@@ -1,7 +1,9 @@
 package model.board;
 
 public enum MoveResult {
-    OK,
+    MOVED,
+    PUSHED,
     BLOCKED,
-    BROKEN
+    WON,
+    LOST
 }
