@@ -1,0 +1,48 @@
+.background {
+    -fx-background-color: #cc4433;
+    -fx-background-image: url("../assets/images/block_06.png");
+    -fx-background-repeat: repeat;
+}
+
+.title {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 110px;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(one-pass-box, #1e9fd7, 0, 1, -4, 6);
+}
+
+/* Marco: nine-slice. 12 px de esquina fija, el resto se estira. */
+.panel {
+    -fx-border-image-source: url("../assets/images/button_square_depth_line.png");
+    -fx-border-image-slice: 20 fill;
+    -fx-border-image-width: 14;
+    /*-fx-border-image-repeat: stretch;*/
+    -fx-padding: 16;
+}
+
+/* Botones: el texto es un Label real, escala solo con el botón. */
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-image-width: 8;
+    -fx-border-image-repeat: stretch;
+    -fx-pref-width: 240px;
+    -fx-pref-height: 64px;
+    -fx-padding: 0 0 4 0;          /* compensa el "grosor" inferior del asset */
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.button-primary {
+    -fx-border-image-source: url("../assets/images/button_square_depth_gloss.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-text-fill: white;
+}
+.button-secondary {
+    -fx-border-image-source: url("../assets/images/button_square_depth_border.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-text-fill: #2b2b2b;
+}
+.menu-button:hover   { -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.5), 12, 0.2, 0, 0); }
+.menu-button:pressed { -fx-translate-y: 2; }
