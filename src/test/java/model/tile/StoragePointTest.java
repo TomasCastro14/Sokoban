@@ -24,10 +24,10 @@ class StoragePointTest {
     }
 
     @Test
-    @DisplayName("2. Una caja sobre un punto de otro color da WRONG_TYPE")
+    @DisplayName("2. Una caja sobre un punto de otro color da WRONG_BOX")
     void boxOnOtherColorIsWrong() {
-        assertEquals(StorageResult.WRONG_TYPE, new StoragePoint(BoxType.NORMAL).receive(new WeakBox(3)));
-        assertEquals(StorageResult.WRONG_TYPE, new StoragePoint(BoxType.WEAK).receive(new NormalBox()));
+        assertEquals(StorageResult.WRONG_BOX, new StoragePoint(BoxType.NORMAL).receive(new WeakBox(3)));
+        assertEquals(StorageResult.WRONG_BOX, new StoragePoint(BoxType.WEAK).receive(new NormalBox()));
     }
 
     @Test
@@ -46,7 +46,7 @@ class StoragePointTest {
     @Test
     @DisplayName("3. Guardar la KeyBox antes de abrir su puerta da derrota (EarlyKeyStorage)")
     void keyBoxStoredBeforeDoorOpenedLoses() {
-        assertEquals(StorageResult.EARLY_KEY, new StoragePoint(BoxType.KEY).receive(new KeyBox()));
+        assertEquals(StorageResult.KEY_NOT_USED, new StoragePoint(BoxType.KEY).receive(new KeyBox()));
 
         Level level = TestLevels.level(
                 "########",

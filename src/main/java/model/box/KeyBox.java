@@ -22,6 +22,6 @@ public class KeyBox extends Box {
     /** A key box can only be stored after it has opened its door. */
     @Override
     protected StorageResult onStored(StoragePoint point) {
-        return doorOpened ? StorageResult.STORED : StorageResult.EARLY_KEY;
+        return doorOpened ? StorageResult.STORED : StorageResult.KEY_NOT_USED;
     }
 }

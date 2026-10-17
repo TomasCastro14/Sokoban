@@ -41,8 +41,18 @@ public class Level {
         return stats;
     }
 
+    /** A blocked move does not count as a move nor as a push. */
     public MoveResult move(Direction direction) {
-        throw new UnsupportedOperationException("TODO");
+        boolean pushing = board.getBoxAt(board.getPlayerPosition().move(direction)) != null;
+        MoveResult result = board.movePlayer(direction);
+        if (result == MoveResult.BLOCKED) {
+            return result;
+        }
+        stats.addMove();
+        if (pushing) {
+            stats.addPush();
+        }
+        return result;
     }
 
     /** Returns false when the undo was not applied (empty history or no undos left). */

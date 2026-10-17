@@ -2,6 +2,6 @@ package model.tile;
 
 public enum StorageResult {
     STORED,
-    WRONG_TYPE,
-    EARLY_KEY
+    WRONG_BOX,
+    KEY_NOT_USED
 }

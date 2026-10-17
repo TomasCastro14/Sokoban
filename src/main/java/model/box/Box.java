@@ -12,6 +12,11 @@ public abstract class Box implements Occupant {
 
     public abstract BoxType getType();
 
+    @Override
+    public boolean isPushable() {
+        return true;
+    }
+
     public final PushResult push() {
         return onPushed();
     }
@@ -23,7 +28,7 @@ public abstract class Box implements Occupant {
 
     public final StorageResult storeAt(StoragePoint point) {
         if (point.getType() != getType()) {
-            return StorageResult.WRONG_TYPE;
+            return StorageResult.WRONG_BOX;
         }
         return onStored(point);
     }
