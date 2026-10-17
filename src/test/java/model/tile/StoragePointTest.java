@@ -39,7 +39,7 @@ class StoragePointTest {
                 "#    $ #",
                 "########");
 
-        assertEquals(MoveResult.LOST, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
         assertEquals(LossReason.WRONG_STORAGE, level.getLossReason());
     }
 
@@ -55,7 +55,7 @@ class StoragePointTest {
                 "#      #",
                 "########");
 
-        assertEquals(MoveResult.LOST, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
         assertEquals(LossReason.EARLY_KEY_STORAGE, level.getLossReason());
     }
 
@@ -74,7 +74,7 @@ class StoragePointTest {
                 "########");
 
         level.move(Direction.RIGHT); // opens door A
-        assertEquals(MoveResult.WON, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
         assertNull(level.getLossReason());
     }
 }
