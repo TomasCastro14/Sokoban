@@ -1,5 +1,8 @@
 package model.box;
 
+import model.tile.StoragePoint;
+import model.tile.StorageResult;
+
 public class KeyBox extends Box {
     private boolean doorOpened;
 
@@ -14,5 +17,11 @@ public class KeyBox extends Box {
     @Override
     public BoxType getType() {
         return BoxType.KEY;
+    }
+
+    /** A key box can only be stored after it has opened its door. */
+    @Override
+    protected StorageResult onStored(StoragePoint point) {
+        return doorOpened ? StorageResult.STORED : StorageResult.EARLY_KEY;
     }
 }

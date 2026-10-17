@@ -15,6 +15,6 @@ public class StoragePoint extends Tile {
     }
 
     public StorageResult receive(Box box) {
-        throw new UnsupportedOperationException("TODO");
+        return box.storeAt(this);
     }
 }
