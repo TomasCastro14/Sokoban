@@ -3,6 +3,7 @@ package model.box;
 public class WeakBox extends Box {
     private int remainingPushes;
 
+    /** @param maxPushes pushes the box withstands; the next one breaks it */
     public WeakBox(int maxPushes) {
         this.remainingPushes = maxPushes;
     }
@@ -17,7 +18,11 @@ public class WeakBox extends Box {
     }
 
     @Override
-    public PushResult push() {
-        throw new UnsupportedOperationException("TODO");
+    protected PushResult onPushed() {
+        if (remainingPushes == 0) {
+            return PushResult.BROKEN;
+        }
+        remainingPushes--;
+        return PushResult.PUSHED;
     }
 }

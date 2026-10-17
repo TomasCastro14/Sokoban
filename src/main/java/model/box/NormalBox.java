@@ -6,9 +6,4 @@ public class NormalBox extends Box {
     public BoxType getType() {
         return BoxType.NORMAL;
     }
-
-    @Override
-    public PushResult push() {
-        throw new UnsupportedOperationException("TODO");
-    }
 }

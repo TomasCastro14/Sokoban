@@ -15,9 +15,4 @@ public class KeyBox extends Box {
     public BoxType getType() {
         return BoxType.KEY;
     }
-
-    @Override
-    public PushResult push() {
-        throw new UnsupportedOperationException("TODO");
-    }
 }
