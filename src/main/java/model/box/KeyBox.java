@@ -16,6 +16,12 @@ public class KeyBox extends Box {
         return BoxType.KEY;
     }
 
+    /** A key box can only be stored after it has opened its door. */
+    @Override
+    public boolean canBeStored() {
+        return doorOpened;
+    }
+
     @Override
     public PushResult push() {
         throw new UnsupportedOperationException("TODO");
