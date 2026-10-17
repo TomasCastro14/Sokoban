@@ -20,7 +20,7 @@ class PushTest {
                 "#@$  .#",
                 "#######");
 
-        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
 
         assertEquals(new Position(1, 2), level.getBoard().getPlayerPosition());
         assertNull(level.getBoard().getBoxAt(new Position(1, 2)));

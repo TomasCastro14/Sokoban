@@ -1,5 +1,6 @@
 package model.tile.mechanism;
 
+import model.box.Box;
 import model.tile.Tile;
 
 public class Door extends Tile {
@@ -24,5 +25,15 @@ public class Door extends Tile {
 
     public void close() {
         this.open = false;
+    }
+
+    @Override
+    public boolean allowsPlayer() {
+        return open;
+    }
+
+    @Override
+    public boolean allowsBox(Box box) {
+        return open;
     }
 }
