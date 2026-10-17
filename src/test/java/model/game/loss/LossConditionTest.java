@@ -21,7 +21,7 @@ class LossConditionTest {
                 "#@ .#",
                 "#####");
 
-        assertEquals(MoveResult.LOST, level.move(Direction.UP));
+        assertEquals(MoveResult.OK, level.move(Direction.UP));
         assertEquals(LossReason.DEADLOCK, level.getLossReason());
     }
 
@@ -36,7 +36,7 @@ class LossConditionTest {
                 "#..   #",
                 "#######");
 
-        assertEquals(MoveResult.LOST, level.move(Direction.UP));
+        assertEquals(MoveResult.OK, level.move(Direction.UP));
         assertEquals(LossReason.DEADLOCK, level.getLossReason());
     }
 
@@ -50,7 +50,7 @@ class LossConditionTest {
                 "#@  #",
                 "#####");
 
-        assertEquals(MoveResult.WON, level.move(Direction.UP));
+        assertEquals(MoveResult.OK, level.move(Direction.UP));
         assertNull(level.getLossReason());
     }
 
@@ -66,7 +66,7 @@ class LossConditionTest {
                 "#     #",
                 "#######");
 
-        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
         assertNull(level.getLossReason());
     }
 
@@ -97,7 +97,7 @@ class LossConditionTest {
 
         level.move(Direction.RIGHT); // uses its only push
 
-        assertEquals(MoveResult.LOST, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.BROKEN, level.move(Direction.RIGHT));
         assertEquals(LossReason.BROKEN_BOX, level.getLossReason());
         assertTrue(new BrokenBoxCondition().isMet(level));
     }

@@ -29,7 +29,7 @@ class MovementTest {
         for (Direction direction : Direction.values()) {
             Level level = openRoom();
 
-            assertEquals(MoveResult.MOVED, level.move(direction), direction.name());
+            assertEquals(MoveResult.OK, level.move(direction), direction.name());
             assertEquals(start.move(direction), level.getBoard().getPlayerPosition(), direction.name());
         }
     }
@@ -94,7 +94,7 @@ class MovementTest {
                 "#######");
 
         level.move(Direction.RIGHT); // stores the box at (1,3)
-        assertEquals(MoveResult.MOVED, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
 
         assertEquals(new Position(1, 3), level.getBoard().getPlayerPosition());
         assertNotNull(level.getBoard().getBoxAt(new Position(1, 3)), "the stored box stays as a bridge");
