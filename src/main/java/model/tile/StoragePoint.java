@@ -15,12 +15,6 @@ public class StoragePoint extends Tile {
     }
 
     public StorageResult receive(Box box) {
-        if (box.getType() != type) {
-            return StorageResult.WRONG_TYPE;
-        }
-        if (!box.canBeStored()) {
-            return StorageResult.EARLY_KEY;
-        }
-        return StorageResult.STORED;
+        return box.storeAt(this);
     }
 }
