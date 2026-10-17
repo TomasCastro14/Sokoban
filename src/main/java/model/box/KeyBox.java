@@ -21,9 +21,4 @@ public class KeyBox extends Box {
     public boolean canBeStored() {
         return doorOpened;
     }
-
-    @Override
-    public PushResult push() {
-        throw new UnsupportedOperationException("TODO");
-    }
 }
