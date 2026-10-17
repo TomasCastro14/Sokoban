@@ -78,4 +78,109 @@ class WeakBoxTest {
         assertEquals(3, box.getRemainingPushes());
         assertEquals(0, level.getStats().getPushes());
     }
+
+    @Test
+    @DisplayName("5. Caminar 1 celda al lado de una WeakBox(3) no descuenta")
+    void walkingOneCellNextToBoxDoesNotCountDown() {
+        Level level = TestLevels.level(
+                "######",
+                "#@   #",
+                "# 3 :#",
+                "######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(2, 2));
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT)); // ends right above the box
+
+        assertEquals(3, box.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("6. Caminar en las 4 direcciones alrededor de la WeakBox(3) no descuenta")
+    void walkingAroundBoxInFourDirectionsDoesNotCountDown() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@    #",
+                "#  3  #",
+                "#    :#",
+                "#######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(2, 3));
+        Direction[] loopAroundBox = {
+                Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, // above the box
+                Direction.DOWN, Direction.DOWN,                    // right of the box
+                Direction.LEFT, Direction.LEFT,                    // below the box
+                Direction.UP, Direction.UP                         // left of the box
+        };
+
+        for (Direction direction : loopAroundBox) {
+            assertEquals(MoveResult.OK, level.move(direction), direction.name());
+        }
+
+        assertEquals(3, box.getRemainingPushes());
+        assertSame(box, level.getBoard().getBoxAt(new Position(2, 3)));
+        assertEquals(0, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("7. Moverse contra una pared o contra % no descuenta")
+    void movingIntoWallOrVoidDoesNotCountDown() {
+        Level level = TestLevels.level(
+                "######",
+                "#@%  #",
+                "# 3 :#",
+                "######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(2, 2));
+
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.UP));
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
+
+        assertEquals(3, box.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("8. Con dos WeakBox(3), empujar una solo descuenta a esa")
+    void pushingOneWeakBoxDoesNotAffectTheOther() {
+        Level level = TestLevels.level(
+                "########",
+                "#@3   :#",
+                "#  3  :#",
+                "########");
+        WeakBox pushed = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
+        WeakBox other = (WeakBox) level.getBoard().getBoxAt(new Position(2, 3));
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+
+        assertEquals(2, pushed.getRemainingPushes());
+        assertEquals(3, other.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("9. Empujar una NormalBox no descuenta a la WeakBox")
+    void pushingNormalBoxDoesNotAffectWeakBox() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$  .#",
+                "#  3 :#",
+                "#######");
+        WeakBox weak = (WeakBox) level.getBoard().getBoxAt(new Position(2, 3));
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+
+        assertEquals(3, weak.getRemainingPushes());
+        assertEquals(1, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("10. Control: empujar la WeakBox(3) con exito si la baja a 2")
+    void successfulPushCountsDown() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@3  :#",
+                "#######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+
+        assertEquals(2, box.getRemainingPushes());
+        assertSame(box, level.getBoard().getBoxAt(new Position(1, 3)));
+    }
 }
