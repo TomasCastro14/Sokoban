@@ -87,6 +87,7 @@ public class Board {
         PushResult result = box.push();
         if (result != PushResult.BROKEN) {
             toCell.place(box);
+            toCell.getTile().onBoxEntered(box);
         }
         return result;
     }

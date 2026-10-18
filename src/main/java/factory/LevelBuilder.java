@@ -6,9 +6,11 @@ import model.board.Cell;
 import model.board.Position;
 import model.box.Player;
 import model.game.Level;
+import model.game.loss.WrongStorageCondition;
 import model.tile.Void;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /** Builder + Creator (GRASP): collects the parsed cells and assembles the Level. */
@@ -55,7 +57,8 @@ public class LevelBuilder {
                 }
             }
         }
-        return new Level(name, timeLimit, targetScore, new Board(cells, playerPosition));
+        return new Level(name, timeLimit, targetScore, new Board(cells, playerPosition),
+                List.of(new WrongStorageCondition()));
     }
 
     private void validate() throws InvalidLevelException {
