@@ -4,6 +4,7 @@ public class LevelStats {
     private int moves;
     private int pushes;
     private int undos;
+    private int storedBoxes;
 
     public void addMove() {
         moves++;
@@ -17,6 +18,10 @@ public class LevelStats {
         undos++;
     }
 
+    public void addStoredBox() {
+        storedBoxes++;
+    }
+
     public int getMoves() {
         return moves;
     }
@@ -27,5 +32,9 @@ public class LevelStats {
 
     public int getUndos() {
         return undos;
+    }
+
+    public int getStoredBoxes() {
+        return storedBoxes;
     }
 }

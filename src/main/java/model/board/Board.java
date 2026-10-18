@@ -37,9 +37,10 @@ public class Board {
         return cellAt(position).getTile();
     }
 
-    /** Returns the box at the given position, or null if there is none. */
+    /** Returns the box at the given position (pushable or stored in its point), or null if there is none. */
     public Box getBoxAt(Position position) {
-        return cellAt(position).getOccupant() instanceof Box box ? box : null;
+        Cell cell = cellAt(position);
+        return cell.getOccupant() instanceof Box box ? box : cell.getTile().getStoredBox();
     }
 
     public void placeBox(Position position, Box box) {
@@ -86,8 +87,10 @@ public class Board {
         fromCell.remove();
         PushResult result = box.push();
         if (result != PushResult.BROKEN) {
-            toCell.place(box);
             toCell.getTile().onBoxEntered(box);
+            if (toCell.getTile().getStoredBox() != box) {
+                toCell.place(box); // a stored box is absorbed by its point, it is no longer an occupant
+            }
         }
         return result;
     }

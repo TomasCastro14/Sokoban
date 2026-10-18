@@ -3,6 +3,7 @@ package model.game;
 import model.board.Board;
 import model.board.Direction;
 import model.board.MoveResult;
+import model.board.Position;
 import model.board.VisibilityMap;
 import model.game.event.EventType;
 import model.game.event.GameEvent;
@@ -57,7 +58,11 @@ public class Level {
         if (lossReason != null) {
             return MoveResult.BLOCKED;
         }
-        boolean pushing = board.getBoxAt(board.getPlayerPosition().move(direction)) != null;
+        Position target = board.getPlayerPosition().move(direction);
+        // A stored box (bridge) is not an occupant, so walking over it is not a push.
+        boolean pushing = board.isInside(target) && !board.cellAt(target).isFree();
+        Position boxTarget = target.move(direction);
+        boolean wasFilled = hasStoredBox(boxTarget);
         MoveResult result = board.movePlayer(direction);
         if (result == MoveResult.BLOCKED) {
             return result;
@@ -65,9 +70,17 @@ public class Level {
         stats.addMove();
         if (pushing) {
             stats.addPush();
+            if (!wasFilled && hasStoredBox(boxTarget)) {
+                stats.addStoredBox();
+                notifyListeners(new GameEvent(EventType.BOX_STORED));
+            }
         }
         checkLoss();
         return result;
+    }
+
+    private boolean hasStoredBox(Position p) {
+        return board.isInside(p) && board.getTile(p).getStoredBox() != null;
     }
 
     /** Loss conditions are evaluated once, after the move is finished. */

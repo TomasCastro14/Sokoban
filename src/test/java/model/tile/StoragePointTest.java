@@ -25,6 +25,120 @@ class StoragePointTest {
     }
 
     @Test
+    @DisplayName("1b. Empujar una caja sobre un punto de su color la deja guardada en el punto")
+    void pushedBoxOnMatchingPointIsStored() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$.  #",
+                "#######");
+        NormalBox box = (NormalBox) level.getBoard().getBoxAt(new Position(1, 2));
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+
+        StoragePoint point = (StoragePoint) level.getBoard().getTile(new Position(1, 3));
+        assertTrue(point.isFilled());
+        assertSame(box, level.getBoard().getBoxAt(new Position(1, 3)));
+        assertNull(level.getLossReason());
+    }
+
+    @Test
+    @DisplayName("1c. Guardar una caja cuenta como 1 movimiento y 1 empuje, y el jugador avanza")
+    void storingCountsAsMoveAndPush() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$.  #",
+                "#######");
+
+        level.move(Direction.RIGHT);
+
+        assertEquals(new Position(1, 2), level.getBoard().getPlayerPosition());
+        assertEquals(1, level.getStats().getMoves());
+        assertEquals(1, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("1d. La cantidad de cajas guardadas sube en 1 por cada caja guardada")
+    void storedBoxesCounterGoesUp() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$.  #",
+                "# 3:  #",
+                "#######");
+        assertEquals(0, level.getStats().getStoredBoxes());
+
+        level.move(Direction.RIGHT);
+        assertEquals(1, level.getStats().getStoredBoxes());
+
+        level.move(Direction.LEFT);
+        level.move(Direction.DOWN);
+        level.move(Direction.RIGHT);
+        assertEquals(2, level.getStats().getStoredBoxes());
+    }
+
+    @Test
+    @DisplayName("1e. Despues de guardarla, el jugador pisa el punto (puente): no la empuja ni suma empuje")
+    void storedBoxIsABridge() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$.  #",
+                "#######");
+        level.move(Direction.RIGHT);
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+
+        assertEquals(new Position(1, 4), level.getBoard().getPlayerPosition());
+        assertNotNull(level.getBoard().getBoxAt(new Position(1, 3)), "the stored box stays fixed");
+        assertNull(level.getBoard().getBoxAt(new Position(1, 5)));
+        assertEquals(1, level.getStats().getPushes());
+        assertEquals(1, level.getStats().getStoredBoxes());
+    }
+
+    @Test
+    @DisplayName("1f. Empujar una caja a piso comun no la guarda")
+    void boxOnFloorIsNotStored() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$ . #",
+                "#######");
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+
+        assertFalse(((StoragePoint) level.getBoard().getTile(new Position(1, 4))).isFilled());
+        assertEquals(0, level.getStats().getStoredBoxes());
+    }
+
+    @Test
+    @DisplayName("1g. Una WeakBox que se rompe en el empuje hacia su punto no queda guardada (gana BROKEN)")
+    void brokenWeakBoxIsNotStored() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@1 : #",
+                "#######");
+        level.move(Direction.RIGHT); // uses its only push, now next to the ':'
+
+        assertEquals(MoveResult.BROKEN, level.move(Direction.RIGHT));
+
+        assertFalse(((StoragePoint) level.getBoard().getTile(new Position(1, 4))).isFilled());
+        assertEquals(0, level.getStats().getStoredBoxes());
+    }
+
+    @Test
+    @DisplayName("1h. Una caja de otro color no queda guardada y sigue dando derrota WRONG_STORAGE")
+    void wrongBoxIsNotStored() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$:  #",
+                "#######");
+
+        level.move(Direction.RIGHT);
+
+        assertFalse(((StoragePoint) level.getBoard().getTile(new Position(1, 3))).isFilled());
+        assertEquals(0, level.getStats().getStoredBoxes());
+        assertEquals(LossReason.WRONG_STORAGE, level.getLossReason());
+    }
+
+    @Test
     @DisplayName("2. Una caja sobre un punto de otro color da WRONG_BOX")
     void boxOnOtherColorIsWrong() {
         assertEquals(StorageResult.WRONG_BOX, new StoragePoint(BoxType.NORMAL).receive(new WeakBox(3)));

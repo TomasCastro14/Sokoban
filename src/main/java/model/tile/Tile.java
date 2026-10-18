@@ -20,6 +20,11 @@ public abstract class Tile {
     public void onBoxEntered(Box box) {
     }
 
+    /** Returns the box this tile absorbed (a filled storage point), or null if there is none. */
+    public Box getStoredBox() {
+        return null;
+    }
+
     /** True while this tile holds a box it does not accept (wrong storage). */
     public boolean holdsWrongBox() {
         return false;
