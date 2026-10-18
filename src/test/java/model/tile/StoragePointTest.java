@@ -270,6 +270,113 @@ class StoragePointTest {
     }
 
     @Test
+    @DisplayName("3b. Empujar una KeyBox a su punto con la puerta cerrada da EARLY_KEY_STORAGE en ese movimiento")
+    void keyBoxOnItsPointWithClosedDoorLoses() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@K;  #",
+                "#######");
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(LossReason.EARLY_KEY_STORAGE, level.getLossReason());
+        assertFalse(((StoragePoint) level.getBoard().getTile(new Position(1, 3))).isFilled());
+    }
+
+    @Test
+    @DisplayName("3c. Despues de la derrota por llave, un nuevo movimiento da BLOCKED y no cambia nada")
+    void noMovesAfterEarlyKeyStorage() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@K;  #",
+                "#     #",
+                "#######");
+        level.move(Direction.RIGHT);
+        Position player = level.getBoard().getPlayerPosition();
+        int moves = level.getStats().getMoves();
+
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.DOWN));
+
+        assertEquals(player, level.getBoard().getPlayerPosition());
+        assertEquals(moves, level.getStats().getMoves());
+        assertEquals(LossReason.EARLY_KEY_STORAGE, level.getLossReason());
+    }
+
+    @Test
+    @DisplayName("3d. Mover la KeyBox por piso comun con la puerta cerrada no es derrota")
+    void keyBoxOnFloorIsNotLoss() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@K  ;#",
+                "#######");
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertNull(level.getLossReason());
+    }
+
+    @Test
+    @DisplayName("3e. Un empuje BLOCKED de la KeyBox no es derrota")
+    void blockedKeyBoxPushIsNotLoss() {
+        Level level = TestLevels.level(
+                "######",
+                "#;@K##",
+                "######");
+
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
+        assertNull(level.getLossReason());
+    }
+
+    @Test
+    @DisplayName("3f. Control: con una KeyBox en el nivel, una NormalBox en su punto se guarda sin derrota")
+    void normalBoxIsStoredNextToKeyBox() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$.  #",
+                "# K ; #",
+                "#######");
+
+        level.move(Direction.RIGHT);
+
+        assertTrue(((StoragePoint) level.getBoard().getTile(new Position(1, 3))).isFilled());
+        assertNull(level.getLossReason());
+    }
+
+    @Test
+    @DisplayName("3g. Control: una KeyBox que ya abrio su puerta se guarda sin EARLY_KEY_STORAGE")
+    void keyBoxWithOpenedDoorIsStored() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@K;  #",
+                "#######");
+        KeyBox key = (KeyBox) level.getBoard().getBoxAt(new Position(1, 2));
+        key.markDoorOpened(); // door opening belongs to the KeyTile task
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+
+        assertNull(level.getLossReason());
+        assertTrue(((StoragePoint) level.getBoard().getTile(new Position(1, 3))).isFilled());
+        assertEquals(1, level.getStats().getStoredBoxes());
+    }
+
+    @Test
+    @DisplayName("3h. Con varias KeyBox, cada una se chequea solo contra su propia puerta")
+    void eachKeyBoxIsCheckedOnItsOwn() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@K;  #",
+                "# K;  #",
+                "#######");
+        ((KeyBox) level.getBoard().getBoxAt(new Position(1, 2))).markDoorOpened();
+
+        level.move(Direction.RIGHT); // the key that opened its door is stored
+        assertNull(level.getLossReason());
+
+        level.move(Direction.LEFT);
+        level.move(Direction.DOWN);
+        level.move(Direction.RIGHT); // this one never opened its door
+        assertEquals(LossReason.EARLY_KEY_STORAGE, level.getLossReason());
+    }
+
+    @Test
     @DisplayName("4. Guardar la KeyBox despues de haber abierto la puerta es valido")
     void keyBoxStoredAfterDoorOpenedIsValid() {
         KeyBox keyBox = new KeyBox();

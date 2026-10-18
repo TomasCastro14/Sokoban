@@ -6,6 +6,7 @@ import model.board.Cell;
 import model.board.Position;
 import model.box.Player;
 import model.game.Level;
+import model.game.loss.EarlyKeyStorageCondition;
 import model.game.loss.WrongStorageCondition;
 import model.tile.Void;
 
@@ -58,7 +59,7 @@ public class LevelBuilder {
             }
         }
         return new Level(name, timeLimit, targetScore, new Board(cells, playerPosition),
-                List.of(new WrongStorageCondition()));
+                List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition()));
     }
 
     private void validate() throws InvalidLevelException {

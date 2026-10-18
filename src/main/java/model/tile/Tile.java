@@ -25,8 +25,8 @@ public abstract class Tile {
         return null;
     }
 
-    /** True while this tile holds a box it does not accept (wrong storage). */
-    public boolean holdsWrongBox() {
-        return false;
+    /** Result of the last box that entered this tile to be stored, or null if it does not store boxes. */
+    public StorageResult getStorageResult() {
+        return null;
     }
 }

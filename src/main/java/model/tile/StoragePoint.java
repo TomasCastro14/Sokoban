@@ -51,7 +51,7 @@ public class StoragePoint extends Tile {
     }
 
     @Override
-    public boolean holdsWrongBox() {
-        return result == StorageResult.WRONG_BOX;
+    public StorageResult getStorageResult() {
+        return result;
     }
 }
