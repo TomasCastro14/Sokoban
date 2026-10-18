@@ -1,7 +1,11 @@
 .background {
     -fx-background-color: #cc4433;
-    -fx-background-image: url("../assets/images/block_06.png");
+    -fx-background-image: url("../assets/images/ground_03.png");
     -fx-background-repeat: repeat;
+}
+
+.background.level-select {
+    -fx-background-color: #0d2b1b;
 }
 
 .title {
@@ -13,10 +17,9 @@
 
 /* Marco: nine-slice. 12 px de esquina fija, el resto se estira. */
 .panel {
-    -fx-border-image-source: url("../assets/images/button_square_depth_line.png");
-    -fx-border-image-slice: 20 fill;
-    -fx-border-image-width: 14;
-    /*-fx-border-image-repeat: stretch;*/
+    -fx-border-image-source: url("../assets/images/ui/containers/button_square_depth_line.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
     -fx-padding: 16;
 }
 
@@ -34,15 +37,87 @@
     -fx-font-weight: bold;
     -fx-cursor: hand;
 }
+
 .button-primary {
-    -fx-border-image-source: url("../assets/images/button_square_depth_gloss.png");
+    -fx-border-image-source: url("../assets/images/ui/buttons/primary_blue/button_square_depth_gloss.png");
     -fx-border-image-slice: 16 fill;
     -fx-text-fill: white;
 }
+
 .button-secondary {
-    -fx-border-image-source: url("../assets/images/button_square_depth_border.png");
-    -fx-border-image-slice: 16 fill;
-    -fx-text-fill: #2b2b2b;
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 8 8 12 8;
+    -fx-padding: 0;               /* el borde inferior de 12 ya sube el texto */
+    -fx-text-fill: #171717;
 }
-.menu-button:hover   { -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.5), 12, 0.2, 0, 0); }
-.menu-button:pressed { -fx-translate-y: 2; }
+
+.menu-button:pressed {
+    -fx-translate-y: 3;
+}
+
+.button-primary:pressed {
+    -fx-border-image-source: url("../assets/images/ui/buttons/primary_blue/button_square_gloss.png");
+}
+
+.button-secondary:pressed {
+    -fx-border-image-source: url("../assets/images/ui/buttons/secondary_blue/button_square_border.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-border-image-width: 8;
+}
+
+.button-secondary, .frame-blue {
+    -fx-border-image-source: url("../assets/images/ui/buttons/secondary_blue/button_square_depth_border.png");
+}
+
+.level-select-bg { -fx-background-color: #0d2b1b; }   /* pantalla verde; el patrón lo ponés vos */
+
+.frame-blue {
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
+    -fx-padding: 8;
+}
+
+.level-title-bar {
+    -fx-border-image-source: url("../assets/images/ui/containers/blue/button_square_gradient.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-border-image-width: 12;
+    -fx-padding: 0 32 12 32;      /* 12 = lo que tapa el frame de abajo */
+}
+
+.level-name {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 24px;
+    -fx-text-fill: white;
+}
+
+.button-gold {
+    -fx-border-image-source: url("../assets/images/ui/buttons/primary_gold/button_square_depth_gloss.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-text-fill: white;
+}
+.button-gold:pressed {
+    -fx-border-image-source: url("../assets/images/ui/buttons/primary_gold/button_square_gloss.png");
+}
+.button-gold:disabled {
+    -fx-border-image-source: url("../assets/images/ui/buttons/primary_disabled/button_square_depth_gloss.png");
+    -fx-opacity: 1;               /* anula el 0.4 de Modena: ya tenés asset de deshabilitado */
+    -fx-text-fill: #9a9a9a;
+}
+.menu-button:disabled { -fx-effect: null; -fx-cursor: default; }
+
+/* Botón redondo: no se estira, así que va como background común */
+.button-round {
+    -fx-background-color: transparent;
+    -fx-background-image: url("../assets/images/ui/buttons/rounded_gold/button_round_depth_gloss.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-pref-width: 72px;
+    -fx-pref-height: 72px;
+    -fx-padding: 0 0 4 0;
+    -fx-cursor: hand;
+}
+
+.button-round:pressed {
+    -fx-background-image: url("../assets/images/ui/buttons/rounded_gold/button_round_gloss.png");
+    -fx-translate-y: 3;
+}

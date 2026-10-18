@@ -4,6 +4,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -11,12 +12,15 @@ import javafx.scene.layout.VBox;
 public class MenuView {
     private final StackPane root = new StackPane();
 
-    public MenuView(Runnable onWork, Runnable onNewGame, Runnable onExit) {
-        Label title = new Label("NEW SOKOBAN!");
+    public MenuView(Runnable onWork, Runnable onNewGame, Runnable onLevels, Runnable onExit) {
+        Label title = new Label("NEW SOKOBAN");
         title.getStyleClass().add("title");
 
+
+
         VBox panel = new VBox(16,
-                button("¡A TRABAJAR!", "button-primary", onWork),
+                button("CONTINUAR", "button-primary", onWork),
+                button("NIVELES", "button-secondary", onLevels),
                 button("NUEVA PARTIDA", "button-secondary", onNewGame),
                 button("SALIR", "button-secondary", onExit));
         panel.getStyleClass().add("panel");

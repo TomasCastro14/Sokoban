@@ -1,8 +1,13 @@
 package view;
 
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -34,7 +39,16 @@ public class GameWindow {
 
         stage.setScene(scene);
         stage.setTitle("New Sokoban!");
+        stage.getIcons().add(
+                new Image(getClass().getResourceAsStream("/assets/playerFace_dark.png"))
+        );
         stage.setResizable(false);
+        stage.setFullScreen(true);
+        scene.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                Platform.exit();
+            }
+        });
     }
 
     public void register(Screen screen, Parent node) {
