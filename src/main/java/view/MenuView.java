@@ -12,7 +12,7 @@ import javafx.scene.layout.VBox;
 public class MenuView {
     private final StackPane root = new StackPane();
 
-    public MenuView(Runnable onWork, Runnable onNewGame, Runnable onLevels, Runnable onExit) {
+    public MenuView(Runnable onWork, Runnable onLevels, Runnable onNewGame, Runnable onExit) {
         Label title = new Label("NEW SOKOBAN");
         title.getStyleClass().add("title");
 

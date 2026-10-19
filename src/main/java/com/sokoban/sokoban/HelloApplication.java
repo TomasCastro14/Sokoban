@@ -16,17 +16,18 @@ public class HelloApplication extends Application {
         Font.loadFont(getClass().getResourceAsStream("/assets/Kenney Future.ttf"), 14);
         GameWindow window = new GameWindow(stage);
 
-        window.register(Screen.LEVEL_SELECT, new LevelSelectView(List.of(
+        window.register(Screen.LEVEL_SELECT, new LevelSelectView(
+            List.of(
                 new LevelSelectView.LevelInfo("Lunes", 1, true),
                 new LevelSelectView.LevelInfo("Martes", 2, true),
                 new LevelSelectView.LevelInfo("Miércoles", 0, false)),
-                n -> { /* arrancar nivel n */ }, 0).getRoot());
+            n -> { /* arrancar nivel n */ }, 0, window::back).getRoot());
 
         window.register(Screen.MAIN_MENU, new MenuView(
-                () -> window.show(Screen.LEVEL_SELECT),   // CONTINUAR (provisorio: último nivel desbloqueado)
-                () -> window.show(Screen.LEVEL_SELECT),   // NIVELES
-                () -> { /* nueva partida */ },
-                Platform::exit).getRoot());
+            () -> { /* nueva partida */ },   // CONTINUAR (provisorio: último nivel desbloqueado)
+            () -> window.show(Screen.LEVEL_SELECT),   // NIVELES
+            () -> { /* nueva partida */ },
+            Platform::exit).getRoot());
 
         window.show(Screen.MAIN_MENU);
         window.open();

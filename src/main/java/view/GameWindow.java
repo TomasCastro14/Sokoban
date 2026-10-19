@@ -14,13 +14,18 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.InputStream;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.Map;
+
+import static javafx.scene.text.Font.loadFont;
 
 public class GameWindow {
     private static final double WIDTH = 1280;
     private static final double HEIGHT = 720;
     private static final Duration FADE = Duration.millis(180);
+    private final Deque<Screen> history = new ArrayDeque<>();
 
     private final Stage stage;
     private final StackPane content = new StackPane();   // lo único que se intercambia
@@ -29,7 +34,6 @@ public class GameWindow {
 
     public GameWindow(Stage stage) {
         this.stage = stage;
-        loadFont("/assets/fonts/Anton-Regular.ttf");
 
         StackPane root = new StackPane(content);          // fondo estático
         root.getStyleClass().add("background");
@@ -60,13 +64,22 @@ public class GameWindow {
     }
 
     public void show(Screen next) {
+        if (current != null && current != next) history.push(current);
+        swap(next);
+    }
+
+    public void back() {
+        if (!history.isEmpty()) swap(history.pop());
+    }
+
+    private void swap(Screen next) {
         Parent target = screens.get(next);
         if (current == null) {
             content.getChildren().setAll(target);
             current = next;
             return;
         }
-        content.setMouseTransparent(true);                // sin clicks durante el fundido
+        content.setMouseTransparent(true);
         FadeTransition out = new FadeTransition(FADE, content);
         out.setToValue(0);
         out.setOnFinished(e -> {

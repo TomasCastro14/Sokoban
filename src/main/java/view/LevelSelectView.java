@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+import view.buttons.CloseButton;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -41,11 +42,12 @@ public class LevelSelectView {
     private final Button play = new Button("¡A TRABAJAR!");
     private final Button prev;
     private final Button next;
+    private final Button exit = new Button("SALIR");
 
     private int index;
     private boolean busy;
 
-    public LevelSelectView(List<LevelInfo> levels, IntConsumer onPlay, int startIndex) {
+    public LevelSelectView(List<LevelInfo> levels, IntConsumer onPlay, int startIndex, Runnable onClose) {
         this.levels = levels;
         this.onPlay = onPlay;
         this.index = startIndex;
@@ -102,6 +104,7 @@ public class LevelSelectView {
 
         StackPane window = new StackPane(panel, play, prev, next);
         window.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        CloseButton.install(window, onClose);
 
         root.getStyleClass().add("background.level-select");
         root.getChildren().add(window);

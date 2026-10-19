@@ -121,3 +121,13 @@
     -fx-background-image: url("../assets/images/ui/buttons/rounded_gold/button_round_gloss.png");
     -fx-translate-y: 3;
 }
+
+.close-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
