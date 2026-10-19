@@ -1,4 +1,4 @@
-package view;
+package view.menus;
 
 import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
@@ -12,7 +12,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-import view.buttons.CloseButton;
+import view.components.buttons.CloseButton;
+import view.components.images.ImageLoader;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -31,8 +32,8 @@ public class LevelSelectView {
     private final List<LevelInfo> levels;
     private final IntConsumer onPlay;                 // recibe el número de nivel (1-based)
     private final Map<Integer, Image> previews = new HashMap<>();
-    private final Image starOn = load("items/star.png");
-    private final Image starOff = load("items/star_outline.png");
+    private final Image starOn = ImageLoader.load(UI + "items/star.png");
+    private final Image starOff = ImageLoader.load(UI + "items/star_outline.png");
 
     private final StackPane root = new StackPane();
     private final StackPane card;
@@ -103,19 +104,26 @@ public class LevelSelectView {
         StackPane.setMargin(play, new Insets(0, 0, -32, 0));
 
         StackPane window = new StackPane(panel, play, prev, next);
-        window.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        CloseButton.install(window, onClose);
+
+        window.setMaxSize(
+                Region.USE_PREF_SIZE,
+                Region.USE_PREF_SIZE
+        );
 
         root.getStyleClass().add("background.level-select");
-        root.getChildren().add(window);
+
+        PopupLayout.install(root, window, onClose);
+
         refresh();
     }
 
     private Button arrow(boolean right) {
-        ImageView a = new ImageView(load("buttons/rounded_gold/arrow_decorative_e.png"));
+        ImageView a = new ImageView(
+                ImageLoader.load(UI + "buttons/rounded_gold/arrow_decorative_e.png")
+        );
         a.setFitWidth(32);
         a.setPreserveRatio(true);
-        if (!right) a.setRotate(180);                 // la flecha original apunta al este
+        if (!right) a.setRotate(180);
         Button b = new Button();
         b.setGraphic(a);
         b.getStyleClass().add("button-round");
@@ -144,15 +152,10 @@ public class LevelSelectView {
         for (int i = 0; i < 3; i++) {
             ((ImageView) stars.getChildren().get(i)).setImage(i < l.stars() ? starOn : starOff);
         }
-        preview.setImage(previews.computeIfAbsent(index + 1, n -> load("level_previews/level" + n + ".png")));
+        preview.setImage(previews.computeIfAbsent(index + 1, n -> ImageLoader.load(UI + "level_previews/level" + n + ".png")));
         play.setDisable(!l.unlocked());
         prev.setVisible(index > 0);
         next.setVisible(index < levels.size() - 1);
-    }
-
-    private Image load(String path) {
-        URL url = getClass().getResource(UI + path);
-        return url == null ? null : new Image(url.toExternalForm());
     }
 
     public Parent getRoot() { return root; }

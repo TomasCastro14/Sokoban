@@ -6,20 +6,17 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import view.components.images.ImageLoader;
 
 import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.Map;
-
-import static javafx.scene.text.Font.loadFont;
 
 public class GameWindow {
     private static final double WIDTH = 1280;
@@ -44,7 +41,7 @@ public class GameWindow {
         stage.setScene(scene);
         stage.setTitle("New Sokoban!");
         stage.getIcons().add(
-                new Image(getClass().getResourceAsStream("/assets/playerFace_dark.png"))
+                ImageLoader.load("/assets/playerFace_dark.png")
         );
         stage.setResizable(false);
         stage.setFullScreen(true);
