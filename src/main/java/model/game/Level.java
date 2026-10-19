@@ -3,9 +3,16 @@ package model.game;
 import model.board.Board;
 import model.board.Direction;
 import model.board.MoveResult;
+import model.board.Position;
 import model.board.VisibilityMap;
+import model.game.event.EventType;
+import model.game.event.GameEvent;
 import model.game.event.GameListener;
+import model.game.loss.LossCondition;
 import model.game.loss.LossReason;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Level {
     private final String name;
@@ -13,12 +20,17 @@ public class Level {
     private final int targetScore;
     private final Board board;
     private final LevelStats stats = new LevelStats();
+    private final List<LossCondition> lossConditions;
+    private final List<GameListener> listeners = new ArrayList<>();
+    private LossReason lossReason;
 
-    public Level(String name, int timeLimitSeconds, int targetScore, Board board) {
+    public Level(String name, int timeLimitSeconds, int targetScore, Board board,
+                 List<LossCondition> lossConditions) {
         this.name = name;
         this.timeLimitSeconds = timeLimitSeconds;
         this.targetScore = targetScore;
         this.board = board;
+        this.lossConditions = List.copyOf(lossConditions);
     }
 
     public String getName() {
@@ -41,8 +53,51 @@ public class Level {
         return stats;
     }
 
+    /** A blocked move does not count as a move nor as a push. A lost level accepts no more moves. */
     public MoveResult move(Direction direction) {
-        throw new UnsupportedOperationException("TODO");
+        if (lossReason != null) {
+            return MoveResult.BLOCKED;
+        }
+        Position target = board.getPlayerPosition().move(direction);
+        // A stored box (bridge) is not an occupant, so walking over it is not a push.
+        boolean pushing = board.isInside(target) && !board.cellAt(target).isFree();
+        Position boxTarget = target.move(direction);
+        boolean wasFilled = hasStoredBox(boxTarget);
+        MoveResult result = board.movePlayer(direction);
+        if (result == MoveResult.BLOCKED) {
+            return result;
+        }
+        stats.addMove();
+        if (pushing) {
+            stats.addPush();
+            if (!wasFilled && hasStoredBox(boxTarget)) {
+                stats.addStoredBox();
+                notifyListeners(new GameEvent(EventType.BOX_STORED));
+            }
+        }
+        checkLoss();
+        return result;
+    }
+
+    private boolean hasStoredBox(Position p) {
+        return board.isInside(p) && board.getTile(p).getStoredBox() != null;
+    }
+
+    /** Loss conditions are evaluated once, after the move is finished. */
+    private void checkLoss() {
+        for (LossCondition condition : lossConditions) {
+            if (condition.isMet(this)) {
+                lossReason = condition.getReason();
+                notifyListeners(new GameEvent(EventType.LEVEL_LOST));
+                return;
+            }
+        }
+    }
+
+    private void notifyListeners(GameEvent event) {
+        for (GameListener listener : listeners) {
+            listener.onEvent(event);
+        }
     }
 
     /** Returns false when the undo was not applied (empty history or no undos left). */
@@ -60,7 +115,7 @@ public class Level {
 
     /** Returns the reason of the loss, or null while the level is not lost. */
     public LossReason getLossReason() {
-        throw new UnsupportedOperationException("TODO");
+        return lossReason;
     }
 
     public VisibilityMap getVisibilityMap() {
@@ -68,7 +123,7 @@ public class Level {
     }
 
     public void addListener(GameListener listener) {
-        throw new UnsupportedOperationException("TODO");
+        listeners.add(listener);
     }
 
     public void elapseSeconds(int seconds) {

@@ -20,7 +20,7 @@ class PushTest {
                 "#@$  .#",
                 "#######");
 
-        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
 
         assertEquals(new Position(1, 2), level.getBoard().getPlayerPosition());
         assertNull(level.getBoard().getBoxAt(new Position(1, 2)));
@@ -96,6 +96,106 @@ class PushTest {
         level.move(Direction.RIGHT);
 
         assertEquals(3, box.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("6b. Caminar al lado de una WeakBox(3) no le baja el contador")
+    void walkingNextToWeakBoxKeepsCounter() {
+        Level level = TestLevels.level(
+                "#######",
+                "#  3 :#",
+                "#@    #",
+                "#######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 3));
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+
+        assertEquals(3, box.getRemainingPushes());
+        assertEquals(0, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("6c. Caminar varias veces sin tocar la WeakBox no cambia el contador de ninguna WeakBox")
+    void walkingAroundKeepsEveryWeakBoxCounter() {
+        Level level = TestLevels.level(
+                "########",
+                "#3    :#",
+                "#      #",
+                "#@   2:#",
+                "########");
+        WeakBox first = (WeakBox) level.getBoard().getBoxAt(new Position(1, 1));
+        WeakBox second = (WeakBox) level.getBoard().getBoxAt(new Position(3, 5));
+
+        level.move(Direction.UP);
+        level.move(Direction.RIGHT);
+        level.move(Direction.RIGHT);
+        level.move(Direction.RIGHT);
+        level.move(Direction.LEFT);
+        level.move(Direction.LEFT);
+
+        assertEquals(6, level.getStats().getMoves());
+        assertEquals(3, first.getRemainingPushes());
+        assertEquals(2, second.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("6d. Empujar una WeakBox contra una pared da BLOCKED y no le baja el contador")
+    void blockedPushAgainstWallKeepsCounter() {
+        Level level = TestLevels.level(
+                "######",
+                "#@3#:#",
+                "######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
+
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
+
+        assertEquals(3, box.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("6e. Empujar una WeakBox contra terreno no accesible (%) da BLOCKED y no le baja el contador")
+    void blockedPushAgainstVoidKeepsCounter() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@3% :#",
+                "#######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
+
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
+
+        assertEquals(3, box.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("6f. Empujar dos cajas en fila da BLOCKED y ninguna WeakBox descuenta")
+    void blockedPushOfTwoBoxesKeepsCounters() {
+        Level level = TestLevels.level(
+                "########",
+                "#@33 ::#",
+                "########");
+        WeakBox front = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
+        WeakBox behind = (WeakBox) level.getBoard().getBoxAt(new Position(1, 3));
+
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
+
+        assertEquals(3, front.getRemainingPushes());
+        assertEquals(3, behind.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("6g. Un empuje valido a una WeakBox(3) la deja en 2")
+    void validPushCountsDownOnce() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@3  :#",
+                "#######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+
+        assertSame(box, level.getBoard().getBoxAt(new Position(1, 3)));
+        assertEquals(2, box.getRemainingPushes());
     }
 
     @Test
