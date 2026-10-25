@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class NormalBoxTest {
 
     @Test
-    @DisplayName("1. Empujar una NormalBox a piso libre: OK, la caja avanza 1, el jugador ocupa su lugar y suma 1 empuje")
+    @DisplayName("1. Empujar una NormalBox a piso libre: PUSHED, la caja avanza 1, el jugador ocupa su lugar y suma 1 empuje")
     void pushToFreeFloorMovesBoxAndPlayer() {
         Level level = TestLevels.level(
                 "#######",
