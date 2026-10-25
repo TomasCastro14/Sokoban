@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class WeakBoxTest {
 
     @Test
-    @DisplayName("1. WeakBox(1) aguanta 1 empuje: el primero da OK y el segundo da BROKEN y la caja desaparece")
+    @DisplayName("1. WeakBox(1) aguanta 1 empuje: el primero da PUSHED y el segundo da BROKEN y la caja desaparece")
     void weakBoxOfOneBreaksOnSecondPush() {
         Level level = TestLevels.level(
                 "#######",
@@ -30,7 +30,7 @@ class WeakBoxTest {
     }
 
     @Test
-    @DisplayName("2. WeakBox(3): los empujes intermedios dan OK y el contador baja de a 1")
+    @DisplayName("2. WeakBox(3): los empujes intermedios dan PUSHED y el contador baja de a 1")
     void weakBoxOfThreeCountsDownOneByOne() {
         Level level = TestLevels.level(
                 "#########",
@@ -182,5 +182,25 @@ class WeakBoxTest {
 
         assertEquals(2, box.getRemainingPushes());
         assertSame(box, level.getBoard().getBoxAt(new Position(1, 3)));
+    }
+
+    @Test
+    @DisplayName("11. Una WeakBox arranca con la resistencia que recibe, en todo el rango valido 1..9")
+    void weakBoxStartsWithItsResistance() {
+        for (int pushes = WeakBox.MIN_PUSHES; pushes <= WeakBox.MAX_PUSHES; pushes++) {
+            assertEquals(pushes, new WeakBox(pushes).getRemainingPushes());
+        }
+    }
+
+    @Test
+    @DisplayName("12. No se puede crear una WeakBox con resistencia menor al minimo")
+    void weakBoxBelowMinimumIsRejected() {
+        assertThrows(IllegalArgumentException.class, () -> new WeakBox(WeakBox.MIN_PUSHES - 1));
+    }
+
+    @Test
+    @DisplayName("13. No se puede crear una WeakBox con resistencia mayor al maximo")
+    void weakBoxAboveMaximumIsRejected() {
+        assertThrows(IllegalArgumentException.class, () -> new WeakBox(WeakBox.MAX_PUSHES + 1));
     }
 }
