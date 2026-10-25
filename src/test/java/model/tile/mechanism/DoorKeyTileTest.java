@@ -35,8 +35,8 @@ class DoorKeyTileTest {
     }
 
     @Test
-    @DisplayName("2. La baldosa llave desaparece despues de usarse")
-    void keyTileDisappearsAfterUse() {
+    @DisplayName("2. La baldosa llave queda usada despues de abrir la puerta (es de un solo uso)")
+    void keyTileIsUsedAfterOpeningDoor() {
         Level level = TestLevels.level(
                 "#########",
                 "#@K a   #",
@@ -47,7 +47,7 @@ class DoorKeyTileTest {
         level.move(Direction.RIGHT);
         level.move(Direction.RIGHT);
 
-        assertFalse(level.getBoard().getTile(new Position(1, 4)) instanceof KeyTile);
+        assertTrue(assertInstanceOf(KeyTile.class, level.getBoard().getTile(new Position(1, 4))).isUsed());
     }
 
     @Test

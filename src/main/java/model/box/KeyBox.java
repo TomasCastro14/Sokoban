@@ -14,6 +14,13 @@ public class KeyBox extends Box {
         this.doorOpened = true;
     }
 
+    /** A key box opens the doors of the key tile it lands on, which also lets it be stored later. */
+    @Override
+    public boolean activateKeyTile() {
+        markDoorOpened();
+        return true;
+    }
+
     @Override
     public BoxType getType() {
         return BoxType.KEY;

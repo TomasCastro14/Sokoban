@@ -26,6 +26,14 @@ public abstract class Box implements Occupant {
         return PushResult.PUSHED;
     }
 
+    /**
+     * Called by a key tile the box lands on. Returns true when the box opens doors;
+     * only key boxes do, so key tiles never ask for the concrete box type.
+     */
+    public boolean activateKeyTile() {
+        return false;
+    }
+
     public final StorageResult storeAt(StoragePoint point) {
         if (point.getType() != getType()) {
             return StorageResult.WRONG_BOX;
