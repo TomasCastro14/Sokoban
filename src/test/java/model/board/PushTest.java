@@ -20,7 +20,7 @@ class PushTest {
                 "#@$  .#",
                 "#######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertEquals(new Position(1, 2), level.getBoard().getPlayerPosition());
         assertNull(level.getBoard().getBoxAt(new Position(1, 2)));
@@ -192,7 +192,7 @@ class PushTest {
                 "#######");
         WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertSame(box, level.getBoard().getBoxAt(new Position(1, 3)));
         assertEquals(2, box.getRemainingPushes());

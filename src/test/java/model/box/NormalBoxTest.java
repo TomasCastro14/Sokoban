@@ -21,7 +21,7 @@ class NormalBoxTest {
                 "#######");
         Box box = level.getBoard().getBoxAt(new Position(1, 2));
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertEquals(new Position(1, 2), level.getBoard().getPlayerPosition());
         assertNull(level.getBoard().getBoxAt(new Position(1, 2)));
@@ -40,7 +40,7 @@ class NormalBoxTest {
         Box box = level.getBoard().getBoxAt(new Position(1, 2));
 
         for (int i = 1; i <= 4; i++) {
-            assertEquals(MoveResult.OK, level.move(Direction.RIGHT), "push " + i);
+            assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT), "push " + i);
             assertSame(box, level.getBoard().getBoxAt(new Position(1, 2 + i)), "push " + i);
         }
 

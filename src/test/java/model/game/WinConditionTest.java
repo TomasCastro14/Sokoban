@@ -43,7 +43,7 @@ class WinConditionTest {
                 "#@$.#",
                 "#####");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertTrue(level.isWon());
     }
 
@@ -55,7 +55,7 @@ class WinConditionTest {
                 "#@$~.#",
                 "######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertTrue(level.isWon());
     }
 

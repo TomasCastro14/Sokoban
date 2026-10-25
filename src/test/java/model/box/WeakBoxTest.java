@@ -21,7 +21,7 @@ class WeakBoxTest {
                 "#######");
         WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertEquals(0, box.getRemainingPushes());
 
         assertEquals(MoveResult.BROKEN, level.move(Direction.RIGHT));
@@ -39,7 +39,7 @@ class WeakBoxTest {
         WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
 
         for (int expected = 2; expected >= 0; expected--) {
-            assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+            assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
             assertEquals(expected, box.getRemainingPushes());
         }
         assertEquals(MoveResult.BROKEN, level.move(Direction.RIGHT));
@@ -147,7 +147,7 @@ class WeakBoxTest {
         WeakBox pushed = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
         WeakBox other = (WeakBox) level.getBoard().getBoxAt(new Position(2, 3));
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertEquals(2, pushed.getRemainingPushes());
         assertEquals(3, other.getRemainingPushes());
@@ -163,7 +163,7 @@ class WeakBoxTest {
                 "#######");
         WeakBox weak = (WeakBox) level.getBoard().getBoxAt(new Position(2, 3));
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertEquals(3, weak.getRemainingPushes());
         assertEquals(1, level.getStats().getPushes());
@@ -178,7 +178,7 @@ class WeakBoxTest {
                 "#######");
         WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertEquals(2, box.getRemainingPushes());
         assertSame(box, level.getBoard().getBoxAt(new Position(1, 3)));
