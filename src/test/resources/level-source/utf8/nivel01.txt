@@ -1,0 +1,7 @@
+nombre: Año de la ñandú con tildes: áéíóú
+tiempo: 90
+objetivo: 500
+---
+#####
+#@$.#
+#####
