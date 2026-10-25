@@ -6,6 +6,7 @@ import model.board.Cell;
 import model.board.Position;
 import model.box.Player;
 import model.game.Level;
+import model.game.LevelHeader;
 import model.game.loss.EarlyKeyStorageCondition;
 import model.game.loss.WrongStorageCondition;
 import model.tile.Void;
@@ -16,17 +17,13 @@ import java.util.Map;
 
 /** Builder + Creator (GRASP): collects the parsed cells and assembles the Level. */
 public class LevelBuilder {
-    private String name;
-    private int timeLimit;
-    private int targetScore;
+    private LevelHeader header;
     private final Map<Position, CellContent> contents = new LinkedHashMap<>();
     private int rows;
     private int cols;
 
-    public LevelBuilder withHeader(String name, int timeLimit, int targetScore) {
-        this.name = name;
-        this.timeLimit = timeLimit;
-        this.targetScore = targetScore;
+    public LevelBuilder withHeader(LevelHeader header) {
+        this.header = header;
         return this;
     }
 
@@ -58,7 +55,7 @@ public class LevelBuilder {
                 }
             }
         }
-        return new Level(name, timeLimit, targetScore, new Board(cells, playerPosition),
+        return new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(), new Board(cells, playerPosition),
                 List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition()));
     }
 

@@ -25,6 +25,7 @@ public class LevelLoader {
     private static final String SEPARATOR = "---";
 
     private final Map<Character, CellCreator> creators = new HashMap<>();
+    private final HeaderParser headerParser = new HeaderParser();
 
     public LevelLoader() {
         register("#", new WallCreator());
@@ -69,28 +70,9 @@ public class LevelLoader {
             throw new InvalidLevelException("Missing '" + SEPARATOR + "' between header and map", -1);
         }
         LevelBuilder builder = new LevelBuilder();
-        parseHeader(lines.subList(0, separator), builder);
+        builder.withHeader(headerParser.parse(lines.subList(0, separator)));
         parseMap(lines, separator + 1, builder);
         return builder.build();
-    }
-
-    private void parseHeader(List<String> lines, LevelBuilder builder) throws InvalidLevelException {
-        Map<String, String> values = new HashMap<>();
-        for (String line : lines) {
-            int colon = line.indexOf(':');
-            if (colon > 0) {
-                values.put(line.substring(0, colon).trim(), line.substring(colon + 1).trim());
-            }
-        }
-        builder.withHeader(values.get("nombre"), intValue(values, "tiempo"), intValue(values, "objetivo"));
-    }
-
-    private int intValue(Map<String, String> values, String key) throws InvalidLevelException {
-        try {
-            return Integer.parseInt(values.get(key));
-        } catch (NumberFormatException e) {
-            throw new InvalidLevelException("Header '" + key + "' must be a number", -1);
-        }
     }
 
     /** Map rows start right after the separator; error lines are 1-based lines of the file. */
