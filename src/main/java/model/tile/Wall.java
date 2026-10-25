@@ -13,4 +13,9 @@ public class Wall extends Tile {
     public boolean allowsBox(Box box) {
         return false;
     }
+
+    @Override
+    public boolean isBoundary() {
+        return true;
+    }
 }

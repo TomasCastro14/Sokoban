@@ -68,7 +68,7 @@ public class LevelLoader {
         if (separator < 0) {
             throw new InvalidLevelException("Missing '" + SEPARATOR + "' between header and map", -1);
         }
-        LevelBuilder builder = new LevelBuilder();
+        LevelBuilder builder = new LevelBuilder().withMapStartLine(separator + 2); // 1-based line after "---"
         parseHeader(lines.subList(0, separator), builder);
         parseMap(lines, separator + 1, builder);
         return builder.build();

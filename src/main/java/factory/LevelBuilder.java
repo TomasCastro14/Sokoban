@@ -10,6 +10,7 @@ import model.game.loss.EarlyKeyStorageCondition;
 import model.game.loss.WrongStorageCondition;
 import model.tile.Void;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +20,19 @@ public class LevelBuilder {
     private String name;
     private int timeLimit;
     private int targetScore;
+    /** Checked in this order before building; the first broken rule is reported. */
+    private static final List<LevelRule> RULES = List.of(new BorderRule(), new OnePlayerRule());
+
     private final Map<Position, CellContent> contents = new LinkedHashMap<>();
     private int rows;
     private int cols;
+    private int firstMapLine = 1;
+
+    /** 1-based line of the file where the first map row is, so rules can report file lines. */
+    public LevelBuilder withMapStartLine(int line) {
+        this.firstMapLine = line;
+        return this;
+    }
 
     public LevelBuilder withHeader(String name, int timeLimit, int targetScore) {
         this.name = name;
@@ -63,9 +74,31 @@ public class LevelBuilder {
     }
 
     private void validate() throws InvalidLevelException {
-        long players = contents.values().stream().filter(c -> c.occupant() instanceof Player).count();
-        if (players != 1) {
-            throw new InvalidLevelException("The level must have exactly one player, found " + players, -1);
+        for (LevelRule rule : RULES) {
+            rule.check(this);
         }
+    }
+
+    // Read-only view of the parsed map for the rules.
+
+    int rows() {
+        return rows;
+    }
+
+    int cols() {
+        return cols;
+    }
+
+    /** Returns what was parsed at that position, or null where a short row was padded. */
+    CellContent contentAt(Position p) {
+        return contents.get(p);
+    }
+
+    Collection<CellContent> contents() {
+        return contents.values();
+    }
+
+    int lineOf(Position p) {
+        return firstMapLine + p.row();
     }
 }
