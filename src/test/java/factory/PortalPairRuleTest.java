@@ -45,12 +45,51 @@ class PortalPairRuleTest {
     void errorNamesTheLetter() {
         InvalidLevelException e = loadInvalid("#########", "#@ P  PR#", "#########");
 
-        assertEquals("R", e.getDetail());
+        assertEquals("'R' aparece 1 vez", e.getDetail());
     }
 
     @Test
     @DisplayName("Varios pares bien formados cargan sin error")
     void wellFormedPairsLoad() {
         assertDoesNotThrow(() -> new LevelLoader().parse(TestLevels.text("##########", "#@PQ  QP #", "##########")));
+    }
+
+    @Test
+    @DisplayName("Con tres Q el error dice la letra y cuantas veces aparecio")
+    void threeQsReportCount() {
+        InvalidLevelException e = loadInvalid("#########", "#@ Q Q Q#", "#########");
+
+        assertEquals("'Q' aparece 3 veces", e.getDetail());
+        assertEquals(FIRST_MAP_LINE + 1, e.getLine());
+    }
+
+    @Test
+    @DisplayName("Con P x2 y R x1 el error menciona la R")
+    void validPairPlusSingleRMentionsR() {
+        InvalidLevelException e = loadInvalid("#########", "#@ P  PR#", "#########");
+
+        assertEquals(LevelFormatRule.PORTAL_NOT_PAIRED, e.getRule());
+        assertTrue(e.getMessage().contains("'R'"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Con un solo P el error apunta a la linea de ese P")
+    void singlePReportsItsLine() {
+        InvalidLevelException e = loadInvalid("#######", "#@    #", "#  P  #", "#######");
+
+        assertEquals(LevelFormatRule.PORTAL_NOT_PAIRED, e.getRule());
+        assertEquals(FIRST_MAP_LINE + 2, e.getLine());
+    }
+
+    @Test
+    @DisplayName("P x2 y Q x2 cargan sin error")
+    void twoPairsLoad() {
+        assertDoesNotThrow(() -> new LevelLoader().parse(TestLevels.text("#########", "#@PQ QP #", "#########")));
+    }
+
+    @Test
+    @DisplayName("Un nivel sin portales carga sin error")
+    void noPortalsIsValid() {
+        assertDoesNotThrow(() -> new LevelLoader().parse(TestLevels.text("#####", "#@$.#", "#####")));
     }
 }

@@ -17,8 +17,12 @@ class PortalPairRule implements LevelRule {
             List<Position> portals = letter.getValue();
             if (portals.size() != PORTALS_PER_PAIR) {
                 throw new InvalidLevelException(LevelFormatRule.PORTAL_NOT_PAIRED,
-                        level.lineOf(portals.get(0)), String.valueOf(letter.getKey()));
+                        level.lineOf(portals.get(0)), describe(letter.getKey(), portals.size()));
             }
         }
+    }
+
+    private static String describe(char letter, int times) {
+        return "'" + letter + "' aparece " + times + (times == 1 ? " vez" : " veces");
     }
 }
