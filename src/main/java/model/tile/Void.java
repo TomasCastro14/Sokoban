@@ -15,6 +15,11 @@ public class Void extends Tile {
     }
 
     @Override
+    public boolean blocksVision() {
+        return true;
+    }
+
+    @Override
     public boolean isBoundary() {
         return true;
     }

@@ -4,6 +4,8 @@ import model.board.Board;
 import model.board.Direction;
 import model.board.MoveResult;
 import model.board.Position;
+import model.board.Reachability;
+import model.board.ReachabilityListener;
 import model.board.VisibilityMap;
 import model.game.event.EventType;
 import model.game.event.GameEvent;
@@ -14,7 +16,8 @@ import model.game.loss.LossReason;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Level {
+/** Also listens to the board: when the reachable area grows, it reveals it once the move ends. */
+public class Level implements ReachabilityListener {
     private final String name;
     private final int timeLimitSeconds;
     private final int targetScore;
@@ -22,6 +25,8 @@ public class Level {
     private final LevelStats stats = new LevelStats();
     private final List<LossCondition> lossConditions;
     private final List<GameListener> listeners = new ArrayList<>();
+    private final VisibilityMap visibility = new VisibilityMap(new Reachability());
+    private boolean reachabilityChanged;
     /** Boxes to store, counted once: stored boxes stay fixed, so the count never has to go down. */
     private final int totalBoxes;
     private LevelStatus status = LevelStatus.PLAYING;
@@ -35,6 +40,7 @@ public class Level {
         this.board = board;
         this.lossConditions = List.copyOf(lossConditions);
         this.totalBoxes = board.countBoxes();
+        visibility.recalculate(board, board.getPlayerPosition());
     }
 
     public String getName() {
@@ -69,6 +75,7 @@ public class Level {
             return result;
         }
         stats.addMove();
+        revealIfReachabilityChanged();
         if (result != MoveResult.OK) { // PUSHED or BROKEN: the board pushed a box
             stats.addPush();
             if (!wasFilled && hasStoredBox(boxTarget)) {
@@ -78,6 +85,21 @@ public class Level {
         }
         checkEnd();
         return result;
+    }
+
+    @Override
+    public void reachabilityChanged() {
+        reachabilityChanged = true;
+    }
+
+    /** Recalculates once per move, however many doors opened in it. */
+    private void revealIfReachabilityChanged() {
+        if (!reachabilityChanged) {
+            return;
+        }
+        reachabilityChanged = false;
+        visibility.recalculate(board, board.getPlayerPosition());
+        notifyListeners(new GameEvent(EventType.DOOR_OPENED));
     }
 
     /** Loss is checked first: a move that loses never wins, even if it stored the last box. */
@@ -134,7 +156,7 @@ public class Level {
     }
 
     public VisibilityMap getVisibilityMap() {
-        throw new UnsupportedOperationException("TODO");
+        return visibility;
     }
 
     public void addListener(GameListener listener) {

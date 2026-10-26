@@ -21,6 +21,11 @@ public abstract class Tile {
         return false;
     }
 
+    /** True when the player cannot see past this tile; the reachable area stops here. */
+    public boolean blocksVision() {
+        return false;
+    }
+
     /** Called by the board once a pushed box finishes moving onto this tile. */
     public void onBoxEntered(Box box) {
     }

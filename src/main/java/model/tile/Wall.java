@@ -15,6 +15,11 @@ public class Wall extends Tile {
     }
 
     @Override
+    public boolean blocksVision() {
+        return true;
+    }
+
+    @Override
     public boolean isBoundary() {
         return true;
     }

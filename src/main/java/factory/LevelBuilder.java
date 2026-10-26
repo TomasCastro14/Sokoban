@@ -70,13 +70,15 @@ public class LevelBuilder {
                 }
             }
         }
-        linkDoorGroups();
-        return new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(), new Board(cells, playerPosition),
+        Collection<DoorGroup> doorGroups = linkDoorGroups();
+        Level level = new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(), new Board(cells, playerPosition),
                 List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition()));
+        doorGroups.forEach(group -> group.addReachabilityListener(level));
+        return level;
     }
 
     /** Wires the Observer: every key tile notifies the door group of its letter. */
-    private void linkDoorGroups() {
+    private Collection<DoorGroup> linkDoorGroups() {
         Map<Character, DoorGroup> groups = new HashMap<>();
         for (CellContent content : contents.values()) {
             if (content.tile() instanceof Door door) {
@@ -88,6 +90,7 @@ public class LevelBuilder {
                 keyTile.addListener(groups.computeIfAbsent(keyTile.getGroup(), DoorGroup::new));
             }
         }
+        return groups.values();
     }
 
     private void validate() throws InvalidLevelException {
