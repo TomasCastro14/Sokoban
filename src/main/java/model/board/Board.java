@@ -165,6 +165,18 @@ public class Board {
     }
 
     /**
+     * Where the box in front of the player would end up if the player moved in that direction
+     * (after any slide), or null if there is no box in front or it cannot be pushed. Changes nothing.
+     */
+    public Position boxDestination(Direction d) {
+        Position entered = playerPosition.move(d);
+        if (!isInside(entered) || cellAt(entered).isFree()) {
+            return null;
+        }
+        return boxArrival(entered, d);
+    }
+
+    /**
      * Whether the occupant could step onto that cell: it is inside the board, its tile admits
      * this kind of occupant and nobody is standing there. Used by entry effects such as ice.
      */

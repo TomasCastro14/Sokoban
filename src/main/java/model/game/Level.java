@@ -69,7 +69,7 @@ public class Level implements ReachabilityListener {
         if (status != LevelStatus.PLAYING) {
             return MoveResult.BLOCKED;
         }
-        Position boxTarget = board.getPlayerPosition().move(direction).move(direction);
+        Position boxTarget = board.boxDestination(direction); // where the box really lands, even after sliding on ice
         boolean wasFilled = hasStoredBox(boxTarget);
         MoveResult result = board.movePlayer(direction);
         if (result == MoveResult.BLOCKED) {
@@ -115,7 +115,7 @@ public class Level implements ReachabilityListener {
     }
 
     private boolean hasStoredBox(Position p) {
-        return board.isInside(p) && board.getTile(p).getStoredBox() != null;
+        return p != null && board.isInside(p) && board.getTile(p).getStoredBox() != null;
     }
 
     /** Loss conditions are evaluated once, after the move is finished. */
