@@ -4,7 +4,7 @@ import model.board.Board;
 import model.board.Direction;
 import model.board.MoveResult;
 import model.board.Position;
-import model.board.Reachability;
+import model.board.BfsReachability;
 import model.board.ReachabilityListener;
 import model.board.Visibility;
 import model.board.VisibilityMap;
@@ -26,7 +26,7 @@ public class Level implements ReachabilityListener {
     private final LevelStats stats = new LevelStats();
     private final List<LossCondition> lossConditions;
     private final List<GameListener> listeners = new ArrayList<>();
-    private final VisibilityMap visibility = new VisibilityMap(new Reachability());
+    private final VisibilityMap visibility = new VisibilityMap(new BfsReachability());
     private boolean reachabilityChanged;
     /** Boxes to store, counted once: stored boxes stay fixed, so the count never has to go down. */
     private final int totalBoxes;

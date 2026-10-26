@@ -8,14 +8,15 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Pure Fabrication: the area connected to a position (BFS).
+ * Pure Fabrication: breadth-first search over the board.
  * It only asks each tile whether it blocks vision, so walls and closed doors stop it
  * and open doors let it through without knowing what a door is.
  * Boxes and empty storage points (holes) do not stop it: the player sees across them.
  * Tiles may link to distant cells (portals), so it also follows each tile's linked positions.
  */
-public class Reachability {
+public class BfsReachability implements ReachabilityCalculator {
 
+    @Override
     public Set<Position> from(Board board, Position start) {
         Set<Position> reached = new HashSet<>();
         Deque<Position> pending = new ArrayDeque<>();
@@ -24,12 +25,12 @@ public class Reachability {
         while (!pending.isEmpty()) {
             Position current = pending.poll();
             for (Position next : neighborsOf(board, current)) {
-                if (board.isInside(next) && !board.getTile(next).blocksVision() && reached.add(next)) {
+                if (isPassable(board, next) && reached.add(next)) {
                     pending.add(next);
                 }
             }
         }
-        return reached;
+        return Set.copyOf(reached);
     }
 
     /** The four adjacent cells plus whatever the tile links to (a portal adds its pair). */
@@ -39,5 +40,9 @@ public class Reachability {
             neighbors.add(p.move(d));
         }
         return neighbors;
+    }
+
+    private static boolean isPassable(Board board, Position p) {
+        return board.isInside(p) && !board.getTile(p).blocksVision();
     }
 }

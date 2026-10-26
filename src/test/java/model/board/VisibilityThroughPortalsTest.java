@@ -149,7 +149,7 @@ class VisibilityThroughPortalsTest {
                 "#######");
 
         assertTimeoutPreemptively(Duration.ofSeconds(1),
-                () -> new Reachability().from(level.getBoard(), level.getBoard().getPlayerPosition()));
+                () -> new BfsReachability().from(level.getBoard(), level.getBoard().getPlayerPosition()));
         assertTrue(visible(level, 3, 5));
     }
 
@@ -160,7 +160,7 @@ class VisibilityThroughPortalsTest {
         Board board = level.getBoard();
         board.placeBox(new Position(3, 3), new NormalBox());
 
-        assertTrue(new Reachability().from(board, board.getPlayerPosition()).contains(new Position(3, 1)));
+        assertTrue(new BfsReachability().from(board, board.getPlayerPosition()).contains(new Position(3, 1)));
     }
 
     @Test

@@ -9,10 +9,10 @@ import java.util.Set;
  * so the outline of each room is drawn. Cells are only ever added, never hidden again.
  */
 public class VisibilityMap implements Visibility {
-    private final Reachability reachability;
+    private final ReachabilityCalculator reachability;
     private final Set<Position> visible = new HashSet<>();
 
-    public VisibilityMap(Reachability reachability) {
+    public VisibilityMap(ReachabilityCalculator reachability) {
         this.reachability = reachability;
     }
 
