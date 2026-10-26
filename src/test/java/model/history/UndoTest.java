@@ -70,7 +70,7 @@ class UndoTest {
         Door door = (Door) level.getBoard().getTile(new Position(2, 4));
         assertFalse(door.isOpen());
         assertInstanceOf(KeyTile.class, level.getBoard().getTile(new Position(1, 4)));
-        assertFalse(level.getVisibilityMap().isVisible(new Position(3, 1)));
+        assertFalse(level.getVisibility().isVisible(new Position(3, 1)));
     }
 
     @Test

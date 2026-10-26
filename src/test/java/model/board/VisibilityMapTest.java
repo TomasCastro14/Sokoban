@@ -19,8 +19,8 @@ class VisibilityMapTest {
                 "#     #",
                 "#######");
 
-        assertTrue(level.getVisibilityMap().isVisible(new Position(1, 5)));
-        assertFalse(level.getVisibilityMap().isVisible(new Position(3, 1)));
+        assertTrue(level.getVisibility().isVisible(new Position(1, 5)));
+        assertFalse(level.getVisibility().isVisible(new Position(3, 1)));
     }
 
     @Test
@@ -33,8 +33,8 @@ class VisibilityMapTest {
                 "#  ;   #",
                 "########");
 
-        assertTrue(level.getVisibilityMap().isVisible(new Position(1, 6)));
-        assertFalse(level.getVisibilityMap().isVisible(new Position(3, 1)));
+        assertTrue(level.getVisibility().isVisible(new Position(1, 6)));
+        assertFalse(level.getVisibility().isVisible(new Position(3, 1)));
     }
 
     @Test
@@ -47,8 +47,8 @@ class VisibilityMapTest {
                 "#  P  #",
                 "#######");
 
-        assertTrue(level.getVisibilityMap().isVisible(new Position(3, 1)));
-        assertTrue(level.getVisibilityMap().isVisible(new Position(3, 5)));
+        assertTrue(level.getVisibility().isVisible(new Position(3, 1)));
+        assertTrue(level.getVisibility().isVisible(new Position(3, 5)));
     }
 
     @Test
@@ -64,7 +64,7 @@ class VisibilityMapTest {
         level.move(Direction.RIGHT);
         level.move(Direction.RIGHT); // key box lands on 'a' and opens 'A'
 
-        assertTrue(level.getVisibilityMap().isVisible(new Position(3, 1)));
-        assertTrue(level.getVisibilityMap().isVisible(new Position(3, 6)));
+        assertTrue(level.getVisibility().isVisible(new Position(3, 1)));
+        assertTrue(level.getVisibility().isVisible(new Position(3, 6)));
     }
 }
