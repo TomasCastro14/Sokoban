@@ -1,7 +1,6 @@
 package model.game.loss;
 
-import model.board.Board;
-import model.board.Position;
+import model.board.Cell;
 import model.game.Level;
 import model.tile.StorageResult;
 
@@ -13,13 +12,10 @@ public abstract class StorageLossCondition implements LossCondition {
 
     @Override
     public final boolean isMet(Level level) {
-        Board board = level.getBoard();
-        for (int row = 0; row < board.getRows(); row++) {
-            for (int col = 0; col < board.getCols(); col++) {
-                StorageResult result = board.getTile(new Position(row, col)).getStorageResult();
-                if (result != null && matches(result)) {
-                    return true;
-                }
+        for (Cell cell : level.getBoard().cells()) {
+            StorageResult result = cell.getTile().getStorageResult();
+            if (result != null && matches(result)) {
+                return true;
             }
         }
         return false;
