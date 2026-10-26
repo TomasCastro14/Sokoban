@@ -50,6 +50,11 @@ public class Game {
         throw new UnsupportedOperationException("TODO");
     }
 
+    /** One second of play time has passed. */
+    public void tick() {
+        throw new UnsupportedOperationException("TODO");
+    }
+
     public boolean isInputBlocked() {
         throw new UnsupportedOperationException("TODO");
     }
