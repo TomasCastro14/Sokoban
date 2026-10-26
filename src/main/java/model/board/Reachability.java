@@ -1,8 +1,10 @@
 package model.board;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -10,6 +12,7 @@ import java.util.Set;
  * It only asks each tile whether it blocks vision, so walls and closed doors stop it
  * and open doors let it through without knowing what a door is.
  * Boxes and empty storage points (holes) do not stop it: the player sees across them.
+ * Tiles may link to distant cells (portals), so it also follows each tile's linked positions.
  */
 public class Reachability {
 
@@ -20,13 +23,21 @@ public class Reachability {
         pending.add(start);
         while (!pending.isEmpty()) {
             Position current = pending.poll();
-            for (Direction d : Direction.values()) {
-                Position next = current.move(d);
+            for (Position next : neighborsOf(board, current)) {
                 if (board.isInside(next) && !board.getTile(next).blocksVision() && reached.add(next)) {
                     pending.add(next);
                 }
             }
         }
         return reached;
+    }
+
+    /** The four adjacent cells plus whatever the tile links to (a portal adds its pair). */
+    private static List<Position> neighborsOf(Board board, Position p) {
+        List<Position> neighbors = new ArrayList<>(board.getTile(p).linkedPositions());
+        for (Direction d : Direction.values()) {
+            neighbors.add(p.move(d));
+        }
+        return neighbors;
     }
 }

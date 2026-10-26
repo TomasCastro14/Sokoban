@@ -1,6 +1,9 @@
 package model.tile;
 
+import model.board.Position;
 import model.box.Box;
+
+import java.util.Set;
 
 /**
  * Polymorphism (GRASP): each tile answers what it lets in, so the board
@@ -24,6 +27,11 @@ public abstract class Tile {
     /** True when the player cannot see past this tile; the reachable area stops here. */
     public boolean blocksVision() {
         return false;
+    }
+
+    /** Cells connected to this one besides its four neighbors (a portal's pair). None by default. */
+    public Set<Position> linkedPositions() {
+        return Set.of();
     }
 
     /** Called by the board once a pushed box finishes moving onto this tile. */

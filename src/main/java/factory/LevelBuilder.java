@@ -10,6 +10,7 @@ import model.game.LevelHeader;
 import model.game.loss.EarlyKeyStorageCondition;
 import model.game.loss.WrongStorageCondition;
 import model.tile.Void;
+import model.tile.Portal;
 import model.tile.mechanism.Door;
 import model.tile.mechanism.DoorGroup;
 import model.tile.mechanism.KeyTile;
@@ -71,6 +72,7 @@ public class LevelBuilder {
             }
         }
         Collection<DoorGroup> doorGroups = linkDoorGroups();
+        linkPortals();
         Level level = new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(), new Board(cells, playerPosition),
                 List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition()));
         doorGroups.forEach(group -> group.addReachabilityListener(level));
@@ -91,6 +93,20 @@ public class LevelBuilder {
             }
         }
         return groups.values();
+    }
+
+    /** Each portal letter appears twice; each portal learns where the other one is. */
+    private void linkPortals() {
+        Map<Character, Position> firstOfLetter = new HashMap<>();
+        for (Map.Entry<Position, CellContent> entry : contents.entrySet()) {
+            if (entry.getValue().tile() instanceof Portal portal) {
+                Position pair = firstOfLetter.putIfAbsent(portal.getLetter(), entry.getKey());
+                if (pair != null) {
+                    portal.linkTo(pair);
+                    ((Portal) contents.get(pair).tile()).linkTo(entry.getKey());
+                }
+            }
+        }
     }
 
     private void validate() throws InvalidLevelException {
