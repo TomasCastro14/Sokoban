@@ -16,6 +16,11 @@ public abstract class Tile {
         return true;
     }
 
+    /** True for tiles that close the map, so they can sit on its border. */
+    public boolean isBoundary() {
+        return false;
+    }
+
     /** Called by the board once a pushed box finishes moving onto this tile. */
     public void onBoxEntered(Box box) {
     }
