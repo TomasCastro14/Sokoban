@@ -78,4 +78,29 @@ class ControllerTest {
 
         assertEquals(List.of("tick", "tick"), game.calls);
     }
+
+    @Test
+    @DisplayName("Dos flechas a la vez llegan como dos eventos: una direccion por evento, en orden, sin diagonal")
+    void combinedArrowsAreTwoSeparateMoves() {
+        RecordingGame game = new RecordingGame();
+        InputController controller = new InputController(game);
+
+        controller.onKey(KeyCode.UP);
+        controller.onKey(KeyCode.RIGHT);
+
+        assertEquals(List.of("move UP", "move RIGHT"), game.calls);
+    }
+
+    @Test
+    @DisplayName("Teclas que no son de direccion no mueven nada")
+    void nonDirectionKeysDoNotMove() {
+        RecordingGame game = new RecordingGame();
+        InputController controller = new InputController(game);
+
+        controller.onKey(KeyCode.W);
+        controller.onKey(KeyCode.SHIFT);
+        controller.onKey(KeyCode.UNDEFINED);
+
+        assertTrue(game.calls.isEmpty());
+    }
 }

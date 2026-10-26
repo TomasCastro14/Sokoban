@@ -214,4 +214,47 @@ class MovementTest {
         assertEquals(3, level.getStats().getMoves());
         assertEquals(1, level.getStats().getPushes());
     }
+
+    @Test
+    @DisplayName("10. Direction tiene 4 valores y cada uno cambia una sola coordenada en 1")
+    void everyDirectionChangesOneCoordinateByOne() {
+        assertEquals(4, Direction.values().length);
+        for (Direction direction : Direction.values()) {
+            int rowStep = Math.abs(direction.getRowOffset());
+            int colStep = Math.abs(direction.getColOffset());
+            assertEquals(1, rowStep + colStep, direction.name());
+            assertTrue(rowStep == 0 || colStep == 0, direction.name());
+        }
+    }
+
+    @Test
+    @DisplayName("10. Cada movimiento cambia solo la fila o solo la columna del jugador")
+    void eachMoveChangesOnlyOneAxis() {
+        for (Direction direction : Direction.values()) {
+            Level level = openRoom();
+            Position before = level.getBoard().getPlayerPosition();
+
+            level.move(direction);
+
+            Position after = level.getBoard().getPlayerPosition();
+            boolean sameRow = before.row() == after.row();
+            boolean sameCol = before.col() == after.col();
+            assertTrue(sameRow ^ sameCol, direction.name());
+            assertEquals(1, Math.abs(before.row() - after.row()) + Math.abs(before.col() - after.col()), direction.name());
+        }
+    }
+
+    @Test
+    @DisplayName("10. Arriba y derecha seguidos son dos pasos ortogonales y suman 2 movimientos")
+    void upThenRightAreTwoOrthogonalSteps() {
+        Level level = openRoom();
+        Position start = level.getBoard().getPlayerPosition();
+
+        level.move(Direction.UP);
+        assertEquals(start.move(Direction.UP), level.getBoard().getPlayerPosition());
+        level.move(Direction.RIGHT);
+
+        assertEquals(start.move(Direction.UP).move(Direction.RIGHT), level.getBoard().getPlayerPosition());
+        assertEquals(2, level.getStats().getMoves());
+    }
 }
