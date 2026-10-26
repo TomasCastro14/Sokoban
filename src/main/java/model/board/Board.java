@@ -79,7 +79,10 @@ public class Board {
         }
         cellAt(target).place(cellAt(playerPosition).remove());
         playerPosition = target;
-        return push == PushResult.BROKEN ? MoveResult.BROKEN : MoveResult.OK;
+        if (push == null) {
+            return MoveResult.OK;
+        }
+        return push == PushResult.BROKEN ? MoveResult.BROKEN : MoveResult.PUSHED;
     }
 
     /**

@@ -34,7 +34,7 @@ public class LevelLoader {
         register("@", (p, symbol) -> new CellContent(new Floor(), new Player(Direction.DOWN)));
         register("$", (p, symbol) -> new CellContent(new Floor(), new NormalBox()));
         register("K", (p, symbol) -> new CellContent(new Floor(), new KeyBox()));
-        register("123456789", new WeakBoxCreator());
+        register(WeakBoxCreator.symbols(), new WeakBoxCreator());
         register(".", (p, symbol) -> new CellContent(new StoragePoint(BoxType.NORMAL), null));
         register(":", (p, symbol) -> new CellContent(new StoragePoint(BoxType.WEAK), null));
         register(";", (p, symbol) -> new CellContent(new StoragePoint(BoxType.KEY), null));

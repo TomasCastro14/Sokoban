@@ -62,17 +62,14 @@ public class Level {
         if (status != LevelStatus.PLAYING) {
             return MoveResult.BLOCKED;
         }
-        Position target = board.getPlayerPosition().move(direction);
-        // A stored box (bridge) is not an occupant, so walking over it is not a push.
-        boolean pushing = board.isInside(target) && !board.cellAt(target).isFree();
-        Position boxTarget = target.move(direction);
+        Position boxTarget = board.getPlayerPosition().move(direction).move(direction);
         boolean wasFilled = hasStoredBox(boxTarget);
         MoveResult result = board.movePlayer(direction);
         if (result == MoveResult.BLOCKED) {
             return result;
         }
         stats.addMove();
-        if (pushing) {
+        if (result != MoveResult.OK) { // PUSHED or BROKEN: the board pushed a box
             stats.addPush();
             if (!wasFilled && hasStoredBox(boxTarget)) {
                 stats.addStoredBox();
