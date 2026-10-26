@@ -129,7 +129,7 @@ class VisibilityThroughPortalsTest {
     void closedDoorOnTheOtherSideBlocks() {
         Level level = TestLevels.level(
                 "########",
-                "#@ P   #",
+                "#@ P a #",
                 "########",
                 "# P A  #",
                 "########");

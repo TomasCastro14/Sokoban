@@ -14,7 +14,7 @@ class HideOnLoadTest {
     /** The player's room on top; a room with a box and a storage point behind a closed door below. */
     private static final String[] ROOM_BEHIND_DOOR = {
             "########",
-            "#@     #",
+            "#@    a#",
             "####A###",
             "#  $ . #",
             "########"};

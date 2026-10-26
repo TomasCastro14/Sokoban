@@ -80,7 +80,7 @@ class ReachabilityTest {
     void closedDoorBlocks() {
         Board board = board(
                 "#####",
-                "#@A #",
+                "#@Aa#",
                 "#####");
 
         assertEquals(Set.of(at(1, 1)), reachFromPlayer(board));
@@ -91,7 +91,7 @@ class ReachabilityTest {
     void openDoorLetsThrough() {
         Board board = board(
                 "#####",
-                "#@A #",
+                "#@Aa#",
                 "#####");
         ((Door) board.getTile(at(1, 2))).open();
 
@@ -103,7 +103,7 @@ class ReachabilityTest {
     void oneOpenOneClosedDoor() {
         Board board = board(
                 "#######",
-                "# B@A #",
+                "#bB@Aa#",
                 "#######");
         ((Door) board.getTile(at(1, 4))).open();
 
@@ -167,7 +167,7 @@ class ReachabilityTest {
     void doesNotModifyTheBoard() {
         Board board = board(
                 "######",
-                "#@$. #",
+                "#@$.a#",
                 "##A###",
                 "#  $ #",
                 "######");
@@ -195,7 +195,7 @@ class ReachabilityTest {
     void sameResultTwice() {
         Board board = board(
                 "#####",
-                "#@A #",
+                "#@Aa#",
                 "#####");
 
         assertEquals(reachFromPlayer(board), reachFromPlayer(board));

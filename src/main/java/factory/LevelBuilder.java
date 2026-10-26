@@ -21,11 +21,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /** Builder + Creator (GRASP): collects the parsed cells and assembles the Level. */
 public class LevelBuilder {
     /** Checked in this order before building; the first broken rule is reported. */
-    private static final List<LevelRule> RULES = List.of(new BorderRule(), new OnePlayerRule(), new PortalPairRule());
+    private static final List<LevelRule> RULES = List.of(new BorderRule(), new OnePlayerRule(), new PortalPairRule(),
+            new DoorKeyGroupRule());
 
     private LevelHeader header;
     private final Map<Position, CellContent> contents = new LinkedHashMap<>();
@@ -111,10 +113,25 @@ public class LevelBuilder {
 
     /** Portal positions grouped by letter, in reading order. Shared by the pair rule and the linking. */
     Map<Character, List<Position>> portalsByLetter() {
+        return positionsByGroup(Portal.class, Portal::getLetter);
+    }
+
+    /** Key tile positions grouped by group letter (upper case), in reading order. */
+    Map<Character, List<Position>> keyTilesByGroup() {
+        return positionsByGroup(KeyTile.class, KeyTile::getGroup);
+    }
+
+    /** Door positions grouped by group letter (upper case), in reading order. */
+    Map<Character, List<Position>> doorsByGroup() {
+        return positionsByGroup(Door.class, Door::getGroup);
+    }
+
+    private <T> Map<Character, List<Position>> positionsByGroup(Class<T> type, Function<T, Character> letterOf) {
         Map<Character, List<Position>> byLetter = new LinkedHashMap<>();
         for (Map.Entry<Position, CellContent> entry : contents.entrySet()) {
-            if (entry.getValue().tile() instanceof Portal portal) {
-                byLetter.computeIfAbsent(portal.getLetter(), letter -> new ArrayList<>()).add(entry.getKey());
+            if (type.isInstance(entry.getValue().tile())) {
+                char letter = letterOf.apply(type.cast(entry.getValue().tile()));
+                byLetter.computeIfAbsent(letter, l -> new ArrayList<>()).add(entry.getKey());
             }
         }
         return byLetter;
