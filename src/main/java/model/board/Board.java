@@ -4,17 +4,55 @@ import model.box.Box;
 import model.box.PushResult;
 import model.tile.Tile;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * Information Expert (GRASP): the board knows every cell, so it validates
  * and executes the player's moves.
+ * Coordinates: Position(row, col), (0,0) is the top-left corner, rows grow down and columns grow right.
+ * The grid is always a full rectangle (the builder pads short rows with void).
  */
 public class Board {
     private final Cell[][] cells;
+    private final List<Cell> cellsInReadingOrder;
     private Position playerPosition;
 
+    /** @param cells a full rectangle of cells; it is copied, later changes to the array do not affect the board */
     public Board(Cell[][] cells, Position playerPosition) {
-        this.cells = cells;
-        this.playerPosition = playerPosition;
+        this.cells = copyOf(Objects.requireNonNull(cells, "cells"));
+        this.cellsInReadingOrder = readingOrder(this.cells);
+        this.playerPosition = Objects.requireNonNull(playerPosition, "playerPosition");
+        requireInside(playerPosition);
+    }
+
+    private static Cell[][] copyOf(Cell[][] cells) {
+        if (cells.length == 0 || cells[0] == null || cells[0].length == 0) {
+            throw new IllegalArgumentException("The board needs at least one cell");
+        }
+        int cols = cells[0].length;
+        Cell[][] copy = new Cell[cells.length][];
+        for (int row = 0; row < cells.length; row++) {
+            if (cells[row] == null || cells[row].length != cols) {
+                throw new IllegalArgumentException("Row " + row + " must have " + cols + " cells");
+            }
+            if (Arrays.asList(cells[row]).contains(null)) {
+                throw new IllegalArgumentException("Row " + row + " has a missing cell");
+            }
+            copy[row] = cells[row].clone();
+        }
+        return copy;
+    }
+
+    private static List<Cell> readingOrder(Cell[][] cells) {
+        List<Cell> all = new ArrayList<>();
+        for (Cell[] row : cells) {
+            all.addAll(Arrays.asList(row));
+        }
+        return Collections.unmodifiableList(all);
     }
 
     public int getRows() {
@@ -25,8 +63,26 @@ public class Board {
         return cells.length == 0 ? 0 : cells[0].length;
     }
 
+    /** Out of the grid is a programming error: the border rule guarantees walls around every level. */
     public Cell cellAt(Position p) {
+        requireInside(p);
         return cells[p.row()][p.col()];
+    }
+
+    /** The cell next to the given position in that direction. */
+    public Cell neighbor(Position p, Direction d) {
+        return cellAt(p.move(d));
+    }
+
+    /** Every cell once, in reading order (row by row, left to right). The list cannot be modified. */
+    public List<Cell> cells() {
+        return cellsInReadingOrder;
+    }
+
+    private void requireInside(Position p) {
+        if (!isInside(p)) {
+            throw new IllegalArgumentException(p + " is outside the " + getRows() + "x" + getCols() + " board");
+        }
     }
 
     public boolean isInside(Position p) {
@@ -53,15 +109,7 @@ public class Board {
 
     /** Number of boxes that can still be pushed (boxes already stored in a point are not occupants). */
     public int countBoxes() {
-        int boxes = 0;
-        for (Cell[] row : cells) {
-            for (Cell cell : row) {
-                if (!cell.isFree() && cell.getOccupant().isPushable()) {
-                    boxes++;
-                }
-            }
-        }
-        return boxes;
+        return (int) cells().stream().filter(cell -> !cell.isFree() && cell.getOccupant().isPushable()).count();
     }
 
     /**
