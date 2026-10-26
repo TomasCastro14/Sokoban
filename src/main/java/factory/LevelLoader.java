@@ -1,6 +1,7 @@
 package factory;
 
 import exception.InvalidLevelException;
+import exception.LevelNotFoundException;
 import model.board.Direction;
 import model.board.Position;
 import model.box.BoxType;
@@ -12,10 +13,9 @@ import model.tile.Floor;
 import model.tile.Ice;
 import model.tile.StoragePoint;
 import model.tile.Void;
+import port.LevelSource;
+import service.ClasspathLevelSource;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +28,15 @@ public class LevelLoader {
 
     private final Map<Character, CellCreator> creators = new HashMap<>();
     private final HeaderParser headerParser = new HeaderParser();
+    private final LevelSource source;
 
+    /** Reads the game levels from the classpath (levels/nivelNN.txt). */
     public LevelLoader() {
+        this(new ClasspathLevelSource());
+    }
+
+    public LevelLoader(LevelSource source) {
+        this.source = source;
         register("#", new WallCreator());
         register("%", (p, symbol) -> new CellContent(new Void(), null));
         register(" ", (p, symbol) -> new CellContent(new Floor(), null));
@@ -52,21 +59,21 @@ public class LevelLoader {
         }
     }
 
-    /** Loads a level from the classpath, e.g. "/levels/nivel01.txt". */
-    public Level load(String resourcePath) throws InvalidLevelException {
-        try (InputStream in = LevelLoader.class.getResourceAsStream(resourcePath)) {
-            if (in == null) {
-                throw new InvalidLevelException("Level not found: " + resourcePath, -1);
-            }
-            return parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new InvalidLevelException("Could not read " + resourcePath + ": " + e.getMessage(), -1);
-        }
+    /** Builds level n from the lines its source gives (1-based). */
+    public Level load(int levelNumber) throws LevelNotFoundException, InvalidLevelException {
+        return parse(source.lines(levelNumber));
+    }
+
+    public boolean exists(int levelNumber) {
+        return source.exists(levelNumber);
     }
 
     /** Parses the full text of a level file: header, "---" separator and map. */
     public Level parse(String text) throws InvalidLevelException {
-        List<String> lines = text.lines().toList();
+        return parse(text.lines().toList());
+    }
+
+    private Level parse(List<String> lines) throws InvalidLevelException {
         int separator = lines.indexOf(SEPARATOR);
         if (separator < 0) {
             throw new InvalidLevelException("Missing '" + SEPARATOR + "' between header and map", -1);
