@@ -1,6 +1,7 @@
 package model.board;
 
 import model.box.Box;
+import model.box.Occupant;
 import model.box.PushResult;
 import model.tile.Tile;
 
@@ -114,19 +115,25 @@ public class Board {
 
     /**
      * Moves the player one cell, pushing the box in front if there is one.
-     * A blocked move leaves the board untouched.
+     * Every check is done first (including where an entry effect such as a portal sends
+     * the player or the box); only then is anything moved. A blocked move leaves the board untouched.
      */
     public MoveResult movePlayer(Direction d) {
-        Position target = playerPosition.move(d);
-        if (!isInside(target) || !getTile(target).allowsPlayer()) {
+        Position entered = playerPosition.move(d);
+        if (!isInside(entered) || !getTile(entered).allowsPlayer()) {
             return MoveResult.BLOCKED;
         }
-        PushResult push = cellAt(target).isFree() ? null : pushBox(target, d);
-        if (push == PushResult.BLOCKED) {
+        Position arrival = getTile(entered).arrivalFor(cellAt(playerPosition).getOccupant(), entered, d, this);
+        Position boxArrival = cellAt(entered).isFree() ? null : boxArrival(entered, d);
+        if (!cellAt(entered).isFree() && boxArrival == null) {
             return MoveResult.BLOCKED;
         }
-        cellAt(target).place(cellAt(playerPosition).remove());
-        playerPosition = target;
+        if (!canPlayerLand(arrival, entered, boxArrival)) {
+            return MoveResult.BLOCKED;
+        }
+        PushResult push = boxArrival == null ? null : moveBox(entered, boxArrival);
+        cellAt(arrival).place(cellAt(playerPosition).remove());
+        playerPosition = arrival;
         if (push == null) {
             return MoveResult.OK;
         }
@@ -134,26 +141,45 @@ public class Board {
     }
 
     /**
-     * Pushes the box only if the next cell admits it and is free; never two boxes at once.
-     * A broken box is removed by the board, the box never removes itself.
+     * The player lands where the entry effect sent it if that cell admits it and is free.
+     * The entered cell counts as free because its box is pushed away first.
      */
-    private PushResult pushBox(Position from, Direction d) {
-        Cell fromCell = cellAt(from);
-        Position to = from.move(d);
-        if (!fromCell.getOccupant().isPushable() || !isInside(to)) {
-            return PushResult.BLOCKED;
+    private boolean canPlayerLand(Position arrival, Position entered, Position boxArrival) {
+        boolean freeAfterPush = arrival.equals(entered) || cellAt(arrival).isFree();
+        return getTile(arrival).allowsPlayer() && freeAfterPush && !arrival.equals(boxArrival);
+    }
+
+    /**
+     * Where the box at the given position would end up, or null if it cannot be pushed:
+     * the next cell must admit it and be free, and so must the cell an entry effect sends it to.
+     * Never two boxes at once.
+     */
+    private Position boxArrival(Position from, Direction d) {
+        Occupant occupant = cellAt(from).getOccupant();
+        Position next = from.move(d);
+        if (!occupant.isPushable() || !canBoxEnter((Box) occupant, next)) {
+            return null;
         }
-        Box box = (Box) fromCell.getOccupant();
-        Cell toCell = cellAt(to);
-        if (!toCell.getTile().allowsBox(box) || !toCell.isFree()) {
-            return PushResult.BLOCKED;
-        }
-        fromCell.remove();
+        Position landing = getTile(next).arrivalFor(occupant, next, d, this);
+        return canBoxEnter((Box) occupant, landing) ? landing : null;
+    }
+
+    private boolean canBoxEnter(Box box, Position p) {
+        return isInside(p) && getTile(p).allowsBox(box) && cellAt(p).isFree();
+    }
+
+    /**
+     * Moves an already validated box. A broken box is removed by the board,
+     * the box never removes itself; a stored box is absorbed by its point.
+     */
+    private PushResult moveBox(Position from, Position to) {
+        Box box = (Box) cellAt(from).remove();
         PushResult result = box.push();
         if (result != PushResult.BROKEN) {
-            toCell.getTile().onBoxEntered(box);
-            if (toCell.getTile().getStoredBox() != box) {
-                toCell.place(box); // a stored box is absorbed by its point, it is no longer an occupant
+            Tile tile = getTile(to);
+            tile.onBoxEntered(box);
+            if (tile.getStoredBox() != box) {
+                cellAt(to).place(box);
             }
         }
         return result;
