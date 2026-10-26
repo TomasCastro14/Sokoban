@@ -157,15 +157,23 @@ public class Board {
     private Position boxArrival(Position from, Direction d) {
         Occupant occupant = cellAt(from).getOccupant();
         Position next = from.move(d);
-        if (!occupant.isPushable() || !canBoxEnter((Box) occupant, next)) {
+        if (!occupant.isPushable() || !canEnter(occupant, next)) {
             return null;
         }
         Position landing = getTile(next).arrivalFor(occupant, next, d, this);
-        return canBoxEnter((Box) occupant, landing) ? landing : null;
+        return canEnter(occupant, landing) ? landing : null;
     }
 
-    private boolean canBoxEnter(Box box, Position p) {
-        return isInside(p) && getTile(p).allowsBox(box) && cellAt(p).isFree();
+    /**
+     * Whether the occupant could step onto that cell: it is inside the board, its tile admits
+     * this kind of occupant and nobody is standing there. Used by entry effects such as ice.
+     */
+    public boolean canEnter(Occupant occupant, Position p) {
+        if (!isInside(p) || !cellAt(p).isFree()) {
+            return false;
+        }
+        Tile tile = getTile(p);
+        return occupant.isPushable() ? tile.allowsBox((Box) occupant) : tile.allowsPlayer();
     }
 
     /**

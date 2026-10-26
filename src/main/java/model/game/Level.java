@@ -75,6 +75,8 @@ public class Level implements ReachabilityListener {
         if (result == MoveResult.BLOCKED) {
             return result;
         }
+        // TODO [Hielo] Definir y testear cómo cuentan movimientos/empujes al deslizar.
+        // For now a slide counts as a single move (and a single push if a box was pushed), however far it goes.
         stats.addMove();
         revealIfReachabilityChanged();
         if (result != MoveResult.OK) { // PUSHED or BROKEN: the board pushed a box
