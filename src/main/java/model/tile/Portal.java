@@ -21,7 +21,24 @@ public class Portal extends Tile {
         return letter;
     }
 
-    public void linkTo(Position pairPosition) {
+    /**
+     * The only way to pair portals: links both directions in one step, so a pair is always
+     * symmetric. Done once, when the level is built; a linked portal can never be relinked.
+     */
+    public static void link(Portal a, Position atA, Portal b, Position atB) {
+        a.requireUnlinked();
+        b.requireUnlinked();
+        a.pointTo(atB);
+        b.pointTo(atA);
+    }
+
+    private void requireUnlinked() {
+        if (pairPosition != null) {
+            throw new IllegalStateException("Portal " + letter + " is already linked to " + pairPosition);
+        }
+    }
+
+    private void pointTo(Position pairPosition) {
         this.pairPosition = pairPosition;
         this.entryEffect = new TeleportEffect(pairPosition);
     }

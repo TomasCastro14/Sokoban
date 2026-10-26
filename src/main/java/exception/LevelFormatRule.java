@@ -14,7 +14,8 @@ public enum LevelFormatRule {
     UNKNOWN_CHARACTER("hay un carácter desconocido en el mapa"),
     OPEN_BORDER("el borde del mapa tiene que ser # o %"),
     PLAYER_COUNT("tiene que haber exactamente un Sokoban"),
-    BOX_STORAGE_MISMATCH("cada tipo de caja necesita tantos puntos de guardado de su color");
+    BOX_STORAGE_MISMATCH("cada tipo de caja necesita tantos puntos de guardado de su color"),
+    PORTAL_NOT_PAIRED("cada letra de portal tiene que aparecer exactamente 2 veces");
 
     private final String description;
 

@@ -3,6 +3,7 @@ package model.board;
 import factory.TestLevels;
 import model.box.NormalBox;
 import model.game.Level;
+import model.tile.Portal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -164,15 +165,8 @@ class VisibilityThroughPortalsTest {
     }
 
     @Test
-    @DisplayName("Un portal sin pareja no conecta con nada")
+    @DisplayName("Un portal sin pareja no aporta conexiones (la carga ya rechaza niveles asi)")
     void unpairedPortalLeadsNowhere() {
-        Level level = TestLevels.level(
-                "#######",
-                "#@ P  #",
-                "#######",
-                "#     #",
-                "#######");
-
-        assertFalse(visible(level, 3, 3));
+        assertTrue(new Portal('P').linkedPositions().isEmpty());
     }
 }

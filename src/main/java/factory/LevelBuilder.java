@@ -15,6 +15,7 @@ import model.tile.mechanism.Door;
 import model.tile.mechanism.DoorGroup;
 import model.tile.mechanism.KeyTile;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -24,7 +25,7 @@ import java.util.Map;
 /** Builder + Creator (GRASP): collects the parsed cells and assembles the Level. */
 public class LevelBuilder {
     /** Checked in this order before building; the first broken rule is reported. */
-    private static final List<LevelRule> RULES = List.of(new BorderRule(), new OnePlayerRule());
+    private static final List<LevelRule> RULES = List.of(new BorderRule(), new OnePlayerRule(), new PortalPairRule());
 
     private LevelHeader header;
     private final Map<Position, CellContent> contents = new LinkedHashMap<>();
@@ -97,16 +98,26 @@ public class LevelBuilder {
 
     /** Each portal letter appears twice; each portal learns where the other one is. */
     private void linkPortals() {
-        Map<Character, Position> firstOfLetter = new HashMap<>();
+        for (List<Position> pair : portalsByLetter().values()) {
+            Position first = pair.get(0);
+            Position second = pair.get(1);
+            Portal.link(portalAt(first), first, portalAt(second), second);
+        }
+    }
+
+    private Portal portalAt(Position p) {
+        return (Portal) contents.get(p).tile();
+    }
+
+    /** Portal positions grouped by letter, in reading order. Shared by the pair rule and the linking. */
+    Map<Character, List<Position>> portalsByLetter() {
+        Map<Character, List<Position>> byLetter = new LinkedHashMap<>();
         for (Map.Entry<Position, CellContent> entry : contents.entrySet()) {
             if (entry.getValue().tile() instanceof Portal portal) {
-                Position pair = firstOfLetter.putIfAbsent(portal.getLetter(), entry.getKey());
-                if (pair != null) {
-                    portal.linkTo(pair);
-                    ((Portal) contents.get(pair).tile()).linkTo(entry.getKey());
-                }
+                byLetter.computeIfAbsent(portal.getLetter(), letter -> new ArrayList<>()).add(entry.getKey());
             }
         }
+        return byLetter;
     }
 
     private void validate() throws InvalidLevelException {
