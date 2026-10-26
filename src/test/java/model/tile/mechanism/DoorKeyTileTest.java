@@ -126,4 +126,62 @@ class DoorKeyTileTest {
         assertNotNull(level.getBoard().getBoxAt(new Position(2, 2)));
         assertEquals(new Position(2, 1), level.getBoard().getPlayerPosition());
     }
+
+    @Test
+    @DisplayName("4. Una KeyBox sobre la baldosa b abre las puertas B y las A siguen cerradas")
+    void keyBoxOnBOpensOnlyDoorsB() {
+        Level level = TestLevels.level(
+                "#########",
+                "#@K b  a#",
+                "##A###B##",
+                "#  ;    #",
+                "#########");
+
+        level.move(Direction.RIGHT);
+        level.move(Direction.RIGHT);
+
+        assertTrue(doorAt(level.getBoard(), 2, 6).isOpen());
+        assertFalse(doorAt(level.getBoard(), 2, 2).isOpen());
+    }
+
+    @Test
+    @DisplayName("4. En un nivel con a/A y b/B, cada baldosa abre solo su grupo, en el orden en que se activan")
+    void eachGroupOpensByItself() {
+        Level level = TestLevels.level(
+                "#########",
+                "#@K a   #",
+                "#   K b #",
+                "##A###B##",
+                "#  ;    #",
+                "#########");
+
+        level.move(Direction.RIGHT);
+        level.move(Direction.RIGHT);
+        assertTrue(doorAt(level.getBoard(), 3, 2).isOpen());
+        assertFalse(doorAt(level.getBoard(), 3, 6).isOpen());
+
+        level.move(Direction.DOWN);
+        level.move(Direction.RIGHT);
+        level.move(Direction.RIGHT);
+        assertTrue(doorAt(level.getBoard(), 3, 2).isOpen());
+        assertTrue(doorAt(level.getBoard(), 3, 6).isOpen());
+    }
+
+    @Test
+    @DisplayName("4. Una puerta B sigue bloqueando al jugador despues de activar a")
+    void doorBStillBlocksAfterA() {
+        Level level = TestLevels.level(
+                "#########",
+                "#@K a b #",
+                "##AB#####",
+                "#  ;    #",
+                "#########");
+
+        level.move(Direction.RIGHT);
+        level.move(Direction.RIGHT);
+
+        assertTrue(doorAt(level.getBoard(), 2, 2).isOpen());
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.DOWN));
+        assertEquals(new Position(1, 3), level.getBoard().getPlayerPosition());
+    }
 }
