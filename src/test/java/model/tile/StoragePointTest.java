@@ -78,9 +78,10 @@ class StoragePointTest {
     @Test
     @DisplayName("1e. Despues de guardarla, el jugador pisa el punto (puente): no la empuja ni suma empuje")
     void storedBoxIsABridge() {
-        Level level = TestLevels.level(
+        Level level = TestLevels.level( // a second box keeps the level playing after the first one is stored
                 "#######",
                 "#@$.  #",
+                "#   $.#",
                 "#######");
         level.move(Direction.RIGHT);
 
