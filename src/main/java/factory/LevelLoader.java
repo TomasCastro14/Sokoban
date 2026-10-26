@@ -23,8 +23,11 @@ import java.util.Map;
 /** Builder director: reads the level text and tells the builder what to create. */
 public class LevelLoader {
     private static final String SEPARATOR = "---";
+    /** Rule reported when a map character is not in the format (the creators map is the only source). */
+    static final String UNKNOWN_CHARACTER = "Unknown character";
 
     private final Map<Character, CellCreator> creators = new HashMap<>();
+    private final HeaderParser headerParser = new HeaderParser();
 
     public LevelLoader() {
         register("#", new WallCreator());
@@ -33,7 +36,7 @@ public class LevelLoader {
         register("@", (p, symbol) -> new CellContent(new Floor(), new Player(Direction.DOWN)));
         register("$", (p, symbol) -> new CellContent(new Floor(), new NormalBox()));
         register("K", (p, symbol) -> new CellContent(new Floor(), new KeyBox()));
-        register("123456789", new WeakBoxCreator());
+        register(WeakBoxCreator.symbols(), new WeakBoxCreator());
         register(".", (p, symbol) -> new CellContent(new StoragePoint(BoxType.NORMAL), null));
         register(":", (p, symbol) -> new CellContent(new StoragePoint(BoxType.WEAK), null));
         register(";", (p, symbol) -> new CellContent(new StoragePoint(BoxType.KEY), null));
@@ -69,28 +72,9 @@ public class LevelLoader {
             throw new InvalidLevelException("Missing '" + SEPARATOR + "' between header and map", -1);
         }
         LevelBuilder builder = new LevelBuilder().withMapStartLine(separator + 2); // 1-based line after "---"
-        parseHeader(lines.subList(0, separator), builder);
+        builder.withHeader(headerParser.parse(lines.subList(0, separator)));
         parseMap(lines, separator + 1, builder);
         return builder.build();
-    }
-
-    private void parseHeader(List<String> lines, LevelBuilder builder) throws InvalidLevelException {
-        Map<String, String> values = new HashMap<>();
-        for (String line : lines) {
-            int colon = line.indexOf(':');
-            if (colon > 0) {
-                values.put(line.substring(0, colon).trim(), line.substring(colon + 1).trim());
-            }
-        }
-        builder.withHeader(values.get("nombre"), intValue(values, "tiempo"), intValue(values, "objetivo"));
-    }
-
-    private int intValue(Map<String, String> values, String key) throws InvalidLevelException {
-        try {
-            return Integer.parseInt(values.get(key));
-        } catch (NumberFormatException e) {
-            throw new InvalidLevelException("Header '" + key + "' must be a number", -1);
-        }
     }
 
     /** Map rows start right after the separator; error lines are 1-based lines of the file. */
@@ -101,7 +85,7 @@ public class LevelLoader {
                 char symbol = line.charAt(col);
                 CellCreator creator = creators.get(symbol);
                 if (creator == null) {
-                    throw new InvalidLevelException("Unknown character '" + symbol + "'", i + 1);
+                    throw new InvalidLevelException(UNKNOWN_CHARACTER + " '" + symbol + "'", i + 1);
                 }
                 Position position = new Position(i - firstRow, col);
                 builder.addCell(position, creator.create(position, symbol));

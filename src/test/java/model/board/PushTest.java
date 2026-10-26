@@ -1,7 +1,9 @@
 package model.board;
 
 import factory.TestLevels;
+import model.box.Box;
 import model.box.NormalBox;
+import model.box.Player;
 import model.box.PushResult;
 import model.box.WeakBox;
 import model.game.Level;
@@ -20,12 +22,68 @@ class PushTest {
                 "#@$  .#",
                 "#######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertEquals(new Position(1, 2), level.getBoard().getPlayerPosition());
         assertNull(level.getBoard().getBoxAt(new Position(1, 2)));
         assertNotNull(level.getBoard().getBoxAt(new Position(1, 3)));
         assertEquals(1, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("1b. Empujar a piso libre funciona igual en las 4 direcciones: PUSHED, caja +1, jugador en su lugar, 1 empuje")
+    void pushWorksInEachDirection() {
+        Position start = new Position(3, 3);
+
+        for (Direction direction : Direction.values()) {
+            Level level = TestLevels.level(
+                    "#######",
+                    "#     #",
+                    "#  $  #",
+                    "# $@$ #",
+                    "#  $  #",
+                    "#     #",
+                    "#######");
+            Position boxStart = start.move(direction);
+            Box box = level.getBoard().getBoxAt(boxStart);
+
+            assertEquals(MoveResult.PUSHED, level.move(direction), direction.name());
+
+            assertEquals(boxStart, level.getBoard().getPlayerPosition(), direction.name());
+            assertSame(box, level.getBoard().getBoxAt(boxStart.move(direction)), direction.name());
+            assertEquals(1, level.getStats().getPushes(), direction.name());
+        }
+    }
+
+    @Test
+    @DisplayName("1c. Despues del empuje, la celda donde estaba el jugador queda libre y el jugador ocupa la de la caja")
+    void pushLeavesOriginCellFree() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$  .#",
+                "#######");
+
+        level.move(Direction.RIGHT);
+
+        assertTrue(level.getBoard().cellAt(new Position(1, 1)).isFree());
+        assertInstanceOf(Player.class, level.getBoard().cellAt(new Position(1, 2)).getOccupant());
+    }
+
+    @Test
+    @DisplayName("1d. Empujes seguidos se acumulan: 3 empujes suman 3 empujes y 3 movimientos")
+    void consecutivePushesAccumulate() {
+        Level level = TestLevels.level(
+                "#########",
+                "#@$    .#",
+                "#########");
+
+        level.move(Direction.RIGHT);
+        level.move(Direction.RIGHT);
+        level.move(Direction.RIGHT);
+
+        assertNotNull(level.getBoard().getBoxAt(new Position(1, 5)));
+        assertEquals(3, level.getStats().getPushes());
+        assertEquals(3, level.getStats().getMoves());
     }
 
     @Test
@@ -192,7 +250,7 @@ class PushTest {
                 "#######");
         WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertSame(box, level.getBoard().getBoxAt(new Position(1, 3)));
         assertEquals(2, box.getRemainingPushes());

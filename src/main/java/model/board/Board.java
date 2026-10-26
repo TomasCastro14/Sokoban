@@ -51,6 +51,19 @@ public class Board {
         return playerPosition;
     }
 
+    /** Number of boxes that can still be pushed (boxes already stored in a point are not occupants). */
+    public int countBoxes() {
+        int boxes = 0;
+        for (Cell[] row : cells) {
+            for (Cell cell : row) {
+                if (!cell.isFree() && cell.getOccupant().isPushable()) {
+                    boxes++;
+                }
+            }
+        }
+        return boxes;
+    }
+
     /**
      * Moves the player one cell, pushing the box in front if there is one.
      * A blocked move leaves the board untouched.
@@ -66,7 +79,10 @@ public class Board {
         }
         cellAt(target).place(cellAt(playerPosition).remove());
         playerPosition = target;
-        return push == PushResult.BROKEN ? MoveResult.BROKEN : MoveResult.OK;
+        if (push == null) {
+            return MoveResult.OK;
+        }
+        return push == PushResult.BROKEN ? MoveResult.BROKEN : MoveResult.PUSHED;
     }
 
     /**

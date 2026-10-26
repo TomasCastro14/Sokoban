@@ -2,12 +2,12 @@ package com.sokoban.sokoban;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import view.*;
+import view.menus.LevelSelectView;
+import view.menus.MenuView;
 
-import java.awt.*;
 import java.util.List;
 
 public class HelloApplication extends Application {
