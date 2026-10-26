@@ -94,7 +94,7 @@ class IceTest {
         level.move(Direction.RIGHT);
 
         assertEquals(new Position(1, 3), level.getBoard().getPlayerPosition());
-        assertEquals(1, level.getStats().getMoves(), "the whole slide counts as one move (see TODO in Level.move)");
+        assertEquals(1, level.getStats().getMoves(), "the whole slide counts as one move");
     }
 
     @Test

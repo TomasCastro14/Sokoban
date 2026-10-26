@@ -45,7 +45,7 @@ class BoxSlideTest {
 
         assertEquals(new Position(1, 2), level.getBoard().getPlayerPosition());
         assertEquals(1, level.getStats().getMoves());
-        assertEquals(1, level.getStats().getPushes()); // TODO [Hielo]: how slides count is still to be defined
+        assertEquals(1, level.getStats().getPushes()); // one push per action, however far the box slides
     }
 
     @Test
