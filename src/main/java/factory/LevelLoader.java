@@ -23,6 +23,8 @@ import java.util.Map;
 /** Builder director: reads the level text and tells the builder what to create. */
 public class LevelLoader {
     private static final String SEPARATOR = "---";
+    /** Rule reported when a map character is not in the format (the creators map is the only source). */
+    static final String UNKNOWN_CHARACTER = "Unknown character";
 
     private final Map<Character, CellCreator> creators = new HashMap<>();
     private final HeaderParser headerParser = new HeaderParser();
@@ -83,7 +85,7 @@ public class LevelLoader {
                 char symbol = line.charAt(col);
                 CellCreator creator = creators.get(symbol);
                 if (creator == null) {
-                    throw new InvalidLevelException("Unknown character '" + symbol + "'", i + 1);
+                    throw new InvalidLevelException(UNKNOWN_CHARACTER + " '" + symbol + "'", i + 1);
                 }
                 Position position = new Position(i - firstRow, col);
                 builder.addCell(position, creator.create(position, symbol));
