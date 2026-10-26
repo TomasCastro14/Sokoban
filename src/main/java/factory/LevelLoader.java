@@ -11,7 +11,7 @@ import model.game.Level;
 import model.tile.Floor;
 import model.tile.Ice;
 import model.tile.StoragePoint;
-import model.tile.Void;
+import model.tile.Inaccessible;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +31,7 @@ public class LevelLoader {
 
     public LevelLoader() {
         register("#", new WallCreator());
-        register("%", (p, symbol) -> new CellContent(new Void(), null));
+        register("%", (p, symbol) -> new CellContent(new Inaccessible(), null));
         register(" ", (p, symbol) -> new CellContent(new Floor(), null));
         register("@", (p, symbol) -> new CellContent(new Floor(), new Player(Direction.DOWN)));
         register("$", (p, symbol) -> new CellContent(new Floor(), new NormalBox()));

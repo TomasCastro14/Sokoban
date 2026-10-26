@@ -12,7 +12,7 @@ import model.tile.Floor;
 import model.tile.Ice;
 import model.tile.Portal;
 import model.tile.StoragePoint;
-import model.tile.Void;
+import model.tile.Inaccessible;
 import model.tile.Wall;
 import model.tile.mechanism.Door;
 import model.tile.mechanism.KeyTile;
@@ -83,7 +83,7 @@ class LevelLoaderTest {
         assertInstanceOf(Floor.class, board.getTile(new Position(2, 4)));
         Portal portal = assertInstanceOf(Portal.class, board.getTile(new Position(2, 5)));
         assertEquals('P', portal.getLetter());
-        assertInstanceOf(Void.class, board.getTile(new Position(3, 1)));
+        assertInstanceOf(Inaccessible.class, board.getTile(new Position(3, 1)));
     }
 
     @Test

@@ -1,16 +1,5 @@
 package model.tile;
 
-import model.box.Box;
-
-public class Wall extends Tile {
-
-    @Override
-    public boolean allowsPlayer() {
-        return false;
-    }
-
-    @Override
-    public boolean allowsBox(Box box) {
-        return false;
-    }
+/** Wall inside the level: solid and drawn by the view. */
+public class Wall extends SolidTile {
 }
