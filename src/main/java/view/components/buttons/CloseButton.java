@@ -1,4 +1,4 @@
-package view.buttons;
+package view.components.buttons;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -59,13 +59,6 @@ public class CloseButton extends Button {
 
         setGraphic(art);
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        /*setStyle("-fx-background-color: transparent;"
-                + "-fx-background-insets: 0;"
-                + "-fx-background-radius: 0;"
-                + "-fx-border-color: transparent;"
-                + "-fx-focus-color: transparent;"
-                + "-fx-faint-focus-color: transparent;"
-                + "-fx-padding: 0;");*/
         getStyleClass().add("close-button");
         setFocusTraversable(false);
         setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
