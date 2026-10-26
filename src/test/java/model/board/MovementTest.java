@@ -1,7 +1,9 @@
 package model.board;
 
 import factory.TestLevels;
+import model.box.Player;
 import model.game.Level;
+import model.tile.Floor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -213,5 +215,60 @@ class MovementTest {
 
         assertEquals(3, level.getStats().getMoves());
         assertEquals(1, level.getStats().getPushes());
+    }
+
+    private static void assertBlockedInEveryDirection(String wall) {
+        for (Direction direction : Direction.values()) {
+            Level level = TestLevels.level(
+                    wall.repeat(3),
+                    wall + "@" + wall,
+                    wall.repeat(3));
+
+            assertEquals(MoveResult.BLOCKED, level.move(direction), direction.name());
+            assertEquals(new Position(1, 1), level.getBoard().getPlayerPosition(), direction.name());
+            assertEquals(0, level.getStats().getMoves(), direction.name());
+            assertEquals(0, level.getStats().getPushes(), direction.name());
+        }
+    }
+
+    @Test
+    @DisplayName("7. Una pared (#) bloquea en las 4 direcciones, sin mover ni contar")
+    void wallBlocksInEveryDirection() {
+        assertBlockedInEveryDirection("#");
+    }
+
+    @Test
+    @DisplayName("7. Terreno no accesible (%) bloquea en las 4 direcciones, sin mover ni contar")
+    void voidBlocksInEveryDirection() {
+        assertBlockedInEveryDirection("%");
+    }
+
+    @Test
+    @DisplayName("8. Moverse a piso libre al lado de una pared sigue dando OK y suma 1 movimiento")
+    void walkingBesideAWallStillWorks() {
+        Level level = TestLevels.level(
+                "######",
+                "#@   #",
+                "######");
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+
+        assertEquals(new Position(1, 2), level.getBoard().getPlayerPosition());
+        assertEquals(1, level.getStats().getMoves());
+        assertEquals(0, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("9. Un destino fuera de la grilla da BLOCKED, igual que una pared")
+    void leavingTheGridIsBlocked() {
+        Position only = new Position(0, 0);
+        Cell cell = new Cell(only, new Floor());
+        cell.place(new Player(Direction.DOWN));
+        Board board = new Board(new Cell[][] {{cell}}, only);
+
+        for (Direction direction : Direction.values()) {
+            assertEquals(MoveResult.BLOCKED, board.movePlayer(direction), direction.name());
+            assertEquals(only, board.getPlayerPosition(), direction.name());
+        }
     }
 }
