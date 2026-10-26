@@ -54,6 +54,11 @@ public abstract class Tile {
     public void onBoxEntered(Box box) {
     }
 
+    /** True once the tile has done its job and the board must leave plain floor in its place. */
+    public boolean isConsumed() {
+        return false;
+    }
+
     /** Returns the box this tile absorbed (a filled storage point), or null if there is none. */
     public Box getStoredBox() {
         return null;
