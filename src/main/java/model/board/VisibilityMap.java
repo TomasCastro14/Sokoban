@@ -8,7 +8,7 @@ import java.util.Set;
  * Visible = every reachable cell plus the cells around it (walls, closed doors),
  * so the outline of each room is drawn. Cells are only ever added, never hidden again.
  */
-public class VisibilityMap {
+public class VisibilityMap implements Visibility {
     private final Reachability reachability;
     private final Set<Position> visible = new HashSet<>();
 
@@ -16,6 +16,7 @@ public class VisibilityMap {
         this.reachability = reachability;
     }
 
+    @Override
     public boolean isVisible(Position position) {
         return visible.contains(position);
     }

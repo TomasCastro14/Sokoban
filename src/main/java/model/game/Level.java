@@ -6,6 +6,7 @@ import model.board.MoveResult;
 import model.board.Position;
 import model.board.Reachability;
 import model.board.ReachabilityListener;
+import model.board.Visibility;
 import model.board.VisibilityMap;
 import model.game.event.EventType;
 import model.game.event.GameEvent;
@@ -155,7 +156,8 @@ public class Level implements ReachabilityListener {
         return lossReason;
     }
 
-    public VisibilityMap getVisibilityMap() {
+    /** Computed when the level is built, so it is ready before the first draw. */
+    public Visibility getVisibility() {
         return visibility;
     }
 
