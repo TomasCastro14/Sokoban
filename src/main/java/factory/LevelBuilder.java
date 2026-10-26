@@ -10,8 +10,12 @@ import model.game.LevelHeader;
 import model.game.loss.EarlyKeyStorageCondition;
 import model.game.loss.WrongStorageCondition;
 import model.tile.Void;
+import model.tile.mechanism.Door;
+import model.tile.mechanism.DoorGroup;
+import model.tile.mechanism.KeyTile;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,8 +70,24 @@ public class LevelBuilder {
                 }
             }
         }
+        linkDoorGroups();
         return new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(), new Board(cells, playerPosition),
                 List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition()));
+    }
+
+    /** Wires the Observer: every key tile notifies the door group of its letter. */
+    private void linkDoorGroups() {
+        Map<Character, DoorGroup> groups = new HashMap<>();
+        for (CellContent content : contents.values()) {
+            if (content.tile() instanceof Door door) {
+                groups.computeIfAbsent(door.getGroup(), DoorGroup::new).addDoor(door);
+            }
+        }
+        for (CellContent content : contents.values()) {
+            if (content.tile() instanceof KeyTile keyTile) {
+                keyTile.addListener(groups.computeIfAbsent(keyTile.getGroup(), DoorGroup::new));
+            }
+        }
     }
 
     private void validate() throws InvalidLevelException {
