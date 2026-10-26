@@ -22,6 +22,9 @@ public class Level {
     private final LevelStats stats = new LevelStats();
     private final List<LossCondition> lossConditions;
     private final List<GameListener> listeners = new ArrayList<>();
+    /** Boxes to store, counted once: stored boxes stay fixed, so the count never has to go down. */
+    private final int totalBoxes;
+    private LevelStatus status = LevelStatus.PLAYING;
     private LossReason lossReason;
 
     public Level(String name, int timeLimitSeconds, int targetScore, Board board,
@@ -31,6 +34,7 @@ public class Level {
         this.targetScore = targetScore;
         this.board = board;
         this.lossConditions = List.copyOf(lossConditions);
+        this.totalBoxes = board.countBoxes();
     }
 
     public String getName() {
@@ -53,30 +57,36 @@ public class Level {
         return stats;
     }
 
-    /** A blocked move does not count as a move nor as a push. A lost level accepts no more moves. */
+    /** A blocked move does not count as a move nor as a push. A finished level accepts no more moves. */
     public MoveResult move(Direction direction) {
-        if (lossReason != null) {
+        if (status != LevelStatus.PLAYING) {
             return MoveResult.BLOCKED;
         }
-        Position target = board.getPlayerPosition().move(direction);
-        // A stored box (bridge) is not an occupant, so walking over it is not a push.
-        boolean pushing = board.isInside(target) && !board.cellAt(target).isFree();
-        Position boxTarget = target.move(direction);
+        Position boxTarget = board.getPlayerPosition().move(direction).move(direction);
         boolean wasFilled = hasStoredBox(boxTarget);
         MoveResult result = board.movePlayer(direction);
         if (result == MoveResult.BLOCKED) {
             return result;
         }
         stats.addMove();
-        if (pushing) {
+        if (result != MoveResult.OK) { // PUSHED or BROKEN: the board pushed a box
             stats.addPush();
             if (!wasFilled && hasStoredBox(boxTarget)) {
                 stats.addStoredBox();
                 notifyListeners(new GameEvent(EventType.BOX_STORED));
             }
         }
-        checkLoss();
+        checkEnd();
         return result;
+    }
+
+    /** Loss is checked first: a move that loses never wins, even if it stored the last box. */
+    private void checkEnd() {
+        checkLoss();
+        if (status == LevelStatus.PLAYING && stats.getStoredBoxes() == totalBoxes) {
+            status = LevelStatus.WON;
+            notifyListeners(new GameEvent(EventType.LEVEL_WON));
+        }
     }
 
     private boolean hasStoredBox(Position p) {
@@ -87,6 +97,7 @@ public class Level {
     private void checkLoss() {
         for (LossCondition condition : lossConditions) {
             if (condition.isMet(this)) {
+                status = LevelStatus.LOST;
                 lossReason = condition.getReason();
                 notifyListeners(new GameEvent(EventType.LEVEL_LOST));
                 return;
@@ -109,8 +120,12 @@ public class Level {
         throw new UnsupportedOperationException("TODO");
     }
 
+    public LevelStatus getStatus() {
+        return status;
+    }
+
     public boolean isWon() {
-        throw new UnsupportedOperationException("TODO");
+        return status == LevelStatus.WON;
     }
 
     /** Returns the reason of the loss, or null while the level is not lost. */

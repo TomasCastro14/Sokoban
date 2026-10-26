@@ -33,7 +33,7 @@ class StoragePointTest {
                 "#######");
         NormalBox box = (NormalBox) level.getBoard().getBoxAt(new Position(1, 2));
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         StoragePoint point = (StoragePoint) level.getBoard().getTile(new Position(1, 3));
         assertTrue(point.isFilled());
@@ -78,9 +78,10 @@ class StoragePointTest {
     @Test
     @DisplayName("1e. Despues de guardarla, el jugador pisa el punto (puente): no la empuja ni suma empuje")
     void storedBoxIsABridge() {
-        Level level = TestLevels.level(
+        Level level = TestLevels.level( // a second box keeps the level playing after the first one is stored
                 "#######",
                 "#@$.  #",
+                "#   $.#",
                 "#######");
         level.move(Direction.RIGHT);
 
@@ -102,7 +103,7 @@ class StoragePointTest {
                 "#@$ . #",
                 "#######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertFalse(((StoragePoint) level.getBoard().getTile(new Position(1, 4))).isFilled());
         assertEquals(0, level.getStats().getStoredBoxes());
@@ -154,7 +155,7 @@ class StoragePointTest {
                 "#    $ #",
                 "########");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertEquals(LossReason.WRONG_STORAGE, level.getLossReason());
     }
 
@@ -166,7 +167,7 @@ class StoragePointTest {
                 "#@$:  #",
                 "#######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertEquals(LossReason.WRONG_STORAGE, level.getLossReason());
     }
 
@@ -197,7 +198,7 @@ class StoragePointTest {
                 "#@$.  #",
                 "#######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertNull(level.getLossReason());
     }
 
@@ -209,7 +210,7 @@ class StoragePointTest {
                 "#@$  :#",
                 "#######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertNull(level.getLossReason());
     }
 
@@ -235,7 +236,7 @@ class StoragePointTest {
                 "#@K.  #",
                 "#######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertEquals(LossReason.WRONG_STORAGE, level.getLossReason());
     }
 
@@ -265,7 +266,7 @@ class StoragePointTest {
                 "#      #",
                 "########");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertEquals(LossReason.EARLY_KEY_STORAGE, level.getLossReason());
     }
 
@@ -277,7 +278,7 @@ class StoragePointTest {
                 "#@K;  #",
                 "#######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertEquals(LossReason.EARLY_KEY_STORAGE, level.getLossReason());
         assertFalse(((StoragePoint) level.getBoard().getTile(new Position(1, 3))).isFilled());
     }
@@ -309,7 +310,7 @@ class StoragePointTest {
                 "#@K  ;#",
                 "#######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertNull(level.getLossReason());
     }
 
@@ -350,7 +351,7 @@ class StoragePointTest {
         KeyBox key = (KeyBox) level.getBoard().getBoxAt(new Position(1, 2));
         key.markDoorOpened(); // door opening belongs to the KeyTile task
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertNull(level.getLossReason());
         assertTrue(((StoragePoint) level.getBoard().getTile(new Position(1, 3))).isFilled());
@@ -391,7 +392,7 @@ class StoragePointTest {
                 "########");
 
         level.move(Direction.RIGHT); // opens door A
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertNull(level.getLossReason());
     }
 }
