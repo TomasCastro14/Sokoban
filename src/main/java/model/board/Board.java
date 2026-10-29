@@ -124,11 +124,11 @@ public class Board {
         if (!isInside(entered) || !getTile(entered).allowsPlayer()) {
             return MoveResult.BLOCKED;
         }
-        Position arrival = getTile(entered).arrivalFor(cellAt(playerPosition).getOccupant(), entered, d, this);
         Position boxArrival = cellAt(entered).isFree() ? null : boxArrival(entered, d);
         if (!cellAt(entered).isFree() && boxArrival == null) {
             return MoveResult.BLOCKED;
         }
+        Position arrival = playerArrival(entered, d, boxArrival);
         if (!canPlayerLand(arrival, entered, boxArrival)) {
             return MoveResult.BLOCKED;
         }
@@ -139,6 +139,26 @@ public class Board {
             return MoveResult.OK;
         }
         return push == PushResult.BROKEN ? MoveResult.BROKEN : MoveResult.PUSHED;
+    }
+
+    /**
+     * Where the entry effect of the entered tile sends the player. When a box is being pushed,
+     * the effect is asked as if the box were already in its new cell (so a player sliding on ice
+     * stops before it); the board is put back as it was before returning.
+     */
+    private Position playerArrival(Position entered, Direction d, Position boxArrival) {
+        Occupant player = cellAt(playerPosition).getOccupant();
+        if (boxArrival == null) {
+            return getTile(entered).arrivalFor(player, entered, d, this);
+        }
+        Occupant box = cellAt(entered).remove();
+        cellAt(boxArrival).place(box);
+        try {
+            return getTile(entered).arrivalFor(player, entered, d, this);
+        } finally {
+            cellAt(boxArrival).remove();
+            cellAt(entered).place(box);
+        }
     }
 
     /**
@@ -158,15 +178,35 @@ public class Board {
     private Position boxArrival(Position from, Direction d) {
         Occupant occupant = cellAt(from).getOccupant();
         Position next = from.move(d);
-        if (!occupant.isPushable() || !canBoxEnter((Box) occupant, next)) {
+        if (!occupant.isPushable() || !canEnter(occupant, next)) {
             return null;
         }
         Position landing = getTile(next).arrivalFor(occupant, next, d, this);
-        return canBoxEnter((Box) occupant, landing) ? landing : null;
+        return canEnter(occupant, landing) ? landing : null;
     }
 
-    private boolean canBoxEnter(Box box, Position p) {
-        return isInside(p) && getTile(p).allowsBox(box) && cellAt(p).isFree();
+    /**
+     * Where the box in front of the player would end up if the player moved in that direction
+     * (after any slide), or null if there is no box in front or it cannot be pushed. Changes nothing.
+     */
+    public Position boxDestination(Direction d) {
+        Position entered = playerPosition.move(d);
+        if (!isInside(entered) || cellAt(entered).isFree()) {
+            return null;
+        }
+        return boxArrival(entered, d);
+    }
+
+    /**
+     * Whether the occupant could step onto that cell: it is inside the board, its tile admits
+     * this kind of occupant and nobody is standing there. Used by entry effects such as ice.
+     */
+    public boolean canEnter(Occupant occupant, Position p) {
+        if (!isInside(p) || !cellAt(p).isFree()) {
+            return false;
+        }
+        Tile tile = getTile(p);
+        return occupant.isPushable() ? tile.allowsBox((Box) occupant) : tile.allowsPlayer();
     }
 
     /**
