@@ -5,7 +5,7 @@ import model.tile.Tile;
 
 public class Cell {
     private final Position position;
-    private final Tile tile;
+    private Tile tile;
     private Occupant occupant;
 
     public Cell(Position position, Tile tile) {
@@ -19,6 +19,11 @@ public class Cell {
 
     public Tile getTile() {
         return tile;
+    }
+
+    /** Swaps the terrain, for example when a used key tile turns into plain floor. The occupant stays. */
+    public void replaceTile(Tile tile) {
+        this.tile = tile;
     }
 
     /** Returns the occupant of the cell, or null if it is free. */

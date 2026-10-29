@@ -36,4 +36,10 @@ public class Door extends Tile {
     public boolean allowsBox(Box box) {
         return open;
     }
+
+    /** A closed door hides what is behind it, like a wall. */
+    @Override
+    public boolean blocksVision() {
+        return !open;
+    }
 }

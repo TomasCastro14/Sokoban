@@ -16,6 +16,7 @@ import model.tile.Inaccessible;
 import model.tile.Wall;
 import model.tile.mechanism.Door;
 import model.tile.mechanism.KeyTile;
+import service.ClasspathLevelSource;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +25,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class LevelLoaderTest {
 
     private final LevelLoader loader = new LevelLoader();
+    /** Small test level kept apart from the real game levels. */
+    private final LevelLoader testLevelLoader =
+            new LevelLoader(new ClasspathLevelSource("/level-source/loader/nivel%02d.txt"));
 
     private InvalidLevelException assertInvalid(String... rows) {
         return assertThrows(InvalidLevelException.class, () -> loader.parse(TestLevels.text(rows)));
@@ -31,8 +35,8 @@ class LevelLoaderTest {
 
     @Test
     @DisplayName("1. Lee el .txt desde el classpath y separa encabezado y mapa con ---")
-    void loadsFromClasspathAndSplitsHeaderAndMap() throws InvalidLevelException {
-        Level level = loader.load("/levels/test_level.txt");
+    void loadsFromClasspathAndSplitsHeaderAndMap() throws Exception {
+        Level level = testLevelLoader.load(1);
 
         assertEquals(3, level.getBoard().getRows());
         assertEquals(6, level.getBoard().getCols());
@@ -41,8 +45,8 @@ class LevelLoaderTest {
 
     @Test
     @DisplayName("2. Lee bien nombre, tiempo y objetivo del encabezado")
-    void readsHeader() throws InvalidLevelException {
-        Level level = loader.load("/levels/test_level.txt");
+    void readsHeader() throws Exception {
+        Level level = testLevelLoader.load(1);
 
         assertEquals("Nivel de prueba", level.getName());
         assertEquals(90, level.getTimeLimitSeconds());
@@ -148,8 +152,8 @@ class LevelLoaderTest {
     @DisplayName("6. Los 5 niveles reales (nivel01 a nivel05) cargan sin error")
     void realLevelsLoad() {
         for (int i = 1; i <= 5; i++) {
-            String path = String.format("/levels/nivel%02d.txt", i);
-            assertDoesNotThrow(() -> loader.load(path), path);
+            int number = i;
+            assertDoesNotThrow(() -> loader.load(number), "nivel " + number);
         }
     }
 }

@@ -1,12 +1,41 @@
 package model.board;
 
-public class VisibilityMap {
+import java.util.HashSet;
+import java.util.Set;
 
-    public boolean isVisible(Position position) {
-        throw new UnsupportedOperationException("TODO");
+/**
+ * Information Expert: knows which cells the player has seen.
+ * Visible = every reachable cell plus the cells around it (walls, closed doors),
+ * so the outline of each room is drawn. Cells are only ever added, never hidden again.
+ */
+public class VisibilityMap implements Visibility {
+    private final ReachabilityCalculator reachability;
+    private final Set<Position> visible = new HashSet<>();
+
+    public VisibilityMap(ReachabilityCalculator reachability) {
+        this.reachability = reachability;
     }
 
-    public void recalculate(Board board) {
-        throw new UnsupportedOperationException("TODO");
+    @Override
+    public boolean isVisible(Position position) {
+        return visible.contains(position);
+    }
+
+    /** Reveals what can be reached from the given position, keeping what was already visible. */
+    public void recalculate(Board board, Position from) {
+        for (Position reached : reachability.from(board, from)) {
+            revealWithSurroundings(board, reached);
+        }
+    }
+
+    private void revealWithSurroundings(Board board, Position center) {
+        for (int row = center.row() - 1; row <= center.row() + 1; row++) {
+            for (int col = center.col() - 1; col <= center.col() + 1; col++) {
+                Position p = new Position(row, col);
+                if (board.isInside(p)) {
+                    visible.add(p);
+                }
+            }
+        }
     }
 }

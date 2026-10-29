@@ -1,0 +1,7 @@
+nombre: Nivel basico
+tiempo: 90
+objetivo: 500
+---
+#####
+#@$.#
+#####

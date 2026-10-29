@@ -214,4 +214,63 @@ class MovementTest {
         assertEquals(3, level.getStats().getMoves());
         assertEquals(1, level.getStats().getPushes());
     }
+
+    @Test
+    @DisplayName("11. Un punto de guardado vacio de cualquier color bloquea al jugador sin mover ni contar")
+    void emptyStoragePointOfEveryColorBlocksPlayer() {
+        for (char point : new char[] {'.', ':', ';'}) {
+            Level level = TestLevels.level(
+                    "######",
+                    "#@" + point + "  #",
+                    "######");
+
+            assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT), "point " + point);
+            assertEquals(new Position(1, 1), level.getBoard().getPlayerPosition(), "point " + point);
+            assertEquals(0, level.getStats().getMoves(), "point " + point);
+            assertEquals(0, level.getStats().getPushes(), "point " + point);
+        }
+    }
+
+    @Test
+    @DisplayName("11. Una caja empujada hacia un punto vacio de su color entra y queda guardada")
+    void boxStillEntersTheHole() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$.  #",
+                "#######");
+
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+
+        assertNotNull(level.getBoard().getTile(new Position(1, 3)).getStoredBox());
+        assertEquals(1, level.getStats().getStoredBoxes());
+    }
+
+    @Test
+    @DisplayName("11. Al lado de un agujero el jugador se mueve con normalidad a piso libre")
+    void walkingAwayFromTheHoleWorks() {
+        Level level = TestLevels.level(
+                "######",
+                "#@.  #",
+                "#    #",
+                "######");
+
+        assertEquals(MoveResult.OK, level.move(Direction.DOWN));
+
+        assertEquals(new Position(2, 1), level.getBoard().getPlayerPosition());
+        assertEquals(1, level.getStats().getMoves());
+    }
+
+    @Test
+    @DisplayName("11. Un agujero frena el deslizamiento del jugador por hielo")
+    void holeStopsIceSlide() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@~~. #",
+                "#     #",
+                "#######");
+
+        level.move(Direction.RIGHT);
+
+        assertEquals(new Position(1, 3), level.getBoard().getPlayerPosition());
+    }
 }
