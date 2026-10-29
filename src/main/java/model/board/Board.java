@@ -3,6 +3,7 @@ package model.board;
 import model.box.Box;
 import model.box.Occupant;
 import model.box.PushResult;
+import model.tile.Floor;
 import model.tile.Tile;
 
 import java.util.ArrayList;
@@ -178,6 +179,9 @@ public class Board {
         if (result != PushResult.BROKEN) {
             Tile tile = getTile(to);
             tile.onBoxEntered(box);
+            if (tile.isConsumed()) {
+                cellAt(to).replaceTile(new Floor());
+            }
             if (tile.getStoredBox() != box) {
                 cellAt(to).place(box);
             }

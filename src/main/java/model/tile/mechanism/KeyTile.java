@@ -29,6 +29,12 @@ public class KeyTile extends Tile {
         return used;
     }
 
+    /** A key tile works once: after it opens its doors the board replaces it with floor. */
+    @Override
+    public boolean isConsumed() {
+        return used;
+    }
+
     public void addListener(KeyTileListener listener) {
         listeners.add(listener);
     }
