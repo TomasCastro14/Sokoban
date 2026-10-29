@@ -12,7 +12,7 @@ import model.game.Level;
 import model.tile.Floor;
 import model.tile.Ice;
 import model.tile.StoragePoint;
-import model.tile.Void;
+import model.tile.Inaccessible;
 import port.LevelSource;
 import service.ClasspathLevelSource;
 
@@ -38,7 +38,7 @@ public class LevelLoader {
     public LevelLoader(LevelSource source) {
         this.source = source;
         register("#", new WallCreator());
-        register("%", (p, symbol) -> new CellContent(new Void(), null));
+        register("%", (p, symbol) -> new CellContent(new Inaccessible(), null));
         register(" ", (p, symbol) -> new CellContent(new Floor(), null));
         register("@", (p, symbol) -> new CellContent(new Floor(), new Player(Direction.DOWN)));
         register("$", (p, symbol) -> new CellContent(new Floor(), new NormalBox()));

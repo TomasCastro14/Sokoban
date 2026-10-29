@@ -9,7 +9,7 @@ import model.game.Level;
 import model.game.LevelHeader;
 import model.game.loss.EarlyKeyStorageCondition;
 import model.game.loss.WrongStorageCondition;
-import model.tile.Void;
+import model.tile.Inaccessible;
 import model.tile.Portal;
 import model.tile.mechanism.Door;
 import model.tile.mechanism.DoorGroup;
@@ -62,7 +62,7 @@ public class LevelBuilder {
                 Position p = new Position(row, col);
                 CellContent content = contents.get(p);
                 if (content == null) {
-                    cells[row][col] = new Cell(p, new Void()); // short rows are padded with void
+                    cells[row][col] = new Cell(p, new Inaccessible()); // short rows are padded with inaccessible tiles
                     continue;
                 }
                 cells[row][col] = new Cell(p, content.tile());
