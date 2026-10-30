@@ -1,5 +1,6 @@
 package controller;
 
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -26,13 +27,18 @@ public class InputController {
         this.game = game;
     }
 
-    /** Adds a handler instead of replacing the scene's own one (the window uses it for ESC). */
-    public void bindKeys(Scene scene) {
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+    /**
+     * Adds a handler instead of replacing the scene's own one (the window uses it for ESC).
+     * Returns the way to take it off again, so a screen that is hidden stops reacting to keys.
+     */
+    public Runnable bindKeys(Scene scene) {
+        EventHandler<KeyEvent> handler = event -> {
             if (onKey(event.getCode())) {
                 event.consume();
             }
-        });
+        };
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, handler);
+        return () -> scene.removeEventHandler(KeyEvent.KEY_PRESSED, handler);
     }
 
     /** Returns true when the key was an arrow and reached the game. */

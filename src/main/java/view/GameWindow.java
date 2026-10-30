@@ -4,21 +4,16 @@ import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import view.components.images.ImageLoader;
 
 import java.io.InputStream;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 
-public class GameWindow {
+public class GameWindow implements Navigator {
     private static final double WIDTH = 1280;
     private static final double HEIGHT = 720;
     private static final Duration FADE = Duration.millis(180);
@@ -29,20 +24,18 @@ public class GameWindow {
     private final Map<Screen, Parent> screens = new EnumMap<>(Screen.class);
     private Screen current;
 
-    public GameWindow(Stage stage) {
+    public GameWindow(Stage stage, SpriteCatalog sprites) {
         this.stage = stage;
 
         StackPane root = new StackPane(content);          // fondo estático
         root.getStyleClass().add("background");
 
         Scene scene = new Scene(root, WIDTH, HEIGHT);
-        scene.getStylesheets().add(getClass().getResource("/view/sokoban.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/view/sokoban.css")).toExternalForm());
 
         stage.setScene(scene);
         stage.setTitle("New Sokoban!");
-        stage.getIcons().add(
-                ImageLoader.load("/assets/playerFace_dark.png")
-        );
+        stage.getIcons().add(sprites.get(SpriteKey.WINDOW_ICON));
         stage.setResizable(false);
         stage.setFullScreen(true);
         scene.setOnKeyPressed(event -> {
@@ -60,11 +53,13 @@ public class GameWindow {
         stage.show();
     }
 
+    @Override
     public void show(Screen next) {
         if (current != null && current != next) history.push(current);
         swap(next);
     }
 
+    @Override
     public void back() {
         if (!history.isEmpty()) swap(history.pop());
     }

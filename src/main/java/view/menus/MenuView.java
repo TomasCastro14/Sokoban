@@ -9,25 +9,24 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import view.components.buttons.ButtonFactory;
 
+import java.util.Objects;
+
 public class MenuView {
     private final StackPane root = new StackPane();
 
-    public MenuView(Runnable onWork, Runnable onLevels, Runnable onNewGame, Runnable onExit) {
+    public MenuView(MenuListener menuListener) {
+        Objects.requireNonNull(menuListener, "listener");
+
         Label title = new Label("NEW SOKOBAN");
+        root.getStyleClass().add("menu-view");
         title.getStyleClass().add("title");
 
-        Button continuar;
-        Button niveles;
-        Button nuevaPartida;
-        Button ajustes;
-        Button salir;
         VBox panel = new VBox(16,
-                    continuar = ButtonFactory.create("CONTINUAR", "button-primary", onWork),
-                    niveles = ButtonFactory.create("NIVELES", "button-secondary", onLevels),
-                    nuevaPartida = ButtonFactory.create("NUEVA PARTIDA", "button-secondary", onNewGame),
-                    ajustes = ButtonFactory.create("AJUSTES", "button-secondary", onNewGame),
-                    salir = ButtonFactory.create("SALIR", "button-secondary", onExit)
-                );
+                ButtonFactory.create("CONTINUAR", "button-primary", menuListener::onContinue),
+                ButtonFactory.create("NIVELES", "button-secondary", menuListener::onLevels),
+                ButtonFactory.create("NUEVA PARTIDA", "button-secondary", menuListener::onNewGame),
+                ButtonFactory.create("AJUSTES", "button-secondary", menuListener::onSettings),
+                ButtonFactory.create("SALIR", "button-secondary", menuListener::onExit));
 
         panel.getStyleClass().add("panel");
         panel.setAlignment(Pos.CENTER);

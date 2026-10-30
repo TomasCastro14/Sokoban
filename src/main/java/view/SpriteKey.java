@@ -8,6 +8,9 @@ import model.box.BoxType;
  * El pasto no está acá: lo pone el CSS de la pantalla (gameplay.css).
  */
 public enum SpriteKey {
+    // icono del juego
+    WINDOW_ICON("playerFace_dark.png"),
+
     // mapa
     STONE("map/ground_04.png"),
     WALL("map/block_06.png"),

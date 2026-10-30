@@ -37,7 +37,7 @@ public final class GamePresenter implements GameListener, ScreenLifecycleListene
     @Override
     public void screenShown(Scene scene) {
         visible = true;
-        unbindKeys = input.bindKeys(scene);
+        input.bindKeys(scene);
         // Whatever happened while the screen was hidden is read from the model now.
         Level level = game.getCurrentLevel();
         screen.showLevel(level);
