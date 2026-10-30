@@ -67,7 +67,11 @@ public final class GamePresenter implements GameListener, ScreenLifecycleListene
             case BOARD_RESTORED -> screen.showLevel(game.getCurrentLevel());
             case PLAYER_MOVED -> screen.playerMoved();
             case BOX_PUSHED, BOX_STORED, DOOR_OPENED -> screen.boardChanged();
-            case LEVEL_WON, LEVEL_LOST -> clock.stop();   // the summary screen takes over from here
+            case LEVEL_WON -> {
+                clock.stop();
+                game.nextLevel();   // provisorio: pasa directo al siguiente hasta tener la winning screen
+            }
+            case LEVEL_LOST -> clock.stop();
         }
     }
 }
