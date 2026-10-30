@@ -6,7 +6,7 @@ public class TimeOutCondition implements LossCondition {
 
     @Override
     public boolean isMet(Level level) {
-        throw new UnsupportedOperationException("TODO");
+        return level.getRemainingSeconds() <= 0;
     }
 
     @Override

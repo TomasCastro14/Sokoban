@@ -12,10 +12,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-import view.components.buttons.CloseButton;
 import view.components.images.ImageLoader;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +50,8 @@ public class LevelSelectView {
         this.levels = levels;
         this.onPlay = onPlay;
         this.index = startIndex;
+
+        root.getStyleClass().add("level-select");
 
         // Título: va DEBAJO del contenedor de la imagen (se dibuja primero)
         name.getStyleClass().add("level-name");

@@ -8,6 +8,7 @@ import model.box.Player;
 import model.game.Level;
 import model.game.LevelHeader;
 import model.game.loss.EarlyKeyStorageCondition;
+import model.game.loss.TimeOutCondition;
 import model.game.loss.WrongStorageCondition;
 import model.tile.Inaccessible;
 import model.tile.Portal;
@@ -77,7 +78,7 @@ public class LevelBuilder {
         Collection<DoorGroup> doorGroups = linkDoorGroups();
         linkPortals();
         Level level = new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(), new Board(cells, playerPosition),
-                List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition()));
+                List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition(), new TimeOutCondition()));
         doorGroups.forEach(group -> group.addReachabilityListener(level));
         return level;
     }

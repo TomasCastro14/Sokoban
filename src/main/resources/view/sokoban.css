@@ -1,11 +1,19 @@
+/* Fondo de la ventana: liso, lo único que se ve durante el fundido entre pantallas */
 .background {
-    -fx-background-color: #cc4433;
-    -fx-background-image: url("../assets/images/ground_03.png");
+    -fx-background-color: #3aa55a;
+}
+
+/* Fondo de las pantallas de menú: lo pone la propia vista */
+.menu-view {
+    -fx-background-color: #3aa55a;
+    -fx-background-image: url("../assets/images/map/ground_03.png");
     -fx-background-repeat: repeat;
 }
 
 .background.level-select {
-    -fx-background-color: #0d2b1b;
+    -fx-background-color: #3aa55a;
+    -fx-background-image: url("../assets/images/map/ground_03.png");
+    -fx-background-repeat: repeat;
 }
 
 .title {

@@ -32,6 +32,7 @@ public class Level implements ReachabilityListener {
     private final int totalBoxes;
     private LevelStatus status = LevelStatus.PLAYING;
     private LossReason lossReason;
+    private int remainingSeconds;
 
     public Level(String name, int timeLimitSeconds, int targetScore, Board board,
                  List<LossCondition> lossConditions) {
@@ -41,6 +42,7 @@ public class Level implements ReachabilityListener {
         this.board = board;
         this.lossConditions = List.copyOf(lossConditions);
         this.totalBoxes = board.countBoxes();
+        this.remainingSeconds = timeLimitSeconds;
         visibility.recalculate(board, board.getPlayerPosition());
     }
 
@@ -78,9 +80,11 @@ public class Level implements ReachabilityListener {
         // The only place that counts. One user action = 1 move, and 1 push if a box was pushed,
         // however many cells the player or the box slid. A blocked move returned above counts nothing.
         stats.addMove();
+        notifyListeners(new GameEvent(EventType.PLAYER_MOVED));
         revealIfReachabilityChanged();
-        if (result != MoveResult.OK) { // PUSHED or BROKEN: the board pushed a box
+        if (result != MoveResult.OK) {
             stats.addPush();
+            notifyListeners(new GameEvent(EventType.BOX_PUSHED));
             if (!wasFilled && hasStoredBox(boxTarget)) {
                 stats.addStoredBox();
                 notifyListeners(new GameEvent(EventType.BOX_STORED));
@@ -168,10 +172,12 @@ public class Level implements ReachabilityListener {
     }
 
     public void elapseSeconds(int seconds) {
-        throw new UnsupportedOperationException("TODO");
+        if (status != LevelStatus.PLAYING) return;
+        remainingSeconds = Math.max(0, remainingSeconds - seconds);
+        checkLoss();
     }
 
     public int getRemainingSeconds() {
-        throw new UnsupportedOperationException("TODO");
+        return remainingSeconds;
     }
 }
