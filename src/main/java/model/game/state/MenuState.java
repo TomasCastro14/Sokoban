@@ -6,4 +6,19 @@ public class MenuState implements GameState {
     public boolean acceptsInput() {
         return false;
     }
+
+    @Override
+    public boolean allowsUndo() {
+        return false;
+    }
+
+    @Override
+    public boolean allowsRestart() {
+        return false;
+    }
+
+    @Override
+    public boolean allowsNextLevel() {
+        return false;
+    }
 }
