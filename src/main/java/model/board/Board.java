@@ -129,8 +129,11 @@ public class Board {
             return MoveResult.BLOCKED;
         }
         Position arrival = playerArrival(entered, d, boxArrival);
-        if (!canPlayerLand(arrival, entered, boxArrival)) {
+        if (!isInside(arrival) || !canPlayerLand(arrival, entered, boxArrival)) {
             return MoveResult.BLOCKED;
+        }
+        if (!cellAt(arrival).isFree() && !arrival.equals(entered)) {
+            shove(arrival);   // a portal exit lands on a box: the box makes room one cell down
         }
         PushResult push = boxArrival == null ? null : moveBox(entered, boxArrival);
         cellAt(arrival).place(cellAt(playerPosition).remove());
@@ -166,8 +169,24 @@ public class Board {
      * The entered cell counts as free because its box is pushed away first.
      */
     private boolean canPlayerLand(Position arrival, Position entered, Position boxArrival) {
-        boolean freeAfterPush = arrival.equals(entered) || cellAt(arrival).isFree();
+        boolean freeAfterPush = arrival.equals(entered) || cellAt(arrival).isFree() || canShove(arrival, boxArrival);
         return getTile(arrival).allowsPlayer() && freeAfterPush && !arrival.equals(boxArrival);
+    }
+
+    /**
+     * A player teleported onto a box pushes it one cell down (portal exits eject downwards).
+     * Only plain floor admits it, and the cell below must be free and not the pushed box's destination.
+     */
+    private boolean canShove(Position at, Position boxArrival) {
+        Occupant occupant = cellAt(at).getOccupant();
+        Position below = at.move(Direction.DOWN);
+        return occupant.isPushable() && !below.equals(boxArrival)
+                && canEnter(occupant, below) && getTile(below) instanceof Floor;
+    }
+
+    /** Moves the box at the position one cell down. It is not a push: the box does not wear. */
+    private void shove(Position at) {
+        cellAt(at.move(Direction.DOWN)).place(cellAt(at).remove());
     }
 
     /**
