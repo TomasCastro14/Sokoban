@@ -15,6 +15,6 @@ public class TeleportEffect implements EntryEffect {
 
     @Override
     public Position apply(Occupant occupant, Position at, Direction direction, Board board) {
-        return exit;
+        return exit.move(Direction.DOWN);
     }
 }

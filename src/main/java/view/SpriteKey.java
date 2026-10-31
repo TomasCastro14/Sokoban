@@ -12,8 +12,8 @@ public enum SpriteKey {
     WINDOW_ICON("playerFace_dark.png"),
 
     // mapa
-    STONE("map/ground_04.png"),
-    WALL("map/block_06.png"),
+    STONE("map/background_brown.png"),
+    WALL("map/block_02.png"),
 
     // cajas
     CRATE_NORMAL("crates/crate_06.png"),
