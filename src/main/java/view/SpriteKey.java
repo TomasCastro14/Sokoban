@@ -1,26 +1,18 @@
 package view;
 
 import model.box.BoxType;
+import view.components.images.ImageAsset;
 
-/**
- * Registro único de los sprites del juego: qué imagen es cada cosa y dónde vive.
- * Ninguna otra clase conoce rutas de archivos de gameplay.
- * El pasto no está acá: lo pone el CSS de la pantalla (gameplay.css).
- */
-public enum SpriteKey {
-    // icono del juego
+public enum SpriteKey implements ImageAsset {
     WINDOW_ICON("playerFace_dark.png"),
 
-    // mapa
     STONE("map/background_brown.png"),
     WALL("map/block_02.png"),
 
-    // cajas
     CRATE_NORMAL("crates/crate_06.png"),
     CRATE_WEAK("crates/crate_22.png"),
     CRATE_KEY("crates/crate_05.png"),
 
-    // puntos de guardado vacíos y llenos
     SAVEPOINT_NORMAL("savepoint/environment_13.png"),
     SAVEPOINT_WEAK("savepoint/environment_01.png"),
     SAVEPOINT_KEY("savepoint/environment_09.png"),
@@ -28,13 +20,11 @@ public enum SpriteKey {
     SAVEPOINT_FULL_WEAK("savepoint/crate_37.png"),
     SAVEPOINT_FULL_KEY("savepoint/crate_40.png"),
 
-    // mecánicas
     DOOR("mechanics/door.png"),
     KEY_ITEM("mechanics/key.png"),
     ICE("mechanics/ice_path.png"),
     PORTAL("mechanics/portal.png"),
 
-    // jugador: quieto, y las dos poses intermedias de caminar (A y B) por dirección
     PLAYER_UP("player/player_24.png"),
     PLAYER_UP_A("player/player_01.png"),
     PLAYER_UP_B("player/player_02.png"),
@@ -55,6 +45,7 @@ public enum SpriteKey {
         this.path = ROOT + file;
     }
 
+    @Override
     public String path() {
         return path;
     }
