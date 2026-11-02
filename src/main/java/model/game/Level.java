@@ -8,14 +8,14 @@ import model.board.BfsReachability;
 import model.board.ReachabilityListener;
 import model.board.Visibility;
 import model.board.VisibilityMap;
-import model.game.event.EventType;
-import model.game.event.GameEvent;
-import model.game.event.GameListener;
+import model.game.event.BoardListener;
+import model.game.event.LevelOutcomeListener;
 import model.game.loss.LossCondition;
 import model.game.loss.LossReason;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /** Also listens to the board: when the reachable area grows, it reveals it once the move ends. */
 public class Level implements ReachabilityListener {
@@ -25,7 +25,8 @@ public class Level implements ReachabilityListener {
     private final Board board;
     private final LevelStats stats = new LevelStats();
     private final List<LossCondition> lossConditions;
-    private final List<GameListener> listeners = new ArrayList<>();
+    private final List<BoardListener> boardListeners = new ArrayList<>();
+    private final List<LevelOutcomeListener> outcomeListeners = new ArrayList<>();
     private final VisibilityMap visibility = new VisibilityMap(new BfsReachability());
     private boolean reachabilityChanged;
     /** Boxes to store, counted once: stored boxes stay fixed, so the count never has to go down. */
@@ -80,14 +81,14 @@ public class Level implements ReachabilityListener {
         // The only place that counts. One user action = 1 move, and 1 push if a box was pushed,
         // however many cells the player or the box slid. A blocked move returned above counts nothing.
         stats.addMove();
-        notifyListeners(new GameEvent(EventType.PLAYER_MOVED));
+        notifyBoard(listener -> listener.playerMoved(direction));
         revealIfReachabilityChanged();
         if (result != MoveResult.OK) {
             stats.addPush();
-            notifyListeners(new GameEvent(EventType.BOX_PUSHED));
+            notifyBoard(listener -> listener.boxPushed(direction));
             if (!wasFilled && hasStoredBox(boxTarget)) {
                 stats.addStoredBox();
-                notifyListeners(new GameEvent(EventType.BOX_STORED));
+                notifyBoard(listener -> listener.boxStored(stats.getStoredBoxes(), totalBoxes));
             }
         }
         checkEnd();
@@ -106,7 +107,7 @@ public class Level implements ReachabilityListener {
         }
         reachabilityChanged = false;
         visibility.recalculate(board, board.getPlayerPosition());
-        notifyListeners(new GameEvent(EventType.DOOR_OPENED));
+        notifyBoard(listener -> listener.doorOpened(visibility));
     }
 
     /** Loss is checked first: a move that loses never wins, even if it stored the last box. */
@@ -114,7 +115,7 @@ public class Level implements ReachabilityListener {
         checkLoss();
         if (status == LevelStatus.PLAYING && stats.getStoredBoxes() == totalBoxes) {
             status = LevelStatus.WON;
-            notifyListeners(new GameEvent(EventType.LEVEL_WON));
+            notifyOutcome(listener -> listener.levelWon(stats));
         }
     }
 
@@ -128,16 +129,19 @@ public class Level implements ReachabilityListener {
             if (condition.isMet(this)) {
                 status = LevelStatus.LOST;
                 lossReason = condition.getReason();
-                notifyListeners(new GameEvent(EventType.LEVEL_LOST));
+                notifyOutcome(listener -> listener.levelLost(lossReason));
                 return;
             }
         }
     }
 
-    private void notifyListeners(GameEvent event) {
-        for (GameListener listener : listeners) {
-            listener.onEvent(event);
-        }
+    // Copia de la lista: un observer puede desuscribirse mientras recibe el aviso.
+    private void notifyBoard(Consumer<BoardListener> notification) {
+        List.copyOf(boardListeners).forEach(notification);
+    }
+
+    private void notifyOutcome(Consumer<LevelOutcomeListener> notification) {
+        List.copyOf(outcomeListeners).forEach(notification);
     }
 
     /** Returns false when the undo was not applied (empty history or no undos left). */
@@ -167,8 +171,20 @@ public class Level implements ReachabilityListener {
         return visibility;
     }
 
-    public void addListener(GameListener listener) {
-        listeners.add(listener);
+    public void addBoardListener(BoardListener listener) {
+        boardListeners.add(listener);
+    }
+
+    public void removeBoardListener(BoardListener listener) {
+        boardListeners.remove(listener);
+    }
+
+    public void addOutcomeListener(LevelOutcomeListener listener) {
+        outcomeListeners.add(listener);
+    }
+
+    public void removeOutcomeListener(LevelOutcomeListener listener) {
+        outcomeListeners.remove(listener);
     }
 
     public void elapseSeconds(int seconds) {
