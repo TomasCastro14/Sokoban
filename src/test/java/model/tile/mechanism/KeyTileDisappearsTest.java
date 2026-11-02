@@ -4,7 +4,7 @@ import factory.TestLevels;
 import model.board.Direction;
 import model.box.KeyBox;
 import model.game.Level;
-import model.game.event.EventType;
+import model.game.event.EventRecorder;
 import model.board.Position;
 import model.tile.Floor;
 import org.junit.jupiter.api.DisplayName;
@@ -64,12 +64,7 @@ class KeyTileDisappearsTest {
     @DisplayName("Una KeyBox que sale y vuelve a entrar no abre dos veces ni avisa dos veces")
     void reenteringDoesNotOpenAgain() {
         Level level = levelWithKeyBoxOnItsWay();
-        int[] notices = {0};
-        level.addListener(event -> {
-            if (event.getType() == EventType.DOOR_OPENED) {
-                notices[0]++;
-            }
-        });
+        EventRecorder events = EventRecorder.attachTo(level);
 
         play(level, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT);
         door(level).close();
@@ -77,19 +72,14 @@ class KeyTileDisappearsTest {
 
         assertInstanceOf(KeyBox.class, level.getBoard().getBoxAt(TILE));
         assertFalse(door(level).isOpen(), "the consumed tile does not open the door again");
-        assertEquals(1, notices[0]);
+        assertEquals(1, events.count("doorOpened"));
     }
 
     @Test
     @DisplayName("Otra KeyBox que entra en la celda no abre nada")
     void anotherKeyBoxOpensNothing() {
         Level level = levelWithKeyBoxOnItsWay();
-        int[] notices = {0};
-        level.addListener(event -> {
-            if (event.getType() == EventType.DOOR_OPENED) {
-                notices[0]++;
-            }
-        });
+        EventRecorder events = EventRecorder.attachTo(level);
 
         play(level, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT);
         door(level).close();
@@ -97,7 +87,7 @@ class KeyTileDisappearsTest {
 
         assertInstanceOf(KeyBox.class, level.getBoard().getBoxAt(TILE));
         assertFalse(door(level).isOpen());
-        assertEquals(1, notices[0]);
+        assertEquals(1, events.count("doorOpened"));
     }
 
     @Test

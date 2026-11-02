@@ -5,23 +5,14 @@ import model.board.Direction;
 import model.board.MoveResult;
 import model.board.Position;
 import model.box.KeyBox;
-import model.game.event.EventType;
+import model.game.event.EventRecorder;
 import model.game.loss.LossReason;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class VictoryTest {
-
-    private static List<EventType> listen(Level level) {
-        List<EventType> events = new ArrayList<>();
-        level.addListener(event -> events.add(event.getType()));
-        return events;
-    }
 
     /** Two normal boxes: RIGHT stores the first one; DOWN + RIGHT store the second one. */
     private static Level twoBoxes() {
@@ -177,17 +168,17 @@ class VictoryTest {
     }
 
     @Test
-    @DisplayName("10. Ganar avisa LEVEL_WON una sola vez")
+    @DisplayName("10. Ganar llama a levelWon() una sola vez")
     void winningNotifiesOnce() {
         Level level = TestLevels.level(
                 "######",
                 "#@$. #",
                 "######");
-        List<EventType> events = listen(level);
+        EventRecorder events = EventRecorder.attachTo(level);
 
         level.move(Direction.RIGHT);
         level.move(Direction.LEFT);
 
-        assertEquals(1, events.stream().filter(EventType.LEVEL_WON::equals).count());
+        assertEquals(1, events.count("levelWon"));
     }
 }

@@ -4,13 +4,10 @@ import factory.TestLevels;
 import model.board.Direction;
 import model.board.MoveResult;
 import model.board.Position;
-import model.game.event.EventType;
+import model.game.event.EventRecorder;
 import model.game.state.WonState;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,8 +63,7 @@ class WinConditionTest {
                 "#######",
                 "#@$ . #",
                 "#######");
-        List<EventType> events = new ArrayList<>();
-        level.addListener(event -> events.add(event.getType()));
+        EventRecorder events = EventRecorder.attachTo(level);
 
         level.move(Direction.RIGHT);
         level.move(Direction.RIGHT); // box stored -> won
@@ -76,7 +72,7 @@ class WinConditionTest {
 
         level.undo();
 
-        assertFalse(events.contains(EventType.LEVEL_WON));
+        assertFalse(events.received("levelWon"));
     }
 
     @Test
