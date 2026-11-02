@@ -95,9 +95,10 @@ class IceCountingTest {
                 new Cell(new Position(0, 1), new Ice()),
                 new Cell(new Position(0, 2), new Floor()),
                 new Cell(new Position(0, 3), new Floor())}};
-        cells[0][0].place(new Player(Direction.RIGHT));
+        Player player = new Player(Direction.RIGHT);
+        cells[0][0].place(player);
         cells[0][1].place(new NormalBox());
-        Level level = new Level("hand-built", 60, 100, new Board(cells, new Position(0, 0)), List.of());
+        Level level = new Level("hand-built", 60, 100, new Board(cells, player, new Position(0, 0)), List.of());
 
         MoveResult result = level.move(Direction.RIGHT);
 

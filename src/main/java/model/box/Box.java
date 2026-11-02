@@ -2,6 +2,7 @@ package model.box;
 
 import model.tile.StoragePoint;
 import model.tile.StorageResult;
+import model.tile.Tile;
 
 /**
  * Template Method: {@link #push()} and {@link #storeAt(StoragePoint)} are fixed
@@ -15,6 +16,26 @@ public abstract class Box implements Occupant {
     @Override
     public boolean isPushable() {
         return true;
+    }
+
+    @Override
+    public final boolean canEnter(Tile tile) {
+        return tile.allowsBox(this);
+    }
+
+    /** Template Method: the box wears first (it may break); a box that survives tells the tile it arrived. */
+    @Override
+    public final PushResult pushOnto(Tile tile) {
+        PushResult result = push();
+        if (result != PushResult.BROKEN) {
+            tile.onBoxEntered(this);
+        }
+        return result;
+    }
+
+    @Override
+    public final Box boxIn(Tile tile) {
+        return this;
     }
 
     public final PushResult push() {

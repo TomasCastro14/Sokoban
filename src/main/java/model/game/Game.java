@@ -1,9 +1,10 @@
 package model.game;
 
 import model.board.Direction;
-import model.game.event.GameEvent;
-import model.game.event.GameListener;
-import model.game.event.EventType;
+import model.board.Visibility;
+import model.game.event.BoardListener;
+import model.game.event.LevelFlowListener;
+import model.game.event.LevelOutcomeListener;
 import model.game.loss.LossReason;
 import model.game.state.BlockedState;
 import model.game.state.GameCompletedState;
@@ -16,32 +17,21 @@ import model.game.state.WonState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
-/**
- * Facade of the model: controllers talk to the game and never to the level, and the current
- * {@link GameState} decides what is allowed (State). It is also the Observer subject of the
- * controllers: it republishes the events of whichever {@link Level} is current, so a listener
- * subscribes once and keeps working across restarts and level changes.
- *
- * The state is brought up to date <em>before</em> an event is republished, so a listener that
- * reads {@link #getState()} while handling LEVEL_WON or LEVEL_LOST already sees the new state.
- * Meant to be used from a single thread (the JavaFX application thread).
- */
 public class Game {
     private final IntFunction<Level> levelFactory;
     private final int levelCount;
-    private final List<GameListener> listeners = new ArrayList<>();
+    private final List<BoardListener> boardListeners = new ArrayList<>();
+    private final List<LevelFlowListener> flowListeners = new ArrayList<>();
+    private final List<LevelOutcomeListener> outcomeListeners = new ArrayList<>();
+    /** Escucha al nivel actual y reenvía sus eventos a los observers del juego. */
+    private final LevelRelay relay = new LevelRelay();
     private GameState state = new MenuState();
     private Level level;
     private int levelNumber;
 
-    /**
-     * Builds nothing yet: the first level is created by {@link #start()}.
-     *
-     * @param levelFactory builds a fresh level from its number (1-based); called again to restart
-     * @param levelCount   number of levels in the game
-     */
     public Game(IntFunction<Level> levelFactory, int levelCount) {
         if (levelCount < 1) {
             throw new IllegalArgumentException("The game needs at least one level, got " + levelCount);
@@ -50,15 +40,34 @@ public class Game {
         this.levelCount = levelCount;
     }
 
-    public void addListener(GameListener listener) {
-        listeners.add(Objects.requireNonNull(listener, "listener"));
+    public void addBoardListener(BoardListener listener) {
+        boardListeners.add(Objects.requireNonNull(listener, "listener"));
+    }
+
+    public void removeBoardListener(BoardListener listener) {
+        boardListeners.remove(listener);
+    }
+
+    public void addLevelFlowListener(LevelFlowListener listener) {
+        flowListeners.add(Objects.requireNonNull(listener, "listener"));
+    }
+
+    public void removeLevelFlowListener(LevelFlowListener listener) {
+        flowListeners.remove(listener);
+    }
+
+    public void addLevelOutcomeListener(LevelOutcomeListener listener) {
+        outcomeListeners.add(Objects.requireNonNull(listener, "listener"));
+    }
+
+    public void removeLevelOutcomeListener(LevelOutcomeListener listener) {
+        outcomeListeners.remove(listener);
     }
 
     public GameState getState() {
         return state;
     }
 
-    /** @throws IllegalStateException before the game has started */
     public Level getCurrentLevel() {
         if (level == null) {
             throw new IllegalStateException("The game has not started: call start() first");
@@ -66,7 +75,6 @@ public class Game {
         return level;
     }
 
-    /** 1-based number of the current level, or 0 before the game has started. */
     public int getCurrentLevelNumber() {
         return levelNumber;
     }
@@ -75,44 +83,38 @@ public class Game {
         return levelCount;
     }
 
-    /** Starts the game at the first level. */
     public void start() {
         start(1);
     }
 
-    /** Starts the game at the given level (1-based), whatever state it was in. */
     public void start(int number) {
         if (number < 1 || number > levelCount) {
             throw new IllegalArgumentException("Level " + number + " is out of range 1.." + levelCount);
         }
         load(number);
-        publish(new GameEvent(EventType.LEVEL_STARTED));
+        notifyFlow(listener -> listener.levelStarted(levelNumber, level));
     }
 
-    /** Ignored while the state does not accept input (menu, won, lost, blocked, completed). */
     public void move(Direction direction) {
         if (state.acceptsInput()) {
             level.move(direction);
         }
     }
 
-    /** Takes the last move back, if the state allows it and the level has one left to undo. */
     public void undo() {
         if (state.allowsUndo() && level.undo()) {
-            state = stateFor(level);       // a blocked level is playable again
-            publish(new GameEvent(EventType.BOARD_RESTORED));
+            state = stateFor(level);
+            notifyFlow(listener -> listener.boardRestored(level));
         }
     }
 
-    /** Rebuilds the current level from its source, as if it were new. */
     public void restart() {
         if (state.allowsRestart()) {
             load(levelNumber);
-            publish(new GameEvent(EventType.LEVEL_STARTED));
+            notifyFlow(listener -> listener.levelRestarted(levelNumber, level));
         }
     }
 
-    /** From a won level, loads the next one; after the last one the game is completed. */
     public void nextLevel() {
         if (!state.allowsNextLevel()) {
             return;
@@ -122,10 +124,9 @@ public class Game {
             return;
         }
         load(levelNumber + 1);
-        publish(new GameEvent(EventType.LEVEL_STARTED));
+        notifyFlow(listener -> listener.levelStarted(levelNumber, level));
     }
 
-    /** One second of play time has passed. Time only runs while the player can act. */
     public void tick() {
         if (state.acceptsInput()) {
             level.elapseSeconds(1);
@@ -141,26 +142,18 @@ public class Game {
         if (next == null) {
             throw new IllegalStateException("No level was built for number " + number);
         }
-        // A level that was replaced can no longer change the game, even if someone still holds it.
-        next.addListener(event -> {
-            if (next == level) {
-                onLevelEvent(event);
-            }
-        });
+        if (level != null) {
+            // El nivel anterior deja de reportar: solo el nivel actual llega a los observers.
+            level.removeBoardListener(relay);
+            level.removeOutcomeListener(relay);
+        }
+        next.addBoardListener(relay);
+        next.addOutcomeListener(relay);
         level = next;
         levelNumber = number;
         state = stateFor(next);
     }
 
-    private void onLevelEvent(GameEvent event) {
-        switch (event.getType()) {
-            case LEVEL_WON, LEVEL_LOST -> state = stateFor(level);
-            default -> { }
-        }
-        publish(event);
-    }
-
-    /** A deadlock is recoverable with an undo (blocked); every other loss ends the attempt (lost). */
     private static GameState stateFor(Level level) {
         return switch (level.getStatus()) {
             case PLAYING -> new PlayingState();
@@ -169,9 +162,55 @@ public class Game {
         };
     }
 
-    private void publish(GameEvent event) {
-        for (GameListener listener : List.copyOf(listeners)) {   // a listener may subscribe while handling
-            listener.onEvent(event);
+    // Copia de la lista: un observer puede desuscribirse mientras recibe el aviso.
+    private void notifyBoard(Consumer<BoardListener> notification) {
+        List.copyOf(boardListeners).forEach(notification);
+    }
+
+    private void notifyFlow(Consumer<LevelFlowListener> notification) {
+        List.copyOf(flowListeners).forEach(notification);
+    }
+
+    private void notifyOutcome(Consumer<LevelOutcomeListener> notification) {
+        List.copyOf(outcomeListeners).forEach(notification);
+    }
+
+    /**
+     * Clase interna para no exponer playerMoved(), levelWon(), etc. como métodos públicos de Game.
+     * Los eventos de tablero se reenvían tal cual; los de resultado además actualizan el estado.
+     */
+    private final class LevelRelay implements BoardListener, LevelOutcomeListener {
+
+        @Override
+        public void playerMoved(Direction direction) {
+            notifyBoard(listener -> listener.playerMoved(direction));
+        }
+
+        @Override
+        public void boxPushed(Direction direction) {
+            notifyBoard(listener -> listener.boxPushed(direction));
+        }
+
+        @Override
+        public void boxStored(int storedBoxes, int totalBoxes) {
+            notifyBoard(listener -> listener.boxStored(storedBoxes, totalBoxes));
+        }
+
+        @Override
+        public void doorOpened(Visibility visibility) {
+            notifyBoard(listener -> listener.doorOpened(visibility));
+        }
+
+        @Override
+        public void levelWon(LevelStats stats) {
+            state = stateFor(level);
+            notifyOutcome(listener -> listener.levelWon(stats));
+        }
+
+        @Override
+        public void levelLost(LossReason reason) {
+            state = stateFor(level);
+            notifyOutcome(listener -> listener.levelLost(reason));
         }
     }
 }
