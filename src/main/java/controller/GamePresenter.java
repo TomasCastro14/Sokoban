@@ -1,5 +1,5 @@
 package controller;
-
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import model.game.Game;
 import model.game.Level;
@@ -11,12 +11,6 @@ import view.gameplay.ScreenLifecycleListener;
 
 import java.util.Objects;
 
-/**
- * MVC controller of the game screen. Observer of the model (GameListener) and listener of the view
- * (ScreenLifecycleListener): it is the only place where the two meet. The view never sees events or
- * Game; the model never sees the view. It also owns what depends on the screen being visible
- * (keyboard and clock), so a game running behind the menus can neither be moved nor ticked.
- */
 public final class GamePresenter implements GameListener, ScreenLifecycleListener {
     private final Game game;
     private final GameScreen screen;
@@ -34,11 +28,16 @@ public final class GamePresenter implements GameListener, ScreenLifecycleListene
         screen.setLifecycleListener(this);
     }
 
+    public void dispose() {
+        screenHidden();
+        clock.stop();
+        game.removeListener(this);
+    }
+
     @Override
     public void screenShown(Scene scene) {
         visible = true;
-        input.bindKeys(scene);
-        // Whatever happened while the screen was hidden is read from the model now.
+        unbindKeys = input.bindKeys(scene);
         Level level = game.getCurrentLevel();
         screen.showLevel(level);
         if (level.getStatus() == LevelStatus.PLAYING) {
@@ -51,13 +50,13 @@ public final class GamePresenter implements GameListener, ScreenLifecycleListene
         visible = false;
         unbindKeys.run();
         unbindKeys = () -> { };
-        clock.stop();
+        clock.pause();
     }
 
     @Override
     public void onEvent(GameEvent event) {
         if (!visible) {
-            return;      // hidden screens do not react; screenShown reads the current state
+            return;
         }
         switch (event.getType()) {
             case LEVEL_STARTED -> {
@@ -69,9 +68,10 @@ public final class GamePresenter implements GameListener, ScreenLifecycleListene
             case BOX_PUSHED, BOX_STORED, DOOR_OPENED -> screen.boardChanged();
             case LEVEL_WON -> {
                 clock.stop();
-                game.nextLevel();   // provisorio: pasa directo al siguiente hasta tener la winning screen
+                Platform.runLater(game::nextLevel);
             }
             case LEVEL_LOST -> clock.stop();
+            default -> { }
         }
     }
 }

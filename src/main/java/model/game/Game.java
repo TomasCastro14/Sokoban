@@ -18,16 +18,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.IntFunction;
 
-/**
- * Facade of the model: controllers talk to the game and never to the level, and the current
- * {@link GameState} decides what is allowed (State). It is also the Observer subject of the
- * controllers: it republishes the events of whichever {@link Level} is current, so a listener
- * subscribes once and keeps working across restarts and level changes.
- *
- * The state is brought up to date <em>before</em> an event is republished, so a listener that
- * reads {@link #getState()} while handling LEVEL_WON or LEVEL_LOST already sees the new state.
- * Meant to be used from a single thread (the JavaFX application thread).
- */
 public class Game {
     private final IntFunction<Level> levelFactory;
     private final int levelCount;
@@ -36,12 +26,6 @@ public class Game {
     private Level level;
     private int levelNumber;
 
-    /**
-     * Builds nothing yet: the first level is created by {@link #start()}.
-     *
-     * @param levelFactory builds a fresh level from its number (1-based); called again to restart
-     * @param levelCount   number of levels in the game
-     */
     public Game(IntFunction<Level> levelFactory, int levelCount) {
         if (levelCount < 1) {
             throw new IllegalArgumentException("The game needs at least one level, got " + levelCount);
@@ -54,11 +38,14 @@ public class Game {
         listeners.add(Objects.requireNonNull(listener, "listener"));
     }
 
+    public void removeListener(GameListener listener) {
+        listeners.remove(listener);
+    }
+
     public GameState getState() {
         return state;
     }
 
-    /** @throws IllegalStateException before the game has started */
     public Level getCurrentLevel() {
         if (level == null) {
             throw new IllegalStateException("The game has not started: call start() first");
@@ -66,7 +53,6 @@ public class Game {
         return level;
     }
 
-    /** 1-based number of the current level, or 0 before the game has started. */
     public int getCurrentLevelNumber() {
         return levelNumber;
     }
@@ -75,12 +61,10 @@ public class Game {
         return levelCount;
     }
 
-    /** Starts the game at the first level. */
     public void start() {
         start(1);
     }
 
-    /** Starts the game at the given level (1-based), whatever state it was in. */
     public void start(int number) {
         if (number < 1 || number > levelCount) {
             throw new IllegalArgumentException("Level " + number + " is out of range 1.." + levelCount);
@@ -89,22 +73,19 @@ public class Game {
         publish(new GameEvent(EventType.LEVEL_STARTED));
     }
 
-    /** Ignored while the state does not accept input (menu, won, lost, blocked, completed). */
     public void move(Direction direction) {
         if (state.acceptsInput()) {
             level.move(direction);
         }
     }
 
-    /** Takes the last move back, if the state allows it and the level has one left to undo. */
     public void undo() {
         if (state.allowsUndo() && level.undo()) {
-            state = stateFor(level);       // a blocked level is playable again
+            state = stateFor(level);
             publish(new GameEvent(EventType.BOARD_RESTORED));
         }
     }
 
-    /** Rebuilds the current level from its source, as if it were new. */
     public void restart() {
         if (state.allowsRestart()) {
             load(levelNumber);
@@ -112,7 +93,6 @@ public class Game {
         }
     }
 
-    /** From a won level, loads the next one; after the last one the game is completed. */
     public void nextLevel() {
         if (!state.allowsNextLevel()) {
             return;
@@ -125,7 +105,6 @@ public class Game {
         publish(new GameEvent(EventType.LEVEL_STARTED));
     }
 
-    /** One second of play time has passed. Time only runs while the player can act. */
     public void tick() {
         if (state.acceptsInput()) {
             level.elapseSeconds(1);
@@ -141,7 +120,6 @@ public class Game {
         if (next == null) {
             throw new IllegalStateException("No level was built for number " + number);
         }
-        // A level that was replaced can no longer change the game, even if someone still holds it.
         next.addListener(event -> {
             if (next == level) {
                 onLevelEvent(event);
@@ -160,7 +138,6 @@ public class Game {
         publish(event);
     }
 
-    /** A deadlock is recoverable with an undo (blocked); every other loss ends the attempt (lost). */
     private static GameState stateFor(Level level) {
         return switch (level.getStatus()) {
             case PLAYING -> new PlayingState();
@@ -170,7 +147,7 @@ public class Game {
     }
 
     private void publish(GameEvent event) {
-        for (GameListener listener : List.copyOf(listeners)) {   // a listener may subscribe while handling
+        for (GameListener listener : List.copyOf(listeners)) {
             listener.onEvent(event);
         }
     }

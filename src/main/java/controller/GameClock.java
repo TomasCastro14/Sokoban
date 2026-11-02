@@ -27,14 +27,22 @@ public class GameClock {
         timeline.play();
     }
 
+<<<<<<< Updated upstream
     /** Pauses without losing the fraction of the current second. */
     public void pause() {
+=======
+        public void pause() {
+>>>>>>> Stashed changes
         if (timeline != null) {
             timeline.pause();
         }
     }
 
+<<<<<<< Updated upstream
     /** Stops for good (level won, lost or restarted). */
+=======
+    
+>>>>>>> Stashed changes
     public void stop() {
         if (timeline != null) {
             timeline.stop();

@@ -7,8 +7,10 @@ import view.menus.MenuListener;
 
 import java.util.Objects;
 
-// controller/MenuController.java
 public final class MenuController implements MenuListener {
+    private static final int FIRST_LEVEL = 1;
+    private static final int NO_LEVEL = 0;
+
     private final Game game;
     private final Navigator navigator;
     private final Runnable exit;
@@ -19,13 +21,39 @@ public final class MenuController implements MenuListener {
         this.exit = Objects.requireNonNull(exit, "exit");
     }
 
-    @Override public void onContinue() {
-        if (game.getCurrentLevelNumber() == 0) game.start(1);   // provisorio hasta tener progreso guardado
+    @Override
+    public void onContinue() {
+        if (game.getCurrentLevelNumber() == NO_LEVEL) {
+            game.start(FIRST_LEVEL);
+        }
         navigator.show(Screen.GAME);
     }
-    @Override public void onLevels()   { navigator.show(Screen.LEVEL_SELECT); }
-    @Override public void onNewGame()  { game.start(1); navigator.show(Screen.GAME); }
-    public void onLevelChosen(int level) { game.start(level); navigator.show(Screen.GAME); }
-    @Override public void onSettings() { /* TODO: cuando exista SettingsView */ }
-    @Override public void onExit()     { exit.run(); }
+
+    @Override
+    public void onLevels() {
+        navigator.show(Screen.LEVEL_SELECT);
+    }
+
+    @Override
+    public void onNewGame() {
+        startLevel(FIRST_LEVEL);
+    }
+
+    public void onLevelChosen(int level) {
+        startLevel(level);
+    }
+
+    @Override
+    public void onSettings() {
+    }
+
+    @Override
+    public void onExit() {
+        exit.run();
+    }
+
+    private void startLevel(int level) {
+        game.start(level);
+        navigator.show(Screen.GAME);
+    }
 }
