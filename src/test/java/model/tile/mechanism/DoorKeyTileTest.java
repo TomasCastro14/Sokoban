@@ -6,7 +6,7 @@ import model.board.Direction;
 import model.board.MoveResult;
 import model.board.Position;
 import model.game.Level;
-import model.tile.Floor;
+import model.tile.Tile;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -36,19 +36,20 @@ class DoorKeyTileTest {
     }
 
     @Test
-    @DisplayName("2. La baldosa llave desaparece despues de abrir la puerta (es de un solo uso)")
-    void keyTileDisappearsAfterOpeningDoor() {
+    @DisplayName("2. La baldosa llave queda en su celda despues de abrir la puerta (es de un solo uso)")
+    void keyTileStaysAfterOpeningDoor() {
         Level level = TestLevels.level(
                 "#########",
                 "#@K a   #",
                 "##A###A##",
                 "#  ;    #",
                 "#########");
+        Tile before = level.getBoard().getTile(new Position(1, 4));
 
         level.move(Direction.RIGHT);
         level.move(Direction.RIGHT);
 
-        assertInstanceOf(Floor.class, level.getBoard().getTile(new Position(1, 4)));
+        assertSame(before, level.getBoard().getTile(new Position(1, 4)));
     }
 
     @Test

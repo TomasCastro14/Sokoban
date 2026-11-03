@@ -10,7 +10,6 @@ import model.tile.effect.NoEffect;
 
 import java.util.Set;
 
-
 public abstract class Tile {
     private static final EntryEffect STAY = new NoEffect();
 
@@ -26,7 +25,6 @@ public abstract class Tile {
         return false;
     }
 
-
     public boolean isBoundary() {
         return false;
     }
@@ -35,36 +33,29 @@ public abstract class Tile {
         return false;
     }
 
-    
     public Set<Position> linkedPositions() {
         return Set.of();
     }
-
 
     public final Position arrivalFor(Occupant occupant, Position entered, Direction direction, Board board) {
         return entryEffect().apply(occupant, entered, direction, board);
     }
 
-
     protected EntryEffect entryEffect() {
         return STAY;
     }
 
-    
     public void onBoxEntered(Box box) {
     }
 
-    
-    public boolean isConsumed() {
-        return false;
+    public TileMemento save() {
+        return TileMemento.NOTHING_TO_RESTORE;
     }
 
-    
     public Box getStoredBox() {
         return null;
     }
 
-    
     public StorageResult getStorageResult() {
         return null;
     }

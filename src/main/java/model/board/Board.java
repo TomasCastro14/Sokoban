@@ -4,7 +4,6 @@ import model.box.Box;
 import model.box.Occupant;
 import model.box.Player;
 import model.box.PushResult;
-import model.tile.Floor;
 import model.tile.Tile;
 
 import java.util.ArrayList;
@@ -64,7 +63,6 @@ public class Board {
         return cells.length == 0 ? 0 : cells[0].length;
     }
 
-
     public Cell cellAt(Position p) {
         requireInside(p);
         return cells[p.row()][p.col()];
@@ -73,7 +71,6 @@ public class Board {
     public Cell neighbor(Position p, Direction d) {
         return cellAt(p.move(d));
     }
-
 
     public List<Cell> cells() {
         return cellsInReadingOrder;
@@ -93,7 +90,6 @@ public class Board {
         return cellAt(position).getTile();
     }
 
- 
     public Box getBoxAt(Position position) {
         Cell cell = cellAt(position);
         return cell.isFree() ? cell.getTile().getStoredBox() : cell.getOccupant().boxIn(cell.getTile());
@@ -103,7 +99,6 @@ public class Board {
         cellAt(position).place(box);
     }
 
-
     public Player getPlayer() {
         return player;
     }
@@ -112,7 +107,6 @@ public class Board {
         return playerPosition;
     }
 
-   
     public int countBoxes() {
         return (int) cells().stream().filter(cell -> !cell.isFree() && cell.getOccupant().isPushable()).count();
     }
@@ -131,7 +125,7 @@ public class Board {
             return MoveResult.BLOCKED;
         }
         if (!cellAt(arrival).isFree() && !arrival.equals(entered)) {
-            shove(arrival);   // a portal exit lands on a box: the box makes room one cell down
+            shove(arrival);
         }
         PushResult push = boxArrival == null ? null : moveBox(entered, boxArrival);
         cellAt(playerPosition).remove();
@@ -162,14 +156,12 @@ public class Board {
         return player.canEnter(getTile(arrival)) && freeAfterPush && !arrival.equals(boxArrival);
     }
 
-  
     private boolean canShove(Position at, Position boxArrival) {
         Occupant occupant = cellAt(at).getOccupant();
         Position below = at.move(Direction.DOWN);
         return occupant.isPushable() && !below.equals(boxArrival)
                 && canEnter(occupant, below) && getTile(below).acceptsEjectedBox();
     }
-
 
     private void shove(Position at) {
         cellAt(at.move(Direction.DOWN)).place(cellAt(at).remove());
@@ -200,15 +192,11 @@ public class Board {
         return occupant.canEnter(getTile(p));
     }
 
-
     private PushResult moveBox(Position from, Position to) {
         Occupant box = cellAt(from).remove();
         Tile tile = getTile(to);
         PushResult result = box.pushOnto(tile);
         if (result != PushResult.BROKEN) {
-            if (tile.isConsumed()) {
-                cellAt(to).replaceTile(new Floor());
-            }
             if (tile.getStoredBox() != box) {
                 cellAt(to).place(box);
             }
