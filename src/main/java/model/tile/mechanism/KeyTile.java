@@ -3,6 +3,8 @@ package model.tile.mechanism;
 import model.box.Box;
 import model.history.Memento;
 import model.tile.Tile;
+import model.tile.TileKind;
+import model.tile.TileLook;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,11 @@ public class KeyTile extends Tile {
             used = true;
             notifyListeners();
         }
+    }
+
+    @Override
+    public TileLook look() {
+        return TileLook.of(TileKind.KEY, used);
     }
 
     @Override

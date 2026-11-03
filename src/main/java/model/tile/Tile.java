@@ -46,6 +46,8 @@ public abstract class Tile {
         return STAY;
     }
 
+    public abstract TileLook look();
+
     public void onBoxEntered(Box box) {
     }
 

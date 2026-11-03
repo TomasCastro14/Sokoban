@@ -3,6 +3,8 @@ package model.tile.mechanism;
 import model.box.Box;
 import model.history.Memento;
 import model.tile.Tile;
+import model.tile.TileKind;
+import model.tile.TileLook;
 
 public class Door extends Tile {
     private final char group;
@@ -26,6 +28,11 @@ public class Door extends Tile {
 
     public void close() {
         this.open = false;
+    }
+
+    @Override
+    public TileLook look() {
+        return TileLook.of(TileKind.DOOR, open);
     }
 
     @Override

@@ -42,6 +42,11 @@ public class StoragePoint extends Tile {
     }
 
     @Override
+    public TileLook look() {
+        return new TileLook(TileKind.STORAGE, type, isFilled());
+    }
+
+    @Override
     public Memento save() {
         Box savedBox = storedBox;
         StorageResult savedResult = result;
