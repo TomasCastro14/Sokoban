@@ -12,12 +12,16 @@ import model.game.event.BoardListener;
 import model.game.event.LevelOutcomeListener;
 import model.game.loss.LossCondition;
 import model.game.loss.LossReason;
+import model.history.LevelMemento;
+import model.history.Memento;
+import model.history.MoveCommand;
+import model.history.MoveReceiver;
+import model.history.UndoHistory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** Also listens to the board: when the reachable area grows, it reveals it once the move ends. */
 public class Level implements ReachabilityListener {
     private final String name;
     private final int timeLimitSeconds;
@@ -29,11 +33,12 @@ public class Level implements ReachabilityListener {
     private final List<LevelOutcomeListener> outcomeListeners = new ArrayList<>();
     private final VisibilityMap visibility = new VisibilityMap(new BfsReachability());
     private boolean reachabilityChanged;
-    /** Boxes to store, counted once: stored boxes stay fixed, so the count never has to go down. */
     private final int totalBoxes;
     private LevelStatus status = LevelStatus.PLAYING;
     private LossReason lossReason;
     private int remainingSeconds;
+    private final UndoHistory history = new UndoHistory();
+    private final MoveReceiver receiver = new LevelMoveReceiver();
 
     public Level(String name, int timeLimitSeconds, int targetScore, Board board,
                  List<LossCondition> lossConditions) {
@@ -67,19 +72,38 @@ public class Level implements ReachabilityListener {
         return stats;
     }
 
-    /** A blocked move does not count as a move nor as a push. A finished level accepts no more moves. */
     public MoveResult move(Direction direction) {
+        MoveCommand command = new MoveCommand(receiver, direction);
+        MoveResult result = command.execute();
+        if (result != MoveResult.BLOCKED) {
+            history.record(command);
+        }
+        return result;
+    }
+
+    public LevelMemento save() {
+        return new LevelMemento(List.of(board.save(), stats.save(), visibility.save(), saveOutcome()));
+    }
+
+    private Memento saveOutcome() {
+        LevelStatus savedStatus = status;
+        LossReason savedReason = lossReason;
+        return () -> {
+            status = savedStatus;
+            lossReason = savedReason;
+        };
+    }
+
+    private MoveResult play(Direction direction) {
         if (status != LevelStatus.PLAYING) {
             return MoveResult.BLOCKED;
         }
-        Position boxTarget = board.boxDestination(direction); // where the box really lands, even after sliding on ice
+        Position boxTarget = board.boxDestination(direction);
         boolean wasFilled = hasStoredBox(boxTarget);
         MoveResult result = board.movePlayer(direction);
         if (result == MoveResult.BLOCKED) {
             return result;
         }
-        // The only place that counts. One user action = 1 move, and 1 push if a box was pushed,
-        // however many cells the player or the box slid. A blocked move returned above counts nothing.
         stats.addMove();
         notifyBoard(listener -> listener.playerMoved(direction));
         revealIfReachabilityChanged();
@@ -100,7 +124,6 @@ public class Level implements ReachabilityListener {
         reachabilityChanged = true;
     }
 
-    /** Recalculates once per move, however many doors opened in it. */
     private void revealIfReachabilityChanged() {
         if (!reachabilityChanged) {
             return;
@@ -110,7 +133,6 @@ public class Level implements ReachabilityListener {
         notifyBoard(listener -> listener.doorOpened(visibility));
     }
 
-    /** Loss is checked first: a move that loses never wins, even if it stored the last box. */
     private void checkEnd() {
         checkLoss();
         if (status == LevelStatus.PLAYING && stats.getStoredBoxes() == totalBoxes) {
@@ -123,7 +145,6 @@ public class Level implements ReachabilityListener {
         return p != null && board.isInside(p) && board.getTile(p).getStoredBox() != null;
     }
 
-    /** Loss conditions are evaluated once, after the move is finished. */
     private void checkLoss() {
         for (LossCondition condition : lossConditions) {
             if (condition.isMet(this)) {
@@ -135,7 +156,6 @@ public class Level implements ReachabilityListener {
         }
     }
 
-    // Copia de la lista: un observer puede desuscribirse mientras recibe el aviso.
     private void notifyBoard(Consumer<BoardListener> notification) {
         List.copyOf(boardListeners).forEach(notification);
     }
@@ -144,13 +164,16 @@ public class Level implements ReachabilityListener {
         List.copyOf(outcomeListeners).forEach(notification);
     }
 
-    /** Returns false when the undo was not applied (empty history or no undos left). */
     public boolean undo() {
-        throw new UnsupportedOperationException("TODO");
+        if (!history.undo()) {
+            return false;
+        }
+        stats.addUndo();
+        return true;
     }
 
     public int getRemainingUndos() {
-        throw new UnsupportedOperationException("TODO");
+        return history.remainingUndos();
     }
 
     public LevelStatus getStatus() {
@@ -161,12 +184,10 @@ public class Level implements ReachabilityListener {
         return status == LevelStatus.WON;
     }
 
-    /** Returns the reason of the loss, or null while the level is not lost. */
     public LossReason getLossReason() {
         return lossReason;
     }
 
-    /** Computed when the level is built, so it is ready before the first draw. */
     public Visibility getVisibility() {
         return visibility;
     }
@@ -195,5 +216,18 @@ public class Level implements ReachabilityListener {
 
     public int getRemainingSeconds() {
         return remainingSeconds;
+    }
+
+    private final class LevelMoveReceiver implements MoveReceiver {
+
+        @Override
+        public LevelMemento save() {
+            return Level.this.save();
+        }
+
+        @Override
+        public MoveResult play(Direction direction) {
+            return Level.this.play(direction);
+        }
     }
 }

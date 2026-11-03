@@ -1,8 +1,8 @@
 package model.tile.mechanism;
 
 import model.box.Box;
+import model.history.Memento;
 import model.tile.Tile;
-import model.tile.TileMemento;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public class KeyTile extends Tile {
     }
 
     @Override
-    public TileMemento save() {
+    public Memento save() {
         return new KeyTileMemento(this, used);
     }
 
@@ -47,7 +47,7 @@ public class KeyTile extends Tile {
         }
     }
 
-    private static final class KeyTileMemento implements TileMemento {
+    private static final class KeyTileMemento implements Memento {
         private final KeyTile tile;
         private final boolean used;
 

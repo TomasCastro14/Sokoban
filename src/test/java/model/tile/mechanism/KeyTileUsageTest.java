@@ -7,8 +7,8 @@ import model.board.Position;
 import model.box.KeyBox;
 import model.game.Level;
 import model.game.event.EventRecorder;
+import model.history.Memento;
 import model.tile.Tile;
-import model.tile.TileMemento;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -126,7 +126,7 @@ class KeyTileUsageTest {
     void mementoRestoresTheSameTile() {
         Level level = levelWithKeyBoxOnItsWay();
         Tile key = level.getBoard().getTile(TILE);
-        TileMemento beforeUse = key.save();
+        Memento beforeUse = key.save();
         play(level, Direction.RIGHT, Direction.RIGHT);
 
         beforeUse.restore();

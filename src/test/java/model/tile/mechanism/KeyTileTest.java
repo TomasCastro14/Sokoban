@@ -3,7 +3,7 @@ package model.tile.mechanism;
 import model.box.KeyBox;
 import model.box.NormalBox;
 import model.box.WeakBox;
-import model.tile.TileMemento;
+import model.history.Memento;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +53,7 @@ class KeyTileTest {
     @Test
     @DisplayName("Restaurar un memento previo deja la llave sin usar y se puede volver a activar")
     void restoringMakesTheKeyUsableAgain() {
-        TileMemento beforeUse = key.save();
+        Memento beforeUse = key.save();
         key.onBoxEntered(new KeyBox());
 
         beforeUse.restore();
@@ -66,7 +66,7 @@ class KeyTileTest {
     @DisplayName("Restaurar un memento de la llave usada la deja usada")
     void restoringAUsedKeyKeepsItUsed() {
         key.onBoxEntered(new KeyBox());
-        TileMemento afterUse = key.save();
+        Memento afterUse = key.save();
 
         afterUse.restore();
         key.onBoxEntered(new KeyBox());

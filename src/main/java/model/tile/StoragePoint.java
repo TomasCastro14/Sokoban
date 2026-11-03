@@ -2,6 +2,7 @@ package model.tile;
 
 import model.box.Box;
 import model.box.BoxType;
+import model.history.Memento;
 
 public class StoragePoint extends Tile {
     private final BoxType type;
@@ -24,16 +25,11 @@ public class StoragePoint extends Tile {
         return storedBox != null;
     }
 
-    /** An empty point is a hole; once filled it works as a bridge. */
     @Override
     public boolean allowsPlayer() {
         return isFilled();
     }
 
-    /**
-     * The box decides whether it can be stored here (Template Method in Box).
-     * A stored box is absorbed by the point and stays fixed; a filled point behaves like floor.
-     */
     @Override
     public void onBoxEntered(Box box) {
         if (isFilled()) {
@@ -43,6 +39,16 @@ public class StoragePoint extends Tile {
         if (result == StorageResult.STORED) {
             storedBox = box;
         }
+    }
+
+    @Override
+    public Memento save() {
+        Box savedBox = storedBox;
+        StorageResult savedResult = result;
+        return () -> {
+            storedBox = savedBox;
+            result = savedResult;
+        };
     }
 
     @Override

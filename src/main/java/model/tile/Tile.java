@@ -5,6 +5,7 @@ import model.board.Direction;
 import model.board.Position;
 import model.box.Box;
 import model.box.Occupant;
+import model.history.Memento;
 import model.tile.effect.EntryEffect;
 import model.tile.effect.NoEffect;
 
@@ -48,8 +49,8 @@ public abstract class Tile {
     public void onBoxEntered(Box box) {
     }
 
-    public TileMemento save() {
-        return TileMemento.NOTHING_TO_RESTORE;
+    public Memento save() {
+        return Memento.NOTHING_TO_RESTORE;
     }
 
     public Box getStoredBox() {

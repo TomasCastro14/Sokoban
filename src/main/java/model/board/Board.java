@@ -4,6 +4,8 @@ import model.box.Box;
 import model.box.Occupant;
 import model.box.Player;
 import model.box.PushResult;
+import model.history.BoxSnapshot;
+import model.history.Memento;
 import model.tile.Tile;
 
 import java.util.ArrayList;
@@ -108,7 +110,37 @@ public class Board {
     }
 
     public int countBoxes() {
-        return (int) cells().stream().filter(cell -> !cell.isFree() && cell.getOccupant().isPushable()).count();
+        return cellsWithBox().size();
+    }
+
+    public Memento save() {
+        Position savedPlayer = playerPosition;
+        List<Memento> savedTiles = cells().stream().map(cell -> cell.getTile().save()).toList();
+        List<Memento> savedBoxes = boxSnapshots();
+        return () -> {
+            cellAt(playerPosition).remove();
+            clearBoxes();
+            savedTiles.forEach(Memento::restore);
+            savedBoxes.forEach(Memento::restore);
+            cellAt(savedPlayer).place(player);
+            playerPosition = savedPlayer;
+        };
+    }
+
+    private List<Memento> boxSnapshots() {
+        List<Memento> snapshots = new ArrayList<>();
+        for (Cell cell : cellsWithBox()) {
+            snapshots.add(new BoxSnapshot(this, getBoxAt(cell.getPosition()), cell.getPosition()));
+        }
+        return snapshots;
+    }
+
+    private void clearBoxes() {
+        cellsWithBox().forEach(Cell::remove);
+    }
+
+    private List<Cell> cellsWithBox() {
+        return cells().stream().filter(cell -> !cell.isFree() && cell.getOccupant().isPushable()).toList();
     }
 
     public MoveResult movePlayer(Direction d) {

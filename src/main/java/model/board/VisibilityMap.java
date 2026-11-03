@@ -1,13 +1,10 @@
 package model.board;
 
+import model.history.Memento;
+
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Information Expert: knows which cells the player has seen.
- * Visible = every reachable cell plus the cells around it (walls, closed doors),
- * so the outline of each room is drawn. Cells are only ever added, never hidden again.
- */
 public class VisibilityMap implements Visibility {
     private final ReachabilityCalculator reachability;
     private final Set<Position> visible = new HashSet<>();
@@ -21,11 +18,18 @@ public class VisibilityMap implements Visibility {
         return visible.contains(position);
     }
 
-    /** Reveals what can be reached from the given position, keeping what was already visible. */
     public void recalculate(Board board, Position from) {
         for (Position reached : reachability.from(board, from)) {
             revealWithSurroundings(board, reached);
         }
+    }
+
+    public Memento save() {
+        Set<Position> saved = Set.copyOf(visible);
+        return () -> {
+            visible.clear();
+            visible.addAll(saved);
+        };
     }
 
     private void revealWithSurroundings(Board board, Position center) {
