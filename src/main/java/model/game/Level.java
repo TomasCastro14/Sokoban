@@ -8,29 +8,48 @@ import model.board.BfsReachability;
 import model.board.ReachabilityListener;
 import model.board.Visibility;
 import model.board.VisibilityMap;
-import model.game.event.BoardListener;
-import model.game.event.LevelOutcomeListener;
+<<<<<<< Updated upstream
+import model.game.event.EventType;
+import model.game.event.GameEvent;
+import model.game.event.GameListener;
 import model.game.loss.LossCondition;
 import model.game.loss.LossReason;
+=======
+import model.game.event.BoardListener;
+import model.game.event.LevelOutcomeListener;
+import model.game.event.TimeListener;
+import model.game.loss.LossReason;
+import model.game.loss.LossReporter;
 import model.history.LevelMemento;
 import model.history.Memento;
 import model.history.MoveCommand;
 import model.history.MoveReceiver;
 import model.history.UndoHistory;
+>>>>>>> Stashed changes
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+<<<<<<< Updated upstream
+/** Also listens to the board: when the reachable area grows, it reveals it once the move ends. */
 public class Level implements ReachabilityListener {
+=======
+public class Level implements ReachabilityListener, LossReporter {
+>>>>>>> Stashed changes
     private final String name;
     private final int timeLimitSeconds;
     private final int targetScore;
     private final Board board;
     private final LevelStats stats = new LevelStats();
+<<<<<<< Updated upstream
     private final List<LossCondition> lossConditions;
+    private final List<GameListener> listeners = new ArrayList<>();
+=======
     private final List<BoardListener> boardListeners = new ArrayList<>();
     private final List<LevelOutcomeListener> outcomeListeners = new ArrayList<>();
+    private final List<TimeListener> timeListeners = new ArrayList<>();
+>>>>>>> Stashed changes
     private final VisibilityMap visibility = new VisibilityMap(new BfsReachability());
     private boolean reachabilityChanged;
     private final int totalBoxes;
@@ -40,13 +59,11 @@ public class Level implements ReachabilityListener {
     private final UndoHistory history = new UndoHistory();
     private final MoveReceiver receiver = new LevelMoveReceiver();
 
-    public Level(String name, int timeLimitSeconds, int targetScore, Board board,
-                 List<LossCondition> lossConditions) {
+    public Level(String name, int timeLimitSeconds, int targetScore, Board board) {
         this.name = name;
         this.timeLimitSeconds = timeLimitSeconds;
         this.targetScore = targetScore;
         this.board = board;
-        this.lossConditions = List.copyOf(lossConditions);
         this.totalBoxes = board.countBoxes();
         this.remainingSeconds = timeLimitSeconds;
         visibility.recalculate(board, board.getPlayerPosition());
@@ -134,7 +151,6 @@ public class Level implements ReachabilityListener {
     }
 
     private void checkEnd() {
-        checkLoss();
         if (status == LevelStatus.PLAYING && stats.getStoredBoxes() == totalBoxes) {
             status = LevelStatus.WON;
             notifyOutcome(listener -> listener.levelWon(stats));
@@ -145,6 +161,8 @@ public class Level implements ReachabilityListener {
         return p != null && board.isInside(p) && board.getTile(p).getStoredBox() != null;
     }
 
+<<<<<<< Updated upstream
+    /** Loss conditions are evaluated once, after the move is finished. */
     private void checkLoss() {
         for (LossCondition condition : lossConditions) {
             if (condition.isMet(this)) {
@@ -153,7 +171,16 @@ public class Level implements ReachabilityListener {
                 notifyOutcome(listener -> listener.levelLost(lossReason));
                 return;
             }
+=======
+    @Override
+    public void declareLoss(LossReason reason) {
+        if (status != LevelStatus.PLAYING) {
+            return;
+>>>>>>> Stashed changes
         }
+        status = LevelStatus.LOST;
+        lossReason = reason;
+        notifyOutcome(listener -> listener.levelLost(reason));
     }
 
     private void notifyBoard(Consumer<BoardListener> notification) {
@@ -208,10 +235,20 @@ public class Level implements ReachabilityListener {
         outcomeListeners.remove(listener);
     }
 
+    public void addTimeListener(TimeListener listener) {
+        timeListeners.add(listener);
+    }
+
+    public void removeTimeListener(TimeListener listener) {
+        timeListeners.remove(listener);
+    }
+
     public void elapseSeconds(int seconds) {
-        if (status != LevelStatus.PLAYING) return;
+        if (status != LevelStatus.PLAYING) {
+            return;
+        }
         remainingSeconds = Math.max(0, remainingSeconds - seconds);
-        checkLoss();
+        List.copyOf(timeListeners).forEach(listener -> listener.secondElapsed(remainingSeconds));
     }
 
     public int getRemainingSeconds() {
