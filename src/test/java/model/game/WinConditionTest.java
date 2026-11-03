@@ -87,7 +87,6 @@ class WinConditionTest {
         game.move(Direction.RIGHT);
 
         assertInstanceOf(WonState.class, game.getState());
-        assertTrue(game.isInputBlocked());
         Position before = game.getCurrentLevel().getBoard().getPlayerPosition();
         game.move(Direction.LEFT);
         assertEquals(before, game.getCurrentLevel().getBoard().getPlayerPosition());

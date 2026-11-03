@@ -1,22 +1,21 @@
 package model.game.state;
 
-public class BlockedState implements GameState {
+/** Deadlock: la partida se frena, pero un undo la recupera. También se puede reiniciar. */
+public final class BlockedState implements GameState {
 
-    @Override
-    public boolean acceptsInput() {
-        return false;
+    public static final BlockedState INSTANCE = new BlockedState();
+
+    private BlockedState() {
     }
 
     @Override
-    public boolean allowsUndo() {
-        return true;
+    public GameState undo(GameContext game) {
+        return game.undoLastMove() ? PlayingState.INSTANCE : this;
     }
 
     @Override
-    public boolean allowsRestart() {
-        return true;
+    public GameState restart(GameContext game) {
+        game.reloadLevel();
+        return PlayingState.INSTANCE;
     }
-
-    @Override
-    public boolean allowsNextLevel() { return false; }
 }

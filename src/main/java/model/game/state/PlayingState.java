@@ -1,24 +1,46 @@
 package model.game.state;
 
-public class PlayingState implements GameState {
+import model.board.Direction;
+import model.game.LevelStats;
+import model.game.loss.LossReason;
 
-    @Override
-    public boolean acceptsInput() {
-        return true;
+/** Nivel en curso: se puede mover, deshacer, reiniciar y corre el tiempo. */
+public final class PlayingState implements GameState {
+
+    public static final PlayingState INSTANCE = new PlayingState();
+
+    private PlayingState() {
     }
 
     @Override
-    public boolean allowsUndo() {
-        return false;
+    public GameState move(GameContext game, Direction direction) {
+        return game.playMove(direction);
     }
 
     @Override
-    public boolean allowsRestart() {
-        return true;
+    public GameState undo(GameContext game) {
+        game.undoLastMove();
+        return this;
     }
 
     @Override
-    public boolean allowsNextLevel() {
-        return false;
+    public GameState restart(GameContext game) {
+        game.reloadLevel();
+        return this;
+    }
+
+    @Override
+    public GameState tick(GameContext game) {
+        return game.elapseSecond();
+    }
+
+    @Override
+    public GameState onLevelWon(LevelStats stats) {
+        return WonState.INSTANCE;
+    }
+
+    @Override
+    public GameState onLevelLost(LossReason reason) {
+        return reason.isRecoverable() ? BlockedState.INSTANCE : LostState.INSTANCE;
     }
 }

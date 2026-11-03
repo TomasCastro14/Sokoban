@@ -7,7 +7,6 @@ import model.board.Visibility;
 import model.game.Game;
 import model.game.Level;
 import model.game.LevelStats;
-import model.game.LevelStatus;
 import model.game.event.BoardListener;
 import model.game.event.LevelFlowListener;
 import model.game.event.LevelOutcomeListener;
@@ -49,11 +48,8 @@ public final class GamePresenter
     public void screenShown(Scene scene) {
         visible = true;
         unbindKeys = input.bindKeys(scene);
-        Level level = game.getCurrentLevel();
-        screen.showLevel(level);
-        if (level.getStatus() == LevelStatus.PLAYING) {
-            clock.start();
-        }
+        screen.showLevel(game.getCurrentLevel());
+        clock.start();
     }
 
     @Override
@@ -64,19 +60,19 @@ public final class GamePresenter
         clock.pause();
     }
 
-    // ---- LevelFlowListener ----
-
     @Override
     public void levelStarted(int levelNumber, Level level) {
         if (visible) {
-            showAndStartClock(level);
+            screen.showLevel(level);
+            clock.start();
         }
     }
 
     @Override
     public void levelRestarted(int levelNumber, Level level) {
         if (visible) {
-            showAndStartClock(level);
+            screen.showLevel(level);
+            clock.start();
         }
     }
 
@@ -86,13 +82,6 @@ public final class GamePresenter
             screen.showLevel(level);
         }
     }
-
-    private void showAndStartClock(Level level) {
-        screen.showLevel(level);
-        clock.start();
-    }
-
-    // ---- BoardListener ----
 
     @Override
     public void playerMoved(Direction direction) {
@@ -121,8 +110,6 @@ public final class GamePresenter
             screen.boardChanged();
         }
     }
-
-    // ---- LevelOutcomeListener ----
 
     @Override
     public void levelWon(LevelStats stats) {

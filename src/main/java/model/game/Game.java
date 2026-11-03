@@ -6,13 +6,10 @@ import model.game.event.BoardListener;
 import model.game.event.LevelFlowListener;
 import model.game.event.LevelOutcomeListener;
 import model.game.loss.LossReason;
-import model.game.state.BlockedState;
-import model.game.state.GameCompletedState;
+import model.game.state.GameContext;
 import model.game.state.GameState;
-import model.game.state.LostState;
 import model.game.state.MenuState;
 import model.game.state.PlayingState;
-import model.game.state.WonState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +23,9 @@ public class Game {
     private final List<BoardListener> boardListeners = new ArrayList<>();
     private final List<LevelFlowListener> flowListeners = new ArrayList<>();
     private final List<LevelOutcomeListener> outcomeListeners = new ArrayList<>();
-    /** Escucha al nivel actual y reenvía sus eventos a los observers del juego. */
     private final LevelRelay relay = new LevelRelay();
-    private GameState state = new MenuState();
+    private final GameContext context = new StateContext();
+    private GameState state = MenuState.INSTANCE;
     private Level level;
     private int levelNumber;
 
@@ -92,49 +89,28 @@ public class Game {
             throw new IllegalArgumentException("Level " + number + " is out of range 1.." + levelCount);
         }
         load(number);
+        state = PlayingState.INSTANCE;
         notifyFlow(listener -> listener.levelStarted(levelNumber, level));
     }
 
     public void move(Direction direction) {
-        if (state.acceptsInput()) {
-            level.move(direction);
-        }
+        state = state.move(context, direction);
     }
 
     public void undo() {
-        if (state.allowsUndo() && level.undo()) {
-            state = stateFor(level);
-            notifyFlow(listener -> listener.boardRestored(level));
-        }
+        state = state.undo(context);
     }
 
     public void restart() {
-        if (state.allowsRestart()) {
-            load(levelNumber);
-            notifyFlow(listener -> listener.levelRestarted(levelNumber, level));
-        }
+        state = state.restart(context);
     }
 
     public void nextLevel() {
-        if (!state.allowsNextLevel()) {
-            return;
-        }
-        if (levelNumber == levelCount) {
-            state = new GameCompletedState();
-            return;
-        }
-        load(levelNumber + 1);
-        notifyFlow(listener -> listener.levelStarted(levelNumber, level));
+        state = state.nextLevel(context);
     }
 
     public void tick() {
-        if (state.acceptsInput()) {
-            level.elapseSeconds(1);
-        }
-    }
-
-    public boolean isInputBlocked() {
-        return !state.acceptsInput();
+        state = state.tick(context);
     }
 
     private void load(int number) {
@@ -143,7 +119,6 @@ public class Game {
             throw new IllegalStateException("No level was built for number " + number);
         }
         if (level != null) {
-            // El nivel anterior deja de reportar: solo el nivel actual llega a los observers.
             level.removeBoardListener(relay);
             level.removeOutcomeListener(relay);
         }
@@ -151,18 +126,8 @@ public class Game {
         next.addOutcomeListener(relay);
         level = next;
         levelNumber = number;
-        state = stateFor(next);
     }
 
-    private static GameState stateFor(Level level) {
-        return switch (level.getStatus()) {
-            case PLAYING -> new PlayingState();
-            case WON -> new WonState();
-            case LOST -> level.getLossReason() == LossReason.DEADLOCK ? new BlockedState() : new LostState();
-        };
-    }
-
-    // Copia de la lista: un observer puede desuscribirse mientras recibe el aviso.
     private void notifyBoard(Consumer<BoardListener> notification) {
         List.copyOf(boardListeners).forEach(notification);
     }
@@ -175,10 +140,6 @@ public class Game {
         List.copyOf(outcomeListeners).forEach(notification);
     }
 
-    /**
-     * Clase interna para no exponer playerMoved(), levelWon(), etc. como métodos públicos de Game.
-     * Los eventos de tablero se reenvían tal cual; los de resultado además actualizan el estado.
-     */
     private final class LevelRelay implements BoardListener, LevelOutcomeListener {
 
         @Override
@@ -203,14 +164,55 @@ public class Game {
 
         @Override
         public void levelWon(LevelStats stats) {
-            state = stateFor(level);
+            state = state.onLevelWon(stats);
             notifyOutcome(listener -> listener.levelWon(stats));
         }
 
         @Override
         public void levelLost(LossReason reason) {
-            state = stateFor(level);
+            state = state.onLevelLost(reason);
             notifyOutcome(listener -> listener.levelLost(reason));
+        }
+    }
+
+    private final class StateContext implements GameContext {
+
+        @Override
+        public GameState playMove(Direction direction) {
+            level.move(direction);
+            return state;
+        }
+
+        @Override
+        public GameState elapseSecond() {
+            level.elapseSeconds(1);
+            return state;
+        }
+
+        @Override
+        public boolean undoLastMove() {
+            boolean undone = level.undo();
+            if (undone) {
+                notifyFlow(listener -> listener.boardRestored(level));
+            }
+            return undone;
+        }
+
+        @Override
+        public void reloadLevel() {
+            load(levelNumber);
+            notifyFlow(listener -> listener.levelRestarted(levelNumber, level));
+        }
+
+        @Override
+        public void loadNextLevel() {
+            load(levelNumber + 1);
+            notifyFlow(listener -> listener.levelStarted(levelNumber, level));
+        }
+
+        @Override
+        public boolean isLastLevel() {
+            return levelNumber == levelCount;
         }
     }
 }
