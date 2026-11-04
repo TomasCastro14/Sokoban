@@ -1,12 +1,38 @@
 package model.game.loss;
 
-import model.game.Level;
+import model.board.Board;
+import model.board.MoveResult;
+import model.board.Position;
+import model.board.Push;
 
-public class DeadlockCondition implements LossCondition {
+import java.util.Arrays;
+
+public class DeadlockCondition extends AbstractLossCondition {
 
     @Override
-    public boolean isMet(Level level) {
-        throw new UnsupportedOperationException("TODO");
+    protected boolean appliesTo(Push push) {
+        return push.result() == MoveResult.PUSHED;
+    }
+
+    @Override
+    protected boolean holds(Board board, Push push) {
+        Position box = push.boxPosition();
+        return board.hasLooseBoxAt(box) && Arrays.stream(Corner.values())
+                .anyMatch(corner -> isCorner(board, box, corner) || isBlock(board, box, corner));
+    }
+
+    private static boolean isCorner(Board board, Position box, Corner corner) {
+        return board.isBoundaryAt(corner.verticalOf(box)) && board.isBoundaryAt(corner.horizontalOf(box));
+    }
+
+    private static boolean isBlock(Board board, Position box, Corner corner) {
+        return isObstacle(board, corner.verticalOf(box))
+                && isObstacle(board, corner.horizontalOf(box))
+                && isObstacle(board, corner.diagonalOf(box));
+    }
+
+    private static boolean isObstacle(Board board, Position p) {
+        return board.isBoundaryAt(p) || board.hasBoxAt(p);
     }
 
     @Override

@@ -88,6 +88,18 @@ public class Board {
         return p.row() >= 0 && p.row() < getRows() && p.col() >= 0 && p.col() < getCols();
     }
 
+    public boolean isBoundaryAt(Position p) {
+        return !isInside(p) || getTile(p).isBoundary();
+    }
+
+    public boolean hasBoxAt(Position p) {
+        return isInside(p) && getBoxAt(p) != null;
+    }
+
+    public boolean hasLooseBoxAt(Position p) {
+        return isInside(p) && !cellAt(p).isFree() && cellAt(p).getOccupant().isPushable();
+    }
+
     public Tile getTile(Position position) {
         return cellAt(position).getTile();
     }

@@ -4,6 +4,7 @@ import model.board.Board;
 import model.board.Direction;
 import model.board.MoveResult;
 import model.board.Position;
+import model.board.Push;
 import model.board.BfsReachability;
 import model.board.ReachabilityListener;
 import model.board.Visibility;
@@ -38,6 +39,7 @@ public class Level implements ReachabilityListener, LossReporter {
     private final int totalBoxes;
     private LevelStatus status = LevelStatus.PLAYING;
     private LossReason lossReason;
+    private Push lastPush;
     private int remainingSeconds;
     private final UndoHistory history = new UndoHistory();
     private final MoveReceiver receiver = new LevelMoveReceiver();
@@ -104,6 +106,7 @@ public class Level implements ReachabilityListener, LossReporter {
         if (result == MoveResult.BLOCKED) {
             return result;
         }
+        lastPush = result == MoveResult.OK ? null : new Push(boxTarget, result);
         stats.addMove();
         notifyBoard(listener -> listener.playerMoved(direction));
         revealIfReachabilityChanged();
@@ -180,6 +183,10 @@ public class Level implements ReachabilityListener, LossReporter {
 
     public boolean isWon() {
         return status == LevelStatus.WON;
+    }
+
+    public Push lastPush() {
+        return lastPush;
     }
 
     public LossReason getLossReason() {

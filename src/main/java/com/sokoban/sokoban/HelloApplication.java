@@ -7,6 +7,7 @@ import controller.MenuController;
 import controller.SettingsPresenter;
 import controller.SoundEventListener;
 import factory.LevelLoader;
+import factory.StandardLossRules;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.text.Font;
@@ -47,7 +48,7 @@ public class HelloApplication extends Application {
         SpriteCatalog sprites = new SpriteCatalog();
 
         GameWindow window = new GameWindow(stage, sprites);
-        Game game = new Game(levelsFrom(new LevelLoader()), LEVEL_COUNT);
+        Game game = new Game(levelsFrom(new LevelLoader(StandardLossRules.create())), LEVEL_COUNT);
         saveProgressOf(game);
         SoundService sound = createSoundService();
         playSoundsOf(game, sound);

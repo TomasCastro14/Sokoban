@@ -4,6 +4,7 @@ import exception.InvalidLevelException;
 import exception.LevelFormatRule;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import model.game.loss.LossRules;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,7 +14,7 @@ class PortalPairRuleTest {
     private static final int FIRST_MAP_LINE = TestLevels.HEADER_LINES + 1;
 
     private static InvalidLevelException loadInvalid(String... rows) {
-        return assertThrows(InvalidLevelException.class, () -> new LevelLoader().parse(TestLevels.text(rows)));
+        return assertThrows(InvalidLevelException.class, () -> new LevelLoader(LossRules.none()).parse(TestLevels.text(rows)));
     }
 
     @Test
@@ -51,7 +52,7 @@ class PortalPairRuleTest {
     @Test
     @DisplayName("Varios pares bien formados cargan sin error")
     void wellFormedPairsLoad() {
-        assertDoesNotThrow(() -> new LevelLoader().parse(TestLevels.text("##########", "#@PQ  QP #", "##########")));
+        assertDoesNotThrow(() -> new LevelLoader(LossRules.none()).parse(TestLevels.text("##########", "#@PQ  QP #", "##########")));
     }
 
     @Test
@@ -84,12 +85,12 @@ class PortalPairRuleTest {
     @Test
     @DisplayName("P x2 y Q x2 cargan sin error")
     void twoPairsLoad() {
-        assertDoesNotThrow(() -> new LevelLoader().parse(TestLevels.text("#########", "#@PQ QP #", "#########")));
+        assertDoesNotThrow(() -> new LevelLoader(LossRules.none()).parse(TestLevels.text("#########", "#@PQ QP #", "#########")));
     }
 
     @Test
     @DisplayName("Un nivel sin portales carga sin error")
     void noPortalsIsValid() {
-        assertDoesNotThrow(() -> new LevelLoader().parse(TestLevels.text("#####", "#@$.#", "#####")));
+        assertDoesNotThrow(() -> new LevelLoader(LossRules.none()).parse(TestLevels.text("#####", "#@$.#", "#####")));
     }
 }

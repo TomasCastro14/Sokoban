@@ -3,6 +3,7 @@ package factory;
 import exception.InvalidLevelException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import model.game.loss.LossRules;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class UnknownCharacterTest {
     private static final int FIRST_ROW_LINE = TestLevels.HEADER_LINES + 1;
 
-    private final LevelLoader loader = new LevelLoader();
+    private final LevelLoader loader = new LevelLoader(LossRules.none());
 
     /** Asserts the level is rejected for an unknown character at the given map row. */
     private void assertUnknownAt(int mapRow, char symbol, String... rows) {

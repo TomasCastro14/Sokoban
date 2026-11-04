@@ -7,13 +7,10 @@ import model.board.Position;
 import model.box.Player;
 import model.game.Level;
 import model.game.LevelHeader;
-import model.game.loss.EarlyKeyStorageCondition;
-import model.game.loss.LossCondition;
 import model.game.loss.LossEvaluator;
+import model.game.loss.LossRules;
 import model.game.loss.MoveLossListener;
 import model.game.loss.TimeLossListener;
-import model.game.loss.TimeOutCondition;
-import model.game.loss.WrongStorageCondition;
 import model.tile.Inaccessible;
 import model.tile.Portal;
 import model.tile.mechanism.Door;
@@ -26,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /** Builder + Creator (GRASP): collects the parsed cells and assembles the Level. */
@@ -33,11 +31,16 @@ public class LevelBuilder {
     private static final List<LevelRule> RULES = List.of(new BorderRule(), new OnePlayerRule(), new PortalPairRule(),
             new DoorKeyGroupRule());
 
+    private final LossRules lossRules;
     private LevelHeader header;
     private final Map<Position, CellContent> contents = new LinkedHashMap<>();
     private int rows;
     private int cols;
     private int firstMapLine = 1;
+
+    public LevelBuilder(LossRules lossRules) {
+        this.lossRules = Objects.requireNonNull(lossRules, "lossRules");
+    }
 
     public LevelBuilder withMapStartLine(int line) {
         this.firstMapLine = line;
@@ -88,11 +91,9 @@ public class LevelBuilder {
         return level;
     }
 
-    private static void subscribeLossListeners(Level level) {
-        List<LossCondition> moveLosses = List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition());
-        List<LossCondition> timeLosses = List.of(new TimeOutCondition());
-        level.addBoardListener(new MoveLossListener(new LossEvaluator(level, moveLosses, level)));
-        level.addTimeListener(new TimeLossListener(new LossEvaluator(level, timeLosses, level)));
+    private void subscribeLossListeners(Level level) {
+        level.addBoardListener(new MoveLossListener(new LossEvaluator(level, lossRules.onPush(), level)));
+        level.addTimeListener(new TimeLossListener(new LossEvaluator(level, lossRules.onTime(), level)));
     }
 
     /** Wires the Observer: every key tile notifies the door group of its letter. */
