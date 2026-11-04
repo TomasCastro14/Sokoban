@@ -72,7 +72,7 @@ class ProgressSaverTest {
 
         assertEquals(1, repository.saved.size());
         Progress saved = repository.saved.get(0);
-        assertEquals(2, saved.lastUnlockedLevel());
+        assertEquals(2, saved.unlockedLevel());
         assertEquals(List.of(new LevelRecord(1, 1, 1)), saved.levels());
     }
 
@@ -86,7 +86,7 @@ class ProgressSaverTest {
 
         game.move(Direction.RIGHT);
 
-        assertEquals(4, repository.saved.get(0).lastUnlockedLevel());
+        assertEquals(4, repository.saved.get(0).unlockedLevel());
         assertEquals(3, repository.saved.get(0).levels().get(0).levelNumber());
     }
 
@@ -114,7 +114,7 @@ class ProgressSaverTest {
         saver.levelCompleted(1, statsOf(25, 6));
 
         Progress saved = repository.saved.get(0);
-        assertEquals(3, saved.lastUnlockedLevel());
+        assertEquals(3, saved.unlockedLevel());
         assertEquals(List.of(best), saved.levels());
     }
 }

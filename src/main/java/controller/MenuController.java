@@ -25,6 +25,6 @@ public final class MenuController implements MenuListener {
     @Override public void onLevels()   { navigator.show(Screen.LEVEL_SELECT); }
     @Override public void onNewGame()  { game.start(Game.FIRST_LEVEL); navigator.show(Screen.GAME); }
     public void onLevelChosen(int level) { game.start(level); navigator.show(Screen.GAME); }
-    @Override public void onSettings() { }
+    @Override public void onSettings() { navigator.show(Screen.SETTINGS); }
     @Override public void onExit()     { exit.run(); }
 }

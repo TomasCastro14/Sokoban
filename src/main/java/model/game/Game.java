@@ -22,24 +22,23 @@ import java.util.function.IntFunction;
 
 public class Game {
     public static final int FIRST_LEVEL = 1;
-    private static final int NOT_STARTED = 0;
 
     private final IntFunction<Level> levelFactory;
     private final int levelCount;
     private final List<BoardListener> boardListeners = new ArrayList<>();
     private final List<LevelFlowListener> flowListeners = new ArrayList<>();
     private final List<LevelOutcomeListener> outcomeListeners = new ArrayList<>();
+    private final List<LevelCompletedListener> completedListeners = new ArrayList<>();
     private final List<PauseListener> pauseListeners = new ArrayList<>();
     private final List<GameCompletionListener> completionListeners = new ArrayList<>();
-    private final List<LevelCompletedListener> levelCompletedListeners = new ArrayList<>();
     private final LevelRelay relay = new LevelRelay();
     private final GameContext context = new StateContext();
     private GameState state = MenuState.INSTANCE;
     private Level level;
-    private int levelNumber = NOT_STARTED;
+    private int levelNumber;
 
     public Game(IntFunction<Level> levelFactory, int levelCount) {
-        if (levelCount < FIRST_LEVEL) {
+        if (levelCount < 1) {
             throw new IllegalArgumentException("The game needs at least one level, got " + levelCount);
         }
         this.levelFactory = Objects.requireNonNull(levelFactory, "levelFactory");
@@ -70,6 +69,14 @@ public class Game {
         outcomeListeners.remove(listener);
     }
 
+    public void addLevelCompletedListener(LevelCompletedListener listener) {
+        completedListeners.add(Objects.requireNonNull(listener, "listener"));
+    }
+
+    public void removeLevelCompletedListener(LevelCompletedListener listener) {
+        completedListeners.remove(listener);
+    }
+
     public void addPauseListener(PauseListener listener) {
         pauseListeners.add(Objects.requireNonNull(listener, "listener"));
     }
@@ -86,18 +93,6 @@ public class Game {
         completionListeners.remove(listener);
     }
 
-    public void addLevelCompletedListener(LevelCompletedListener listener) {
-        levelCompletedListeners.add(Objects.requireNonNull(listener, "listener"));
-    }
-
-    public void removeLevelCompletedListener(LevelCompletedListener listener) {
-        levelCompletedListeners.remove(listener);
-    }
-
-    public boolean hasStarted() {
-        return levelNumber != NOT_STARTED;
-    }
-
     public GameState getState() {
         return state;
     }
@@ -107,6 +102,10 @@ public class Game {
             throw new IllegalStateException("The game has not started: call start() first");
         }
         return level;
+    }
+
+    public boolean hasStarted() {
+        return level != null;
     }
 
     public int getCurrentLevelNumber() {
@@ -181,8 +180,13 @@ public class Game {
         List.copyOf(outcomeListeners).forEach(notification);
     }
 
-    private void notifyLevelCompleted(Consumer<LevelCompletedListener> notification) {
-        List.copyOf(levelCompletedListeners).forEach(notification);
+    private void notifyCompleted(LevelStats stats) {
+        int number = levelNumber;
+        List.copyOf(completedListeners).forEach(listener -> listener.levelCompleted(number, stats));
+    }
+
+    private void notifyPause(Consumer<PauseListener> notification) {
+        List.copyOf(pauseListeners).forEach(notification);
     }
 
     private final class LevelRelay implements BoardListener, LevelOutcomeListener {
@@ -210,7 +214,7 @@ public class Game {
         @Override
         public void levelWon(LevelStats stats) {
             state = state.onLevelWon(stats);
-            notifyLevelCompleted(listener -> listener.levelCompleted(levelNumber, stats));
+            notifyCompleted(stats);
             notifyOutcome(listener -> listener.levelWon(stats));
         }
 
@@ -268,12 +272,12 @@ public class Game {
 
         @Override
         public void announcePause() {
-            List.copyOf(pauseListeners).forEach(PauseListener::gamePaused);
+            notifyPause(PauseListener::gamePaused);
         }
 
         @Override
         public void announceResume() {
-            List.copyOf(pauseListeners).forEach(PauseListener::gameResumed);
+            notifyPause(PauseListener::gameResumed);
         }
     }
 }

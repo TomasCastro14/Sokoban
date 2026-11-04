@@ -17,7 +17,7 @@ class ProgressTest {
     void initialProgress() {
         Progress progress = Progress.initial();
 
-        assertEquals(1, progress.lastUnlockedLevel());
+        assertEquals(1, progress.unlockedLevel());
         assertTrue(progress.levels().isEmpty());
     }
 
@@ -28,7 +28,7 @@ class ProgressTest {
 
         Progress progress = Progress.initial().withLevelWon(won, LEVEL_COUNT);
 
-        assertEquals(2, progress.lastUnlockedLevel());
+        assertEquals(2, progress.unlockedLevel());
         assertEquals(List.of(won), progress.levels());
     }
 
@@ -38,7 +38,7 @@ class ProgressTest {
         Progress progress = new Progress(LEVEL_COUNT, List.of())
                 .withLevelWon(new LevelRecord(LEVEL_COUNT, 50, 10), LEVEL_COUNT);
 
-        assertEquals(LEVEL_COUNT, progress.lastUnlockedLevel());
+        assertEquals(LEVEL_COUNT, progress.unlockedLevel());
     }
 
     @Test
@@ -47,7 +47,7 @@ class ProgressTest {
         Progress progress = new Progress(4, List.of())
                 .withLevelWon(new LevelRecord(1, 20, 4), LEVEL_COUNT);
 
-        assertEquals(4, progress.lastUnlockedLevel());
+        assertEquals(4, progress.unlockedLevel());
     }
 
     @Test

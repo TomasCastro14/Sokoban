@@ -8,7 +8,6 @@ import port.ProgressRepository;
 
 import java.util.Objects;
 
-
 public final class ProgressSaver implements LevelCompletedListener {
     private final ProgressRepository repository;
     private final int levelCount;
