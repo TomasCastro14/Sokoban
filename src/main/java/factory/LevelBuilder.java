@@ -28,10 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-<<<<<<< Updated upstream
 /** Builder + Creator (GRASP): collects the parsed cells and assembles the Level. */
-=======
->>>>>>> Stashed changes
 public class LevelBuilder {
     private static final List<LevelRule> RULES = List.of(new BorderRule(), new OnePlayerRule(), new PortalPairRule(),
             new DoorKeyGroupRule());
@@ -76,33 +73,21 @@ public class LevelBuilder {
                 if (content.occupant() != null) {
                     cells[row][col].place(content.occupant());
                 }
-<<<<<<< Updated upstream
-                if (content.occupant() instanceof Player) {
-=======
                 if (content.occupant() instanceof Player found) {
                     player = found;
->>>>>>> Stashed changes
                     playerPosition = p;
                 }
             }
         }
         Collection<DoorGroup> doorGroups = linkDoorGroups();
         linkPortals();
-<<<<<<< Updated upstream
-        Level level = new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(), new Board(cells, playerPosition),
-                List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition(), new TimeOutCondition()));
-=======
         Level level = new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(),
                 new Board(cells, player, playerPosition));
->>>>>>> Stashed changes
         doorGroups.forEach(group -> group.addReachabilityListener(level));
         subscribeLossListeners(level);
         return level;
     }
 
-<<<<<<< Updated upstream
-    /** Wires the Observer: every key tile notifies the door group of its letter. */
-=======
     private static void subscribeLossListeners(Level level) {
         List<LossCondition> moveLosses = List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition());
         List<LossCondition> timeLosses = List.of(new TimeOutCondition());
@@ -110,7 +95,7 @@ public class LevelBuilder {
         level.addTimeListener(new TimeLossListener(new LossEvaluator(level, timeLosses, level)));
     }
 
->>>>>>> Stashed changes
+    /** Wires the Observer: every key tile notifies the door group of its letter. */
     private Collection<DoorGroup> linkDoorGroups() {
         Map<Character, DoorGroup> groups = new HashMap<>();
         for (CellContent content : contents.values()) {
@@ -126,10 +111,7 @@ public class LevelBuilder {
         return groups.values();
     }
 
-<<<<<<< Updated upstream
     /** Each portal letter appears twice; each portal learns where the other one is. */
-=======
->>>>>>> Stashed changes
     private void linkPortals() {
         for (List<Position> pair : portalsByLetter().values()) {
             Position first = pair.get(0);
@@ -142,18 +124,12 @@ public class LevelBuilder {
         return (Portal) contents.get(p).tile();
     }
 
-<<<<<<< Updated upstream
     /** Portal positions grouped by letter, in reading order. Shared by the pair rule and the linking. */
-=======
->>>>>>> Stashed changes
     Map<Character, List<Position>> portalsByLetter() {
         return positionsByGroup(Portal.class, Portal::getLetter);
     }
 
-<<<<<<< Updated upstream
     /** Key tile positions grouped by group letter (upper case), in reading order. */
-=======
->>>>>>> Stashed changes
     Map<Character, List<Position>> keyTilesByGroup() {
         return positionsByGroup(KeyTile.class, KeyTile::getGroup);
     }
@@ -187,10 +163,7 @@ public class LevelBuilder {
         return cols;
     }
 
-<<<<<<< Updated upstream
     /** Returns what was parsed at that position, or null where a short row was padded. */
-=======
->>>>>>> Stashed changes
     CellContent contentAt(Position p) {
         return contents.get(p);
     }

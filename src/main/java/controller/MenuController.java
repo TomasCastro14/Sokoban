@@ -7,7 +7,6 @@ import view.menus.MenuListener;
 
 import java.util.Objects;
 
-// controller/MenuController.java
 public final class MenuController implements MenuListener {
     private final Game game;
     private final Navigator navigator;
@@ -20,12 +19,12 @@ public final class MenuController implements MenuListener {
     }
 
     @Override public void onContinue() {
-        if (game.getCurrentLevelNumber() == 0) game.start(1);   // provisorio hasta tener progreso guardado
+        if (!game.hasStarted()) game.start(Game.FIRST_LEVEL);
         navigator.show(Screen.GAME);
     }
     @Override public void onLevels()   { navigator.show(Screen.LEVEL_SELECT); }
-    @Override public void onNewGame()  { game.start(1); navigator.show(Screen.GAME); }
+    @Override public void onNewGame()  { game.start(Game.FIRST_LEVEL); navigator.show(Screen.GAME); }
     public void onLevelChosen(int level) { game.start(level); navigator.show(Screen.GAME); }
-    @Override public void onSettings() { /* TODO: cuando exista SettingsView */ }
+    @Override public void onSettings() { }
     @Override public void onExit()     { exit.run(); }
 }

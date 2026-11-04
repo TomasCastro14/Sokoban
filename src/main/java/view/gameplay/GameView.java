@@ -2,31 +2,32 @@ package view.gameplay;
 
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import model.game.Level;
 import view.SpriteCatalog;
 
 import java.util.Objects;
 
-/**
- * Pantalla de juego: el tablero al centro y un lugar arriba para el HUD. Es una vista pasiva:
- * dibuja lo que el controller le pide (GameScreen) y avisa cuándo entra y sale de la ventana
- * (ScreenLifecycleListener). No conoce Game, ni eventos del modelo, ni teclado, ni reloj.
- */
 public class GameView implements GameScreen {
+    private static final String PAUSED_TEXT = "PAUSA";
+
     private final BorderPane root = new BorderPane();
     private final BoardView board;
+    private final Label pausedBanner = new Label(PAUSED_TEXT);
     private ScreenLifecycleListener lifecycle;
 
     public GameView(SpriteCatalog sprites) {
         this.board = new BoardView(Objects.requireNonNull(sprites, "sprites"));
-        root.setCenter(board);
+        pausedBanner.getStyleClass().add("paused-banner");
+        pausedBanner.setVisible(false);
+        root.setCenter(new StackPane(board, pausedBanner));
         root.getStyleClass().add("game-view");
         root.getStylesheets().add(
                 Objects.requireNonNull(getClass().getResource("/view/gameplay.css"),
                         "Falta /view/gameplay.css").toExternalForm());
 
-        // GameWindow intercambia pantallas sacando y poniendo su raíz: esa es nuestra señal de mostrar/ocultar.
         root.sceneProperty().addListener((obs, oldScene, scene) -> {
             if (lifecycle == null) {
                 return;
@@ -43,7 +44,6 @@ public class GameView implements GameScreen {
         return root;
     }
 
-    /** Punto de enganche del próximo commit: el HUD ocupa su franja y el tablero se achica solo. */
     public void setHud(Node hud) {
         root.setTop(hud);
     }
@@ -66,5 +66,10 @@ public class GameView implements GameScreen {
     @Override
     public void boardChanged() {
         board.refresh();
+    }
+
+    @Override
+    public void showPaused(boolean paused) {
+        pausedBanner.setVisible(paused);
     }
 }

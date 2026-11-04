@@ -4,7 +4,6 @@ import model.board.Direction;
 import model.game.LevelStats;
 import model.game.loss.LossReason;
 
-/** Nivel en curso: se puede mover, deshacer, reiniciar y corre el tiempo. */
 public final class PlayingState implements GameState {
 
     public static final PlayingState INSTANCE = new PlayingState();
@@ -27,6 +26,12 @@ public final class PlayingState implements GameState {
     public GameState restart(GameContext game) {
         game.reloadLevel();
         return this;
+    }
+
+    @Override
+    public GameState togglePause(GameContext game) {
+        game.announcePause();
+        return PausedState.INSTANCE;
     }
 
     @Override

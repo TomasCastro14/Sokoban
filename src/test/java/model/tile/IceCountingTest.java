@@ -91,11 +91,7 @@ class IceCountingTest {
         Player player = new Player(Direction.RIGHT);
         cells[0][0].place(player);
         cells[0][1].place(new NormalBox());
-<<<<<<< Updated upstream
-        Level level = new Level("hand-built", 60, 100, new Board(cells, new Position(0, 0)), List.of());
-=======
         Level level = new Level("hand-built", 60, 100, new Board(cells, player, new Position(0, 0)));
->>>>>>> Stashed changes
 
         MoveResult result = level.move(Direction.RIGHT);
 

@@ -3,6 +3,7 @@ package com.sokoban.sokoban;
 import controller.GameClock;
 import controller.GamePresenter;
 import controller.InputController;
+import controller.LevelProgression;
 import controller.MenuController;
 import factory.LevelLoader;
 import javafx.application.Application;
@@ -23,44 +24,42 @@ import java.util.List;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
-/** Composition root: the only place that knows every piece and wires them together. */
 public class HelloApplication extends Application {
     private static final int LEVEL_COUNT = 5;
+    private static final double UI_FONT_SIZE = 14;
+    private static final int NO_STARS = 0;
+    private static final String UI_FONT = "/assets/Kenney Future.ttf";
+    private static final Runnable NOTHING = () -> { };
 
     @Override
     public void start(Stage stage) {
-        Font.loadFont(getClass().getResourceAsStream("/assets/Kenney Future.ttf"), 14);
+        Font.loadFont(getClass().getResourceAsStream(UI_FONT), UI_FONT_SIZE);
         SpriteCatalog sprites = new SpriteCatalog();
 
         GameWindow window = new GameWindow(stage, sprites);
         Game game = new Game(levelsFrom(new LevelLoader()), LEVEL_COUNT);
-        GameView gameView = createGameView(game, sprites);
+        GameView gameView = new GameView(sprites);
+        GamePresenter presenter = new GamePresenter(game, gameView, new InputController(game), new GameClock(game));
         MenuController menus = new MenuController(game, window, Platform::exit);
+        new LevelProgression(game, window, Platform::runLater);
 
-        window.register(Screen.MAIN_MENU, new MenuView(menus).getRoot());
+        window.register(Screen.MAIN_MENU, new MenuView(menus).getRoot(), NOTHING);
         window.register(Screen.LEVEL_SELECT,
-                new LevelSelectView(levelInfos(), menus::onLevelChosen, 0, window::back).getRoot());
-        window.register(Screen.GAME, gameView.getRoot());
+                new LevelSelectView(levelInfos(), menus::onLevelChosen, LevelSelectView.FIRST_INDEX, window::back)
+                        .getRoot(),
+                window::back);
+        window.register(Screen.GAME, gameView.getRoot(), presenter::onEscape);
 
         window.show(Screen.MAIN_MENU);
         window.open();
     }
 
-    /** The view is passive: the presenter is what joins it to the model, the keyboard and the clock. */
-    private static GameView createGameView(Game game, SpriteCatalog sprites) {
-        GameView gameView = new GameView(sprites);
-        new GamePresenter(game, gameView, new InputController(game), new GameClock(game));
-        return gameView;
-    }
-
-    /** Provisional: every level unlocked and no stars until saved progress exists. */
     private static List<LevelInfo> levelInfos() {
-        return IntStream.rangeClosed(1, LEVEL_COUNT)
-                .mapToObj(n -> new LevelInfo("Nivel " + n, 0, true))
+        return IntStream.rangeClosed(Game.FIRST_LEVEL, LEVEL_COUNT)
+                .mapToObj(n -> new LevelInfo("Nivel " + n, NO_STARS, true))
                 .toList();
     }
 
-    /** LevelLoader.load throws checked exceptions; Game asks for an IntFunction. */
     private static IntFunction<Level> levelsFrom(LevelLoader loader) {
         return number -> {
             try {

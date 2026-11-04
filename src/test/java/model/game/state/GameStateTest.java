@@ -58,6 +58,21 @@ class GameStateTest {
         public boolean isLastLevel() {
             return lastLevel;
         }
+
+        @Override
+        public void completeGame() {
+            calls.add("completeGame");
+        }
+
+        @Override
+        public void announcePause() {
+            calls.add("announcePause");
+        }
+
+        @Override
+        public void announceResume() {
+            calls.add("announceResume");
+        }
     }
 
     private static final LevelStats STATS = new LevelStats();
@@ -70,6 +85,7 @@ class GameStateTest {
         assertSame(state, state.restart(game));
         assertSame(state, state.nextLevel(game));
         assertSame(state, state.tick(game));
+        assertSame(state, state.togglePause(game));
         assertSame(state, state.onLevelWon(STATS));
         assertSame(state, state.onLevelLost(LossReason.TIME_OUT));
         assertTrue(game.calls.isEmpty(), "no debe pedirle nada al juego: " + game.calls);
@@ -136,6 +152,13 @@ class GameStateTest {
         }
 
         @Test
+        @DisplayName("PLAYING -> PAUSED con togglePause, y lo avisa")
+        void togglePauseGoesToPaused() {
+            assertSame(PausedState.INSTANCE, PlayingState.INSTANCE.togglePause(game));
+            assertEquals(List.of("announcePause"), game.calls);
+        }
+
+        @Test
         @DisplayName("PLAYING -> WON al ganar el nivel")
         void winGoesToWon() {
             assertSame(WonState.INSTANCE, PlayingState.INSTANCE.onLevelWon(STATS));
@@ -154,6 +177,36 @@ class GameStateTest {
                     LossReason.WRONG_STORAGE, LossReason.EARLY_KEY_STORAGE)) {
                 assertSame(LostState.INSTANCE, PlayingState.INSTANCE.onLevelLost(reason), reason.name());
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("PausedState")
+    class Paused {
+        private final FakeContext game = new FakeContext();
+
+        @Test
+        @DisplayName("PAUSED -> PLAYING con togglePause, y lo avisa")
+        void togglePauseResumes() {
+            assertSame(PlayingState.INSTANCE, PausedState.INSTANCE.togglePause(game));
+            assertEquals(List.of("announceResume"), game.calls);
+        }
+
+        @Test
+        @DisplayName("PAUSED -> PLAYING al reiniciar")
+        void restartGoesToPlaying() {
+            assertSame(PlayingState.INSTANCE, PausedState.INSTANCE.restart(game));
+            assertEquals(List.of("announceResume", "reloadLevel"), game.calls);
+        }
+
+        @Test
+        @DisplayName("En pausa no se mueve, no se deshace ni corre el tiempo")
+        void invalidActions() {
+            assertSame(PausedState.INSTANCE, PausedState.INSTANCE.move(game, Direction.LEFT));
+            assertSame(PausedState.INSTANCE, PausedState.INSTANCE.undo(game));
+            assertSame(PausedState.INSTANCE, PausedState.INSTANCE.tick(game));
+            assertSame(PausedState.INSTANCE, PausedState.INSTANCE.nextLevel(game));
+            assertTrue(game.calls.isEmpty());
         }
     }
 
@@ -230,12 +283,12 @@ class GameStateTest {
         }
 
         @Test
-        @DisplayName("WON -> GAME_COMPLETED si era el último nivel")
+        @DisplayName("WON -> GAME_COMPLETED si era el último nivel, y avisa que terminó el juego")
         void lastLevelGoesToCompleted() {
             game.lastLevel = true;
 
             assertSame(GameCompletedState.INSTANCE, WonState.INSTANCE.nextLevel(game));
-            assertTrue(game.calls.isEmpty());
+            assertEquals(List.of("completeGame"), game.calls);
         }
 
         @Test
@@ -246,11 +299,12 @@ class GameStateTest {
         }
 
         @Test
-        @DisplayName("Después de ganar no se puede mover, deshacer ni corre el tiempo")
+        @DisplayName("Después de ganar no se puede mover, deshacer, pausar ni corre el tiempo")
         void invalidActions() {
             assertSame(WonState.INSTANCE, WonState.INSTANCE.move(game, Direction.LEFT));
             assertSame(WonState.INSTANCE, WonState.INSTANCE.undo(game));
             assertSame(WonState.INSTANCE, WonState.INSTANCE.tick(game));
+            assertSame(WonState.INSTANCE, WonState.INSTANCE.togglePause(game));
             assertSame(WonState.INSTANCE, WonState.INSTANCE.onLevelLost(LossReason.TIME_OUT));
             assertTrue(game.calls.isEmpty());
         }

@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Observer de prueba: anota el nombre de cada método que el nivel le llama, en orden. */
 public final class EventRecorder implements BoardListener, LevelOutcomeListener {
     private final List<String> events = new ArrayList<>();
 

@@ -1,6 +1,5 @@
 package controller;
 
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import model.board.Direction;
 import model.board.Visibility;
@@ -10,6 +9,7 @@ import model.game.LevelStats;
 import model.game.event.BoardListener;
 import model.game.event.LevelFlowListener;
 import model.game.event.LevelOutcomeListener;
+import model.game.event.PauseListener;
 import model.game.loss.LossReason;
 import view.gameplay.GameScreen;
 import view.gameplay.ScreenLifecycleListener;
@@ -17,7 +17,7 @@ import view.gameplay.ScreenLifecycleListener;
 import java.util.Objects;
 
 public final class GamePresenter
-        implements BoardListener, LevelFlowListener, LevelOutcomeListener, ScreenLifecycleListener {
+        implements BoardListener, LevelFlowListener, LevelOutcomeListener, PauseListener, ScreenLifecycleListener {
     private final Game game;
     private final GameScreen screen;
     private final InputController input;
@@ -33,6 +33,7 @@ public final class GamePresenter
         game.addBoardListener(this);
         game.addLevelFlowListener(this);
         game.addLevelOutcomeListener(this);
+        game.addPauseListener(this);
         screen.setLifecycleListener(this);
     }
 
@@ -42,6 +43,11 @@ public final class GamePresenter
         game.removeBoardListener(this);
         game.removeLevelFlowListener(this);
         game.removeLevelOutcomeListener(this);
+        game.removePauseListener(this);
+    }
+
+    public void onEscape() {
+        game.togglePause();
     }
 
     @Override
@@ -62,6 +68,7 @@ public final class GamePresenter
 
     @Override
     public void levelStarted(int levelNumber, Level level) {
+        screen.showPaused(false);
         if (visible) {
             screen.showLevel(level);
             clock.start();
@@ -70,10 +77,7 @@ public final class GamePresenter
 
     @Override
     public void levelRestarted(int levelNumber, Level level) {
-        if (visible) {
-            screen.showLevel(level);
-            clock.start();
-        }
+        levelStarted(levelNumber, level);
     }
 
     @Override
@@ -115,7 +119,6 @@ public final class GamePresenter
     public void levelWon(LevelStats stats) {
         if (visible) {
             clock.stop();
-            Platform.runLater(game::nextLevel);
         }
     }
 
@@ -124,5 +127,15 @@ public final class GamePresenter
         if (visible) {
             clock.stop();
         }
+    }
+
+    @Override
+    public void gamePaused() {
+        screen.showPaused(true);
+    }
+
+    @Override
+    public void gameResumed() {
+        screen.showPaused(false);
     }
 }

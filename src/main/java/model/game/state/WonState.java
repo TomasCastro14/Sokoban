@@ -1,6 +1,5 @@
 package model.game.state;
 
-
 public final class WonState implements GameState {
 
     public static final WonState INSTANCE = new WonState();
@@ -17,6 +16,7 @@ public final class WonState implements GameState {
     @Override
     public GameState nextLevel(GameContext game) {
         if (game.isLastLevel()) {
+            game.completeGame();
             return GameCompletedState.INSTANCE;
         }
         game.loadNextLevel();

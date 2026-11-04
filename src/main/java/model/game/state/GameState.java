@@ -22,6 +22,10 @@ public interface GameState {
         return this;
     }
 
+    default GameState togglePause(GameContext game) {
+        return this;
+    }
+
     default GameState tick(GameContext game) {
         return this;
     }

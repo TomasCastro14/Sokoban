@@ -3,8 +3,10 @@ package model.game;
 import model.board.Direction;
 import model.board.Visibility;
 import model.game.event.BoardListener;
+import model.game.event.GameCompletionListener;
 import model.game.event.LevelFlowListener;
 import model.game.event.LevelOutcomeListener;
+import model.game.event.PauseListener;
 import model.game.loss.LossReason;
 import model.game.state.GameContext;
 import model.game.state.GameState;
@@ -18,19 +20,24 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 public class Game {
+    public static final int FIRST_LEVEL = 1;
+    private static final int NOT_STARTED = 0;
+
     private final IntFunction<Level> levelFactory;
     private final int levelCount;
     private final List<BoardListener> boardListeners = new ArrayList<>();
     private final List<LevelFlowListener> flowListeners = new ArrayList<>();
     private final List<LevelOutcomeListener> outcomeListeners = new ArrayList<>();
+    private final List<PauseListener> pauseListeners = new ArrayList<>();
+    private final List<GameCompletionListener> completionListeners = new ArrayList<>();
     private final LevelRelay relay = new LevelRelay();
     private final GameContext context = new StateContext();
     private GameState state = MenuState.INSTANCE;
     private Level level;
-    private int levelNumber;
+    private int levelNumber = NOT_STARTED;
 
     public Game(IntFunction<Level> levelFactory, int levelCount) {
-        if (levelCount < 1) {
+        if (levelCount < FIRST_LEVEL) {
             throw new IllegalArgumentException("The game needs at least one level, got " + levelCount);
         }
         this.levelFactory = Objects.requireNonNull(levelFactory, "levelFactory");
@@ -61,6 +68,26 @@ public class Game {
         outcomeListeners.remove(listener);
     }
 
+    public void addPauseListener(PauseListener listener) {
+        pauseListeners.add(Objects.requireNonNull(listener, "listener"));
+    }
+
+    public void removePauseListener(PauseListener listener) {
+        pauseListeners.remove(listener);
+    }
+
+    public void addCompletionListener(GameCompletionListener listener) {
+        completionListeners.add(Objects.requireNonNull(listener, "listener"));
+    }
+
+    public void removeCompletionListener(GameCompletionListener listener) {
+        completionListeners.remove(listener);
+    }
+
+    public boolean hasStarted() {
+        return levelNumber != NOT_STARTED;
+    }
+
     public GameState getState() {
         return state;
     }
@@ -81,11 +108,11 @@ public class Game {
     }
 
     public void start() {
-        start(1);
+        start(FIRST_LEVEL);
     }
 
     public void start(int number) {
-        if (number < 1 || number > levelCount) {
+        if (number < FIRST_LEVEL || number > levelCount) {
             throw new IllegalArgumentException("Level " + number + " is out of range 1.." + levelCount);
         }
         load(number);
@@ -107,6 +134,10 @@ public class Game {
 
     public void nextLevel() {
         state = state.nextLevel(context);
+    }
+
+    public void togglePause() {
+        state = state.togglePause(context);
     }
 
     public void tick() {
@@ -213,6 +244,21 @@ public class Game {
         @Override
         public boolean isLastLevel() {
             return levelNumber == levelCount;
+        }
+
+        @Override
+        public void completeGame() {
+            List.copyOf(completionListeners).forEach(GameCompletionListener::gameCompleted);
+        }
+
+        @Override
+        public void announcePause() {
+            List.copyOf(pauseListeners).forEach(PauseListener::gamePaused);
+        }
+
+        @Override
+        public void announceResume() {
+            List.copyOf(pauseListeners).forEach(PauseListener::gameResumed);
         }
     }
 }
