@@ -7,30 +7,30 @@ import java.util.Objects;
 import java.util.Set;
 
 
-public record Progress(int lastUnlockedLevel, List<LevelRecord> levels) {
+public record Progress(int unlockedLevel, List<LevelRecord> levels) {
 
     static final int FIRST_LEVEL = 1;
 
     public Progress {
-        if (lastUnlockedLevel < FIRST_LEVEL) {
-            throw new IllegalArgumentException("The last unlocked level must be at least 1, got " + lastUnlockedLevel);
+        if (unlockedLevel < FIRST_LEVEL) {
+            throw new IllegalArgumentException("The unlocked level must be at least " + FIRST_LEVEL + ", got " + unlockedLevel);
         }
         levels = List.copyOf(Objects.requireNonNull(levels, "levels"));
-        requireUnlockedAndUnique(lastUnlockedLevel, levels);
+        requireUnlockedAndUnique(unlockedLevel, levels);
     }
 
-    /** First run: only the first level is unlocked and nothing has been won yet. */
+
     public static Progress initial() {
         return new Progress(FIRST_LEVEL, List.of());
     }
 
-    /** Unlocks the next level (never past the last one) and keeps the best result of the level won. */
+    
     public Progress withLevelWon(LevelRecord won, int levelCount) {
         int nextLevel = Math.min(won.levelNumber() + 1, levelCount);
-        return new Progress(Math.max(lastUnlockedLevel, nextLevel), replaceRecord(won));
+        return new Progress(Math.max(unlockedLevel, nextLevel), withBestOf(won));
     }
 
-    private List<LevelRecord> replaceRecord(LevelRecord won) {
+    private List<LevelRecord> withBestOf(LevelRecord won) {
         List<LevelRecord> updated = new ArrayList<>();
         LevelRecord best = won;
         for (LevelRecord record : levels) {
@@ -44,12 +44,12 @@ public record Progress(int lastUnlockedLevel, List<LevelRecord> levels) {
         return updated;
     }
 
-    private static void requireUnlockedAndUnique(int lastUnlockedLevel, List<LevelRecord> levels) {
+    private static void requireUnlockedAndUnique(int unlockedLevel, List<LevelRecord> levels) {
         Set<Integer> seen = new HashSet<>();
         for (LevelRecord record : levels) {
-            if (record.levelNumber() > lastUnlockedLevel) {
+            if (record.levelNumber() > unlockedLevel) {
                 throw new IllegalArgumentException(
-                        "Level " + record.levelNumber() + " was won but only " + lastUnlockedLevel + " are unlocked");
+                        "Level " + record.levelNumber() + " was won but only " + unlockedLevel + " are unlocked");
             }
             if (!seen.add(record.levelNumber())) {
                 throw new IllegalArgumentException("Level " + record.levelNumber() + " appears twice");

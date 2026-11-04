@@ -9,11 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-/**
- * Replaces a file all at once: the content goes to a temporary file in the same folder, which
- * then takes the place of the target. If writing fails or the program stops halfway, the target
- * keeps its previous content, and the temporary file never stays behind.
- */
 final class AtomicFileWriter {
     private static final String TEMP_SUFFIX = ".tmp";
 
@@ -40,7 +35,7 @@ final class AtomicFileWriter {
         }
     }
 
-    /** Some file systems cannot move atomically; a plain replace is the best they offer. */
+    
     private static void replace(Path temp, Path target) throws IOException {
         try {
             Files.move(temp, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);

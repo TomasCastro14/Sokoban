@@ -4,7 +4,7 @@ public record LevelRecord(int levelNumber, int fewestMoves, int fewestPushes) {
 
     public LevelRecord {
         if (levelNumber < Progress.FIRST_LEVEL) {
-            throw new IllegalArgumentException("Level number must be at least 1, got " + levelNumber);
+            throw new IllegalArgumentException("Level number must be at least " + Progress.FIRST_LEVEL + ", got " + levelNumber);
         }
         if (fewestMoves < 0 || fewestPushes < 0) {
             throw new IllegalArgumentException(
@@ -16,6 +16,7 @@ public record LevelRecord(int levelNumber, int fewestMoves, int fewestPushes) {
         }
     }
 
+   
     public LevelRecord bestOf(LevelRecord other) {
         if (other.levelNumber != levelNumber) {
             throw new IllegalArgumentException(

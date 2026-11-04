@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
-
 public final class JsonProgressRepository implements ProgressRepository {
     private static final Logger LOG = System.getLogger(JsonProgressRepository.class.getName());
     private static final String CORRUPT_SUFFIX = ".corrupt-";
@@ -77,11 +76,10 @@ public final class JsonProgressRepository implements ProgressRepository {
         }
     }
 
-    
-    private record ProgressJson(Integer lastUnlockedLevel, List<LevelJson> levels) {
+    private record ProgressJson(Integer unlockedLevel, List<LevelJson> levels) {
 
         static ProgressJson from(Progress progress) {
-            return new ProgressJson(progress.lastUnlockedLevel(),
+            return new ProgressJson(progress.unlockedLevel(),
                     progress.levels().stream().map(LevelJson::from).toList());
         }
 
@@ -89,7 +87,7 @@ public final class JsonProgressRepository implements ProgressRepository {
             if (levels == null || levels.contains(null)) {
                 throw new IllegalArgumentException("The list of levels is missing or has empty entries");
             }
-            return new Progress(required(lastUnlockedLevel, "lastUnlockedLevel"),
+            return new Progress(required(unlockedLevel, "unlockedLevel"),
                     levels.stream().map(LevelJson::toRecord).toList());
         }
     }
