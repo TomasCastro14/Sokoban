@@ -12,6 +12,8 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import model.game.Game;
 import model.game.Level;
+import service.JsonProgressRepository;
+import service.ProgressSaver;
 import view.GameWindow;
 import view.Screen;
 import view.SpriteCatalog;
@@ -20,6 +22,7 @@ import view.menus.LevelSelectView;
 import view.menus.LevelSelectView.LevelInfo;
 import view.menus.MenuView;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
@@ -30,6 +33,8 @@ public class HelloApplication extends Application {
     private static final int NO_STARS = 0;
     private static final String UI_FONT = "/assets/Kenney Future.ttf";
     private static final Runnable NOTHING = () -> { };
+    private static final String PROGRESS_FOLDER = ".new-sokoban";
+    private static final String PROGRESS_FILE = "progress.json";
 
     @Override
     public void start(Stage stage) {
@@ -42,6 +47,7 @@ public class HelloApplication extends Application {
         GamePresenter presenter = new GamePresenter(game, gameView, new InputController(game), new GameClock(game));
         MenuController menus = new MenuController(game, window, Platform::exit);
         new LevelProgression(game, window, Platform::runLater);
+        game.addLevelCompletedListener(new ProgressSaver(new JsonProgressRepository(progressFile()), LEVEL_COUNT));
 
         window.register(Screen.MAIN_MENU, new MenuView(menus).getRoot(), NOTHING);
         window.register(Screen.LEVEL_SELECT,
@@ -52,6 +58,11 @@ public class HelloApplication extends Application {
 
         window.show(Screen.MAIN_MENU);
         window.open();
+    }
+
+    /** Levels are read from the classpath; progress is written outside the jar, in the user's home. */
+    private static Path progressFile() {
+        return Path.of(System.getProperty("user.home"), PROGRESS_FOLDER, PROGRESS_FILE);
     }
 
     private static List<LevelInfo> levelInfos() {

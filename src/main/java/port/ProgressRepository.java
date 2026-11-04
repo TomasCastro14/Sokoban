@@ -1,9 +1,11 @@
 package port;
 
+
 public interface ProgressRepository {
 
-    void save(Progress progress);
-
-    /** Returns the saved progress, or progress at level 1 if nothing was saved yet. */
+    /** The saved progress, or {@link Progress#initial()} when there is none or it cannot be read. */
     Progress load();
+
+    /** Stores the progress; a failure is logged and the game goes on. */
+    void save(Progress progress);
 }

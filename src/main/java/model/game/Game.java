@@ -4,6 +4,7 @@ import model.board.Direction;
 import model.board.Visibility;
 import model.game.event.BoardListener;
 import model.game.event.GameCompletionListener;
+import model.game.event.LevelCompletedListener;
 import model.game.event.LevelFlowListener;
 import model.game.event.LevelOutcomeListener;
 import model.game.event.PauseListener;
@@ -30,6 +31,7 @@ public class Game {
     private final List<LevelOutcomeListener> outcomeListeners = new ArrayList<>();
     private final List<PauseListener> pauseListeners = new ArrayList<>();
     private final List<GameCompletionListener> completionListeners = new ArrayList<>();
+    private final List<LevelCompletedListener> levelCompletedListeners = new ArrayList<>();
     private final LevelRelay relay = new LevelRelay();
     private final GameContext context = new StateContext();
     private GameState state = MenuState.INSTANCE;
@@ -82,6 +84,14 @@ public class Game {
 
     public void removeCompletionListener(GameCompletionListener listener) {
         completionListeners.remove(listener);
+    }
+
+    public void addLevelCompletedListener(LevelCompletedListener listener) {
+        levelCompletedListeners.add(Objects.requireNonNull(listener, "listener"));
+    }
+
+    public void removeLevelCompletedListener(LevelCompletedListener listener) {
+        levelCompletedListeners.remove(listener);
     }
 
     public boolean hasStarted() {
@@ -171,6 +181,10 @@ public class Game {
         List.copyOf(outcomeListeners).forEach(notification);
     }
 
+    private void notifyLevelCompleted(Consumer<LevelCompletedListener> notification) {
+        List.copyOf(levelCompletedListeners).forEach(notification);
+    }
+
     private final class LevelRelay implements BoardListener, LevelOutcomeListener {
 
         @Override
@@ -196,6 +210,7 @@ public class Game {
         @Override
         public void levelWon(LevelStats stats) {
             state = state.onLevelWon(stats);
+            notifyLevelCompleted(listener -> listener.levelCompleted(levelNumber, stats));
             notifyOutcome(listener -> listener.levelWon(stats));
         }
 
