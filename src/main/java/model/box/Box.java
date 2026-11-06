@@ -1,13 +1,10 @@
 package model.box;
 
+import model.history.Memento;
 import model.tile.StoragePoint;
 import model.tile.StorageResult;
+import model.tile.Tile;
 
-/**
- * Template Method: {@link #push()} and {@link #storeAt(StoragePoint)} are fixed
- * skeletons and each box only redefines their hooks. The board moves the box;
- * the box never removes itself, it reports BROKEN instead.
- */
 public abstract class Box implements Occupant {
 
     public abstract BoxType getType();
@@ -17,21 +14,39 @@ public abstract class Box implements Occupant {
         return true;
     }
 
+    @Override
+    public final boolean canEnter(Tile tile) {
+        return tile.allowsBox(this);
+    }
+
+    @Override
+    public final PushResult pushOnto(Tile tile) {
+        PushResult result = push();
+        if (result != PushResult.BROKEN) {
+            tile.onBoxEntered(this);
+        }
+        return result;
+    }
+
+    @Override
+    public final Box boxIn(Tile tile) {
+        return this;
+    }
+
     public final PushResult push() {
         return onPushed();
     }
 
-    /** Hook for subclasses. A box without extra behaviour is simply pushed. */
     protected PushResult onPushed() {
         return PushResult.PUSHED;
     }
 
-    /**
-     * Called by a key tile the box lands on. Returns true when the box opens doors;
-     * only key boxes do, so key tiles never ask for the concrete box type.
-     */
     public boolean activateKeyTile() {
         return false;
+    }
+
+    public Memento save() {
+        return Memento.NOTHING_TO_RESTORE;
     }
 
     public final StorageResult storeAt(StoragePoint point) {
@@ -41,7 +56,6 @@ public abstract class Box implements Occupant {
         return onStored(point);
     }
 
-    /** Hook for subclasses with their own storage rule. By default a matching box is stored. */
     protected StorageResult onStored(StoragePoint point) {
         return StorageResult.STORED;
     }

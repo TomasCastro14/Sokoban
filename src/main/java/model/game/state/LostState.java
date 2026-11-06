@@ -1,24 +1,15 @@
 package model.game.state;
 
-public class LostState implements GameState {
+public final class LostState implements GameState {
 
-    @Override
-    public boolean acceptsInput() {
-        return false;
+    public static final LostState INSTANCE = new LostState();
+
+    private LostState() {
     }
 
     @Override
-    public boolean allowsUndo() {
-        return false;
-    }
-
-    @Override
-    public boolean allowsRestart() {
-        return true;
-    }
-
-    @Override
-    public boolean allowsNextLevel() {
-        return false;
+    public GameState restart(GameContext game) {
+        game.reloadLevel();
+        return PlayingState.INSTANCE;
     }
 }

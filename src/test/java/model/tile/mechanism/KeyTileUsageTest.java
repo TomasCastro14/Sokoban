@@ -1,19 +1,20 @@
 package model.tile.mechanism;
 
 import factory.TestLevels;
+import model.board.Cell;
 import model.board.Direction;
+import model.board.Position;
 import model.box.KeyBox;
 import model.game.Level;
-import model.game.event.EventType;
-import model.board.Position;
-import model.tile.Floor;
+import model.game.event.EventRecorder;
+import model.history.Memento;
+import model.tile.Tile;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** A key tile is consumed by the key box that activates it: the terrain becomes floor, the box stays. */
-class KeyTileDisappearsTest {
+class KeyTileUsageTest {
 
     private static final Position TILE = new Position(1, 4);
     private static final Position DOOR = new Position(4, 4);
@@ -40,18 +41,31 @@ class KeyTileDisappearsTest {
     }
 
     @Test
-    @DisplayName("Despues de la KeyBox, la celda ya no tiene una KeyTile y su terreno es Floor")
-    void tileBecomesFloor() {
+    @DisplayName("La celda mantiene la misma instancia de KeyTile antes y despues de usarla")
+    void cellKeepsTheSameKeyTile() {
+        Level level = levelWithKeyBoxOnItsWay();
+        Cell cell = level.getBoard().cellAt(TILE);
+        Tile before = cell.getTile();
+
+        play(level, Direction.RIGHT, Direction.RIGHT);
+
+        assertSame(cell, level.getBoard().cellAt(TILE));
+        assertSame(before, cell.getTile());
+        assertInstanceOf(KeyTile.class, cell.getTile());
+    }
+
+    @Test
+    @DisplayName("La llave sin usar abre las puertas de su grupo")
+    void unusedKeyOpensTheDoor() {
         Level level = levelWithKeyBoxOnItsWay();
 
         play(level, Direction.RIGHT, Direction.RIGHT);
 
-        assertInstanceOf(Floor.class, level.getBoard().getTile(TILE));
-        assertFalse(level.getBoard().getTile(TILE) instanceof KeyTile);
+        assertTrue(door(level).isOpen());
     }
 
     @Test
-    @DisplayName("La KeyBox sigue en la celda despues de que la baldosa desaparece")
+    @DisplayName("La KeyBox queda en la celda de la llave")
     void keyBoxStaysInTheCell() {
         Level level = levelWithKeyBoxOnItsWay();
 
@@ -64,32 +78,22 @@ class KeyTileDisappearsTest {
     @DisplayName("Una KeyBox que sale y vuelve a entrar no abre dos veces ni avisa dos veces")
     void reenteringDoesNotOpenAgain() {
         Level level = levelWithKeyBoxOnItsWay();
-        int[] notices = {0};
-        level.addListener(event -> {
-            if (event.getType() == EventType.DOOR_OPENED) {
-                notices[0]++;
-            }
-        });
+        EventRecorder events = EventRecorder.attachTo(level);
 
         play(level, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT);
         door(level).close();
         play(level, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.UP, Direction.LEFT);
 
         assertInstanceOf(KeyBox.class, level.getBoard().getBoxAt(TILE));
-        assertFalse(door(level).isOpen(), "the consumed tile does not open the door again");
-        assertEquals(1, notices[0]);
+        assertFalse(door(level).isOpen(), "la llave usada no vuelve a abrir la puerta");
+        assertEquals(1, events.count("doorOpened"));
     }
 
     @Test
     @DisplayName("Otra KeyBox que entra en la celda no abre nada")
     void anotherKeyBoxOpensNothing() {
         Level level = levelWithKeyBoxOnItsWay();
-        int[] notices = {0};
-        level.addListener(event -> {
-            if (event.getType() == EventType.DOOR_OPENED) {
-                notices[0]++;
-            }
-        });
+        EventRecorder events = EventRecorder.attachTo(level);
 
         play(level, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT);
         door(level).close();
@@ -97,21 +101,37 @@ class KeyTileDisappearsTest {
 
         assertInstanceOf(KeyBox.class, level.getBoard().getBoxAt(TILE));
         assertFalse(door(level).isOpen());
-        assertEquals(1, notices[0]);
+        assertEquals(1, events.count("doorOpened"));
     }
 
     @Test
-    @DisplayName("Una NormalBox sobre la baldosa no la consume")
-    void normalBoxDoesNotConsumeTheTile() {
+    @DisplayName("Una NormalBox sobre la llave no la usa")
+    void normalBoxDoesNotUseTheKey() {
         Level level = TestLevels.level(
                 "########",
                 "#@$a   #",
                 "####A###",
                 "#      #",
                 "########");
+        KeyTile key = (KeyTile) level.getBoard().getTile(new Position(1, 3));
 
         level.move(Direction.RIGHT);
 
-        assertInstanceOf(KeyTile.class, level.getBoard().getTile(new Position(1, 3)));
+        assertSame(key, level.getBoard().getTile(new Position(1, 3)));
+        assertFalse(key.isUsed());
+    }
+
+    @Test
+    @DisplayName("El memento restaura el estado sobre la misma casilla del tablero")
+    void mementoRestoresTheSameTile() {
+        Level level = levelWithKeyBoxOnItsWay();
+        Tile key = level.getBoard().getTile(TILE);
+        Memento beforeUse = key.save();
+        play(level, Direction.RIGHT, Direction.RIGHT);
+
+        beforeUse.restore();
+
+        assertSame(key, level.getBoard().getTile(TILE));
+        assertFalse(((KeyTile) key).isUsed());
     }
 }

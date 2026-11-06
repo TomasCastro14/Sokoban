@@ -3,6 +3,7 @@ package factory;
 import exception.InvalidLevelException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import model.game.loss.LossRules;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class BorderValidationTest {
     private static final int FIRST_ROW_LINE = TestLevels.HEADER_LINES + 1;
 
-    private final LevelLoader loader = new LevelLoader();
+    private final LevelLoader loader = new LevelLoader(LossRules.none());
 
     private void assertValid(String... rows) {
         assertDoesNotThrow(() -> loader.parse(TestLevels.text(rows)));

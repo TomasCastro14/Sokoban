@@ -37,14 +37,18 @@ class LevelStatsTest {
                 "#      #",
                 "########");
 
-        level.move(Direction.RIGHT); // walk
-        level.move(Direction.RIGHT); // walk
-        level.move(Direction.DOWN);  // push the box down
-        level.move(Direction.UP);    // walk
+        level.move(Direction.RIGHT);
+        level.move(Direction.RIGHT);
+        level.move(Direction.DOWN);
+        level.move(Direction.UP);
+        level.move(Direction.LEFT);
+        level.move(Direction.RIGHT);
+        level.move(Direction.LEFT);
+        level.move(Direction.RIGHT);
         level.undo();
 
+        assertEquals(3, level.getStats().getMoves());
         assertEquals(1, level.getStats().getPushes());
         assertEquals(1, level.getStats().getUndos());
-        assertTrue(level.getStats().getMoves() >= 3, "at least the three plain steps are counted");
     }
 }

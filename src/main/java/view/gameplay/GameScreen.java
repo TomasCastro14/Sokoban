@@ -6,5 +6,6 @@ public interface GameScreen {
     void showLevel(Level level);
     void playerMoved();
     void boardChanged();
+    void showPaused(boolean paused);
     void setLifecycleListener(ScreenLifecycleListener listener);
 }

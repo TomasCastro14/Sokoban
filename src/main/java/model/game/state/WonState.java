@@ -1,24 +1,25 @@
 package model.game.state;
 
-public class WonState implements GameState {
+public final class WonState implements GameState {
 
-    @Override
-    public boolean acceptsInput() {
-        return false;
+    public static final WonState INSTANCE = new WonState();
+
+    private WonState() {
     }
 
     @Override
-    public boolean allowsUndo() {
-        return false;
+    public GameState restart(GameContext game) {
+        game.reloadLevel();
+        return PlayingState.INSTANCE;
     }
 
     @Override
-    public boolean allowsRestart() {
-        return true;
-    }
-
-    @Override
-    public boolean allowsNextLevel() {
-        return true;
+    public GameState nextLevel(GameContext game) {
+        if (game.isLastLevel()) {
+            game.completeGame();
+            return GameCompletedState.INSTANCE;
+        }
+        game.loadNextLevel();
+        return PlayingState.INSTANCE;
     }
 }

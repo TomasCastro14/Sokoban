@@ -7,6 +7,7 @@ import model.game.Level;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import port.LevelSource;
+import model.game.loss.LossRules;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ class LevelLoaderSourceTest {
     @Test
     @DisplayName("1. load(n) arma el nivel con las lineas que da la fuente, sin tocar archivos")
     void loadsFromAnySource() throws Exception {
-        Level level = new LevelLoader(ONE_LEVEL_IN_MEMORY).load(1);
+        Level level = new LevelLoader(ONE_LEVEL_IN_MEMORY, LossRules.none()).load(1);
 
         assertEquals("En memoria", level.getName());
         assertEquals(new Position(1, 1), level.getBoard().getPlayerPosition());
@@ -44,13 +45,13 @@ class LevelLoaderSourceTest {
     @Test
     @DisplayName("2. Si la fuente no tiene el nivel, load(n) propaga LevelNotFoundException")
     void missingLevelPropagates() {
-        assertThrows(LevelNotFoundException.class, () -> new LevelLoader(ONE_LEVEL_IN_MEMORY).load(2));
+        assertThrows(LevelNotFoundException.class, () -> new LevelLoader(ONE_LEVEL_IN_MEMORY, LossRules.none()).load(2));
     }
 
     @Test
     @DisplayName("3. exists(n) le pregunta a la fuente")
     void existsAsksTheSource() {
-        LevelLoader loader = new LevelLoader(ONE_LEVEL_IN_MEMORY);
+        LevelLoader loader = new LevelLoader(ONE_LEVEL_IN_MEMORY, LossRules.none());
 
         assertTrue(loader.exists(1));
         assertFalse(loader.exists(2));
@@ -71,6 +72,6 @@ class LevelLoaderSourceTest {
             }
         };
 
-        assertThrows(InvalidLevelException.class, () -> new LevelLoader(broken).load(1));
+        assertThrows(InvalidLevelException.class, () -> new LevelLoader(broken, LossRules.none()).load(1));
     }
 }

@@ -1,23 +1,23 @@
 package controller;
 
 import javafx.scene.Scene;
+import model.board.Direction;
+import model.board.Visibility;
 import model.game.Game;
 import model.game.Level;
-import model.game.LevelStatus;
-import model.game.event.GameEvent;
-import model.game.event.GameListener;
+import model.game.LevelStats;
+import model.game.event.BoardListener;
+import model.game.event.LevelFlowListener;
+import model.game.event.LevelOutcomeListener;
+import model.game.event.PauseListener;
+import model.game.loss.LossReason;
 import view.gameplay.GameScreen;
 import view.gameplay.ScreenLifecycleListener;
 
 import java.util.Objects;
 
-/**
- * MVC controller of the game screen. Observer of the model (GameListener) and listener of the view
- * (ScreenLifecycleListener): it is the only place where the two meet. The view never sees events or
- * Game; the model never sees the view. It also owns what depends on the screen being visible
- * (keyboard and clock), so a game running behind the menus can neither be moved nor ticked.
- */
-public final class GamePresenter implements GameListener, ScreenLifecycleListener {
+public final class GamePresenter
+        implements BoardListener, LevelFlowListener, LevelOutcomeListener, PauseListener, ScreenLifecycleListener {
     private final Game game;
     private final GameScreen screen;
     private final InputController input;
@@ -30,20 +30,32 @@ public final class GamePresenter implements GameListener, ScreenLifecycleListene
         this.screen = Objects.requireNonNull(screen, "screen");
         this.input = Objects.requireNonNull(input, "input");
         this.clock = Objects.requireNonNull(clock, "clock");
-        game.addListener(this);
+        game.addBoardListener(this);
+        game.addLevelFlowListener(this);
+        game.addLevelOutcomeListener(this);
+        game.addPauseListener(this);
         screen.setLifecycleListener(this);
+    }
+
+    public void dispose() {
+        screenHidden();
+        clock.stop();
+        game.removeBoardListener(this);
+        game.removeLevelFlowListener(this);
+        game.removeLevelOutcomeListener(this);
+        game.removePauseListener(this);
+    }
+
+    public void onEscape() {
+        game.togglePause();
     }
 
     @Override
     public void screenShown(Scene scene) {
         visible = true;
-        input.bindKeys(scene);
-        // Whatever happened while the screen was hidden is read from the model now.
-        Level level = game.getCurrentLevel();
-        screen.showLevel(level);
-        if (level.getStatus() == LevelStatus.PLAYING) {
-            clock.start();
-        }
+        unbindKeys = input.bindKeys(scene);
+        screen.showLevel(game.getCurrentLevel());
+        clock.start();
     }
 
     @Override
@@ -51,27 +63,79 @@ public final class GamePresenter implements GameListener, ScreenLifecycleListene
         visible = false;
         unbindKeys.run();
         unbindKeys = () -> { };
-        clock.stop();
+        clock.pause();
     }
 
     @Override
-    public void onEvent(GameEvent event) {
-        if (!visible) {
-            return;      // hidden screens do not react; screenShown reads the current state
+    public void levelStarted(int levelNumber, Level level) {
+        screen.showPaused(false);
+        if (visible) {
+            screen.showLevel(level);
+            clock.start();
         }
-        switch (event.getType()) {
-            case LEVEL_STARTED -> {
-                screen.showLevel(game.getCurrentLevel());
-                clock.start();
-            }
-            case BOARD_RESTORED -> screen.showLevel(game.getCurrentLevel());
-            case PLAYER_MOVED -> screen.playerMoved();
-            case BOX_PUSHED, BOX_STORED, DOOR_OPENED -> screen.boardChanged();
-            case LEVEL_WON -> {
-                clock.stop();
-                game.nextLevel();   // provisorio: pasa directo al siguiente hasta tener la winning screen
-            }
-            case LEVEL_LOST -> clock.stop();
+    }
+
+    @Override
+    public void levelRestarted(int levelNumber, Level level) {
+        levelStarted(levelNumber, level);
+    }
+
+    @Override
+    public void boardRestored(Level level) {
+        if (visible) {
+            screen.showLevel(level);
         }
+    }
+
+    @Override
+    public void playerMoved(Direction direction) {
+        if (visible) {
+            screen.playerMoved();
+        }
+    }
+
+    @Override
+    public void boxPushed(Direction direction) {
+        if (visible) {
+            screen.boardChanged();
+        }
+    }
+
+    @Override
+    public void boxStored(int storedBoxes, int totalBoxes) {
+        if (visible) {
+            screen.boardChanged();
+        }
+    }
+
+    @Override
+    public void doorOpened(Visibility visibility) {
+        if (visible) {
+            screen.boardChanged();
+        }
+    }
+
+    @Override
+    public void levelWon(LevelStats stats) {
+        if (visible) {
+            clock.stop();
+        }
+    }
+
+    @Override
+    public void levelLost(LossReason reason) {
+        if (visible) {
+            clock.stop();
+        }
+    }
+
+    @Override
+    public void gamePaused() {
+        screen.showPaused(true);
+    }
+
+    @Override
+    public void gameResumed() {
+        screen.showPaused(false);
     }
 }
