@@ -15,11 +15,11 @@ public class MenuView {
     private static final double BUTTON_SPACING = 16;
     private static final double TITLE_SPACING = 40;
     private static final String TITLE = "NEW SOKOBAN";
-    private static final String CONTINUE_TEXT = CONTINUE_TEXT;
-    private static final String LEVELS_TEXT = LEVELS_TEXT;
-    private static final String NEW_GAME_TEXT = NEW_GAME_TEXT;
-    private static final String SETTINGS_TEXT = SETTINGS_TEXT;
-    private static final String EXIT_TEXT = EXIT_TEXT;
+    private static final String CONTINUE_TEXT = "CONTINUAR";
+    private static final String LEVELS_TEXT = "NIVELES";
+    private static final String NEW_GAME_TEXT = "NUEVA PARTIDA";
+    private static final String SETTINGS_TEXT = "AJUSTES";
+    private static final String EXIT_TEXT = "SALIR";
     private static final String ROOT_STYLE = "menu-view";
     private static final String TITLE_STYLE = "title";
     private static final String PANEL_STYLE = "panel";
