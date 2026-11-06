@@ -1,6 +1,8 @@
 nombre: Cajas débiles y portales
 tiempo: 180
-objetivo: 450
+movimientos: 90
+empujes: 25
+undo: 1
 ---
 %%########%%
 %%# 5   :#%%

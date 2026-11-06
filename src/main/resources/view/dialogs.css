@@ -1,0 +1,98 @@
+/* Popups over the game: goals, defeat and victory. Boxes are nine-slice, like the menu panels. */
+
+.dialog-name {
+    -fx-border-image-source: url("../assets/images/UI/buttons/secondary_blue/button_square_depth_border.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
+    -fx-padding: 14 20 22 20;
+}
+
+.dialog-header {
+    -fx-border-image-source: url("../assets/images/UI/containers/grey/button_square_flat.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-border-image-width: 10;
+    -fx-padding: 8 16 8 16;
+}
+
+.dialog-list {
+    -fx-border-image-source: url("../assets/images/UI/containers/grey/button_square_depth_line.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 10 10 15 10;
+    -fx-padding: 14 18 20 14;
+}
+
+.dialog-defeat-title {
+    -fx-border-image-source: url("../assets/images/UI/containers/red/button_square_depth_flat.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
+    -fx-padding: 14 20 22 20;
+}
+
+.dialog-defeat-message {
+    -fx-border-image-source: url("../assets/images/UI/containers/red/button_square_depth_border.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
+    -fx-padding: 24 22 32 22;
+    -fx-min-height: 120;
+}
+
+.dialog-victory-title {
+    -fx-border-image-source: url("../assets/images/UI/containers/gold/button_square_border.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-border-image-width: 12;
+    -fx-padding: 10 16 10 16;
+}
+
+.dialog-score {
+    -fx-border-image-source: url("../assets/images/UI/containers/gold/button_square_depth_flat.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
+    -fx-padding: 8 16 18 16;
+}
+
+.dialog-title {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 26px;
+    -fx-text-fill: #1b1b22;
+    -fx-text-alignment: center;
+}
+
+.dialog-title-light {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 32px;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(one-pass-box, #8c0f22, 0, 1, 0, 3);
+}
+
+.dialog-score-text {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 36px;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(one-pass-box, #b7860b, 0, 1, 0, 3);
+}
+
+.dialog-message {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 17px;
+    -fx-text-fill: #1b1b22;
+    -fx-text-alignment: center;
+}
+
+.goal-name,
+.goal-value {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 18px;
+}
+
+.goal-name,
+.goal-neutral {
+    -fx-text-fill: #62637a;
+}
+
+.goal-met {
+    -fx-text-fill: #17703a;
+}
+
+.goal-missed {
+    -fx-text-fill: #a3132b;
+}

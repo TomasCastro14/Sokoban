@@ -5,14 +5,16 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import view.components.buttons.ButtonIcon;
 import view.components.buttons.ButtonProvider;
+import view.components.buttons.ButtonSize;
+import view.components.buttons.RoundStyle;
 
 import java.util.Objects;
 
 public final class PopupLayout implements PopupInstaller {
-    private static final String OVERLAY_STYLE = "popup-overlay";
-    private static final double CLOSE_BUTTON_PEEK = 44;
-    private static final double CLOSE_BUTTON_RIGHT_INSET = 32;
+    /** How far the close button sticks out of the popup's top-right corner. */
+    private static final double CLOSE_BUTTON_OVERHANG = 20;
 
     private final ButtonProvider buttons;
 
@@ -22,21 +24,15 @@ public final class PopupLayout implements PopupInstaller {
 
     @Override
     public void install(StackPane root, StackPane content, Runnable onClose) {
-        root.getChildren().addAll(overlay(), content);
-        content.getChildren().add(0, closeButton(onClose));
-    }
-
-    private static Region overlay() {
-        Region overlay = new Region();
-        overlay.getStyleClass().add(OVERLAY_STYLE);
-        overlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        return overlay;
+        content.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        content.getChildren().add(closeButton(onClose));
+        root.getChildren().addAll(Overlay.create(), content);
     }
 
     private Button closeButton(Runnable onClose) {
-        Button close = buttons.createClose(onClose);
+        Button close = buttons.createRound(RoundStyle.RED, ButtonIcon.CLOSE, ButtonSize.SMALL, onClose);
         StackPane.setAlignment(close, Pos.TOP_RIGHT);
-        StackPane.setMargin(close, new Insets(-CLOSE_BUTTON_PEEK, CLOSE_BUTTON_RIGHT_INSET, 0, 0));
+        StackPane.setMargin(close, new Insets(-CLOSE_BUTTON_OVERHANG, -CLOSE_BUTTON_OVERHANG, 0, 0));
         return close;
     }
 }

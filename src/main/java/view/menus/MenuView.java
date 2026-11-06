@@ -35,11 +35,11 @@ public class MenuView {
         title.getStyleClass().add(TITLE_STYLE);
 
         VBox panel = new VBox(BUTTON_SPACING,
-                buttons.create(CONTINUE_TEXT, ButtonStyle.PRIMARY, menuListener::onContinue),
-                buttons.create(LEVELS_TEXT, ButtonStyle.SECONDARY, menuListener::onLevels),
-                buttons.create(NEW_GAME_TEXT, ButtonStyle.SECONDARY, menuListener::onNewGame),
-                buttons.create(SETTINGS_TEXT, ButtonStyle.SECONDARY, menuListener::onSettings),
-                buttons.create(EXIT_TEXT, ButtonStyle.SECONDARY, menuListener::onExit));
+                buttons.createRectangular(CONTINUE_TEXT, ButtonStyle.PRIMARY, menuListener::onContinue),
+                buttons.createRectangular(LEVELS_TEXT, ButtonStyle.SECONDARY, menuListener::onLevels),
+                buttons.createRectangular(NEW_GAME_TEXT, ButtonStyle.SECONDARY, menuListener::onNewGame),
+                buttons.createRectangular(SETTINGS_TEXT, ButtonStyle.SECONDARY, menuListener::onSettings),
+                buttons.createRectangular(EXIT_TEXT, ButtonStyle.SECONDARY, menuListener::onExit));
 
         panel.getStyleClass().add(PANEL_STYLE);
         panel.setAlignment(Pos.CENTER);

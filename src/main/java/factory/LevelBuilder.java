@@ -84,7 +84,7 @@ public class LevelBuilder {
         }
         Collection<DoorGroup> doorGroups = linkDoorGroups();
         linkPortals();
-        Level level = new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(),
+        Level level = new Level(header.name(), (int) header.timeLimit().toSeconds(), header.goals(),
                 new Board(cells, player, playerPosition));
         doorGroups.forEach(group -> group.addReachabilityListener(level));
         subscribeLossListeners(level);

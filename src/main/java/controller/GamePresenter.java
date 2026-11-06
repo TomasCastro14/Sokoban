@@ -5,65 +5,57 @@ import model.board.Direction;
 import model.board.Visibility;
 import model.game.Game;
 import model.game.Level;
-import model.game.LevelStats;
 import model.game.event.BoardListener;
 import model.game.event.LevelFlowListener;
-import model.game.event.LevelOutcomeListener;
 import model.game.event.PauseListener;
-import model.game.loss.LossReason;
 import view.gameplay.GameScreen;
 import view.gameplay.ScreenLifecycleListener;
 
 import java.util.Objects;
 
-public final class GamePresenter
-        implements BoardListener, LevelFlowListener, LevelOutcomeListener, PauseListener, ScreenLifecycleListener {
+/** Joins the board view to the model and the screen lifecycle to the play session. Popups live in LevelDialogPresenter. */
+public final class GamePresenter implements BoardListener, LevelFlowListener, PauseListener, ScreenLifecycleListener {
     private final Game game;
     private final GameScreen screen;
-    private final InputController input;
-    private final GameClock clock;
-    private Runnable unbindKeys = () -> { };
+    private final PlaySession session;
     private boolean visible;
 
-    public GamePresenter(Game game, GameScreen screen, InputController input, GameClock clock) {
+    public GamePresenter(Game game, GameScreen screen, PlaySession session) {
         this.game = Objects.requireNonNull(game, "game");
         this.screen = Objects.requireNonNull(screen, "screen");
-        this.input = Objects.requireNonNull(input, "input");
-        this.clock = Objects.requireNonNull(clock, "clock");
+        this.session = Objects.requireNonNull(session, "session");
         game.addBoardListener(this);
         game.addLevelFlowListener(this);
-        game.addLevelOutcomeListener(this);
         game.addPauseListener(this);
         screen.setLifecycleListener(this);
     }
 
     public void dispose() {
         screenHidden();
-        clock.stop();
+        session.stop();
         game.removeBoardListener(this);
         game.removeLevelFlowListener(this);
-        game.removeLevelOutcomeListener(this);
         game.removePauseListener(this);
     }
 
+    /** ESC only pauses while playing: with a popup open there is nothing to pause. */
     public void onEscape() {
-        game.togglePause();
+        if (session.isActive()) {
+            game.togglePause();
+        }
     }
 
     @Override
     public void screenShown(Scene scene) {
         visible = true;
-        unbindKeys = input.bindKeys(scene);
         screen.showLevel(game.getCurrentLevel());
-        clock.start();
+        session.attach(scene);
     }
 
     @Override
     public void screenHidden() {
         visible = false;
-        unbindKeys.run();
-        unbindKeys = () -> { };
-        clock.pause();
+        session.detach();
     }
 
     @Override
@@ -71,7 +63,6 @@ public final class GamePresenter
         screen.showPaused(false);
         if (visible) {
             screen.showLevel(level);
-            clock.start();
         }
     }
 
@@ -112,20 +103,6 @@ public final class GamePresenter
     public void doorOpened(Visibility visibility) {
         if (visible) {
             screen.boardChanged();
-        }
-    }
-
-    @Override
-    public void levelWon(LevelStats stats) {
-        if (visible) {
-            clock.stop();
-        }
-    }
-
-    @Override
-    public void levelLost(LossReason reason) {
-        if (visible) {
-            clock.stop();
         }
     }
 

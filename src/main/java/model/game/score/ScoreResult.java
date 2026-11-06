@@ -1,19 +1,12 @@
 package model.game.score;
 
-public class ScoreResult {
-    private final int score;
-    private final int stars;
+import java.util.List;
+import java.util.Objects;
 
-    public ScoreResult(int score, int stars) {
-        this.score = score;
-        this.stars = stars;
-    }
+/** The end-of-level summary: points, stars and how each goal went. */
+public record ScoreResult(int score, int stars, List<GoalResult> goals) {
 
-    public int getScore() {
-        return score;
-    }
-
-    public int getStars() {
-        return stars;
+    public ScoreResult {
+        goals = List.copyOf(Objects.requireNonNull(goals, "goals"));
     }
 }

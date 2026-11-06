@@ -1,36 +1,19 @@
 package controller;
 
 import model.game.Game;
-import model.game.LevelStats;
 import model.game.event.GameCompletionListener;
-import model.game.event.LevelOutcomeListener;
-import model.game.loss.LossReason;
 import view.Navigator;
 import view.Screen;
 
 import java.util.Objects;
-import java.util.concurrent.Executor;
 
-public final class LevelProgression implements LevelOutcomeListener, GameCompletionListener {
-    private final Game game;
+/** After the last level is won the game is over and the player goes back to the main menu. */
+public final class LevelProgression implements GameCompletionListener {
     private final Navigator navigator;
-    private final Executor afterCurrentEvent;
 
-    public LevelProgression(Game game, Navigator navigator, Executor afterCurrentEvent) {
-        this.game = Objects.requireNonNull(game, "game");
+    public LevelProgression(Game game, Navigator navigator) {
         this.navigator = Objects.requireNonNull(navigator, "navigator");
-        this.afterCurrentEvent = Objects.requireNonNull(afterCurrentEvent, "afterCurrentEvent");
-        game.addLevelOutcomeListener(this);
-        game.addCompletionListener(this);
-    }
-
-    @Override
-    public void levelWon(LevelStats stats) {
-        afterCurrentEvent.execute(game::nextLevel);
-    }
-
-    @Override
-    public void levelLost(LossReason reason) {
+        Objects.requireNonNull(game, "game").addCompletionListener(this);
     }
 
     @Override

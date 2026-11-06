@@ -4,7 +4,7 @@ import model.board.Direction;
 import model.game.LevelStats;
 import model.game.loss.LossReason;
 
-public final class PlayingState implements GameState {
+public final class PlayingState extends AbstractGameState {
 
     public static final PlayingState INSTANCE = new PlayingState();
 
@@ -45,7 +45,7 @@ public final class PlayingState implements GameState {
     }
 
     @Override
-    public GameState onLevelLost(LossReason reason) {
-        return reason.isRecoverable() ? BlockedState.INSTANCE : LostState.INSTANCE;
+    public GameState onLevelLost(GameContext game, LossReason reason) {
+        return game.canRecoverFrom(reason) ? BlockedState.INSTANCE : LostState.INSTANCE;
     }
 }

@@ -1,6 +1,8 @@
 nombre: Nivel 4
 tiempo: 300
-objetivo: 800
+movimientos: 260
+empujes: 80
+undo: 2
 ---
 %%%%%%%%%%%%%%%%%%%%%
 %###P###%%%%%%%%%%%%%

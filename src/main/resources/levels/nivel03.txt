@@ -1,6 +1,8 @@
 nombre: Llaves y puertas
 tiempo: 300
-objetivo: 850
+movimientos: 160
+empujes: 45
+undo: 2
 ---
 %%%%##########%%%%%
 %%%%# ; ##   #%%%%%

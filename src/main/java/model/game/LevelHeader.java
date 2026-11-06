@@ -1,5 +1,7 @@
 package model.game;
 
+import model.game.score.LevelGoals;
+
 import java.time.Duration;
 import java.util.Objects;
 
@@ -7,17 +9,16 @@ import java.util.Objects;
  * The level data from the file header, already typed. It is the single owner of its invariants:
  * the parser reuses the same checks so each rule lives in one place.
  *
- * @param name        shown to the player, not blank
- * @param timeLimit   time to solve the level, greater than zero
- * @param targetScore reference score for the score strategy, zero or more
+ * @param name      shown to the player, not blank
+ * @param timeLimit time to solve the level, greater than zero
+ * @param goals     the three goals that give the stars
  */
-public record LevelHeader(String name, Duration timeLimit, int targetScore) {
-    private static final int MIN_TARGET_SCORE = 0;
+public record LevelHeader(String name, Duration timeLimit, LevelGoals goals) {
 
     public LevelHeader {
         requireName(name);
         requireTimeLimit(timeLimit);
-        requireTargetScore(targetScore);
+        Objects.requireNonNull(goals, "goals");
     }
 
     public static String requireName(String name) {
@@ -34,12 +35,5 @@ public record LevelHeader(String name, Duration timeLimit, int targetScore) {
             throw new IllegalArgumentException("The time limit must be greater than zero, got " + timeLimit.toSeconds() + "s");
         }
         return timeLimit;
-    }
-
-    public static int requireTargetScore(int targetScore) {
-        if (targetScore < MIN_TARGET_SCORE) {
-            throw new IllegalArgumentException("The target score cannot be negative, got " + targetScore);
-        }
-        return targetScore;
     }
 }

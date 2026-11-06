@@ -1,6 +1,8 @@
 nombre: Primeros pasos
 tiempo: 120
-objetivo: 350
+movimientos: 60
+empujes: 15
+undo: 1
 ---
 ######%%%%%%
 #   .####%%%
