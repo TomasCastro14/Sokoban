@@ -37,7 +37,7 @@ public final class TestLevels {
 
     public static Level level(String... rows) {
         try {
-            return new LevelLoader().parse(text(rows));
+            return new LevelLoader(StandardLossRules.create()).parse(text(rows));
         } catch (InvalidLevelException e) {
             throw new IllegalArgumentException("Invalid test level: " + e.getMessage(), e);
         }

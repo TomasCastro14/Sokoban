@@ -1,13 +1,13 @@
 package model.box;
 
+import model.history.Memento;
+
 public class WeakBox extends Box {
-    /** Range of the map digit that creates a weak box ('1'..'9'). */
     public static final int MIN_PUSHES = 1;
     public static final int MAX_PUSHES = 9;
 
     private int remainingPushes;
 
-    /** @param maxPushes pushes the box withstands; the next one breaks it */
     public WeakBox(int maxPushes) {
         if (maxPushes < MIN_PUSHES || maxPushes > MAX_PUSHES) {
             throw new IllegalArgumentException(
@@ -23,6 +23,12 @@ public class WeakBox extends Box {
     @Override
     public BoxType getType() {
         return BoxType.WEAK;
+    }
+
+    @Override
+    public Memento save() {
+        int savedPushes = remainingPushes;
+        return () -> remainingPushes = savedPushes;
     }
 
     @Override

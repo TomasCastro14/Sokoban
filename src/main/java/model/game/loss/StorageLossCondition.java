@@ -1,26 +1,22 @@
 package model.game.loss;
 
-import model.board.Cell;
-import model.game.Level;
+import model.board.Board;
+import model.board.MoveResult;
+import model.board.Push;
 import model.tile.StorageResult;
 
-/**
- * Template Method: walks the board once and each storage rule only says
- * which storage result means a loss.
- */
-public abstract class StorageLossCondition implements LossCondition {
+public abstract class StorageLossCondition extends AbstractLossCondition {
 
     @Override
-    public final boolean isMet(Level level) {
-        for (Cell cell : level.getBoard().cells()) {
-            StorageResult result = cell.getTile().getStorageResult();
-            if (result != null && matches(result)) {
-                return true;
-            }
-        }
-        return false;
+    protected final boolean appliesTo(Push push) {
+        return push.result() == MoveResult.PUSHED;
     }
 
-    /** Hook: true when this storage result makes the level lost. */
+    @Override
+    protected final boolean holds(Board board, Push push) {
+        StorageResult result = board.getTile(push.boxPosition()).getStorageResult();
+        return result != null && matches(result);
+    }
+
     protected abstract boolean matches(StorageResult result);
 }

@@ -5,6 +5,7 @@ import model.board.Direction;
 import model.board.Position;
 import model.box.WeakBox;
 import model.game.Level;
+import model.tile.Tile;
 import model.tile.mechanism.Door;
 import model.tile.mechanism.KeyTile;
 import org.junit.jupiter.api.DisplayName;
@@ -16,10 +17,16 @@ class UndoTest {
 
     private static Level corridor() {
         return TestLevels.level(
-                "########",
-                "#@     #",
-                "#  $.  #",
-                "########");
+                "##############",
+                "#@           #",
+                "#  $.        #",
+                "##############");
+    }
+
+    private static void moveRight(Level level, int times) {
+        for (int i = 0; i < times; i++) {
+            level.move(Direction.RIGHT);
+        }
     }
 
     @Test
@@ -39,22 +46,23 @@ class UndoTest {
     }
 
     @Test
-    @DisplayName("2. El undo restaura el contador de la WeakBox")
+    @DisplayName("2. El undo restaura el contador de la WeakBox sobre la misma caja")
     void restoresWeakBoxCounter() {
         Level level = TestLevels.level(
                 "#######",
                 "#@3  :#",
                 "#######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
         level.move(Direction.RIGHT);
 
         level.undo();
 
-        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
+        assertSame(box, level.getBoard().getBoxAt(new Position(1, 2)));
         assertEquals(3, box.getRemainingPushes());
     }
 
     @Test
-    @DisplayName("3. El undo restaura puertas, baldosas y visibilidad")
+    @DisplayName("3. El undo restaura puertas, la llave usada y la visibilidad, sin recrear casillas")
     void restoresDoorsTilesAndVisibility() {
         Level level = TestLevels.level(
                 "########",
@@ -62,23 +70,50 @@ class UndoTest {
                 "####A###",
                 "#  ;   #",
                 "########");
+        Tile key = level.getBoard().getTile(new Position(1, 4));
         level.move(Direction.RIGHT);
-        level.move(Direction.RIGHT); // opens door A, key tile is consumed
+        level.move(Direction.RIGHT);
 
         level.undo();
 
         Door door = (Door) level.getBoard().getTile(new Position(2, 4));
         assertFalse(door.isOpen());
-        assertInstanceOf(KeyTile.class, level.getBoard().getTile(new Position(1, 4)));
+        assertSame(key, level.getBoard().getTile(new Position(1, 4)));
+        assertFalse(((KeyTile) key).isUsed());
         assertFalse(level.getVisibility().isVisible(new Position(3, 1)));
     }
 
     @Test
-    @DisplayName("4. Solo hay 3 undos por nivel; el cuarto no hace nada")
-    void onlyThreeUndos() {
+    @DisplayName("4. Cada undo retrocede 5 movimientos")
+    void eachUndoGoesBackFiveMoves() {
         Level level = corridor();
-        for (int i = 0; i < 4; i++) {
-            level.move(Direction.RIGHT); // (1,1) -> (1,5)
+        moveRight(level, 7);
+
+        level.undo();
+
+        assertEquals(new Position(1, 3), level.getBoard().getPlayerPosition());
+        assertEquals(2, level.getStats().getMoves());
+    }
+
+    @Test
+    @DisplayName("5. Con menos de 5 movimientos, el undo vuelve al inicio")
+    void fewerThanFiveMovesGoesBackToTheStart() {
+        Level level = corridor();
+        moveRight(level, 3);
+
+        assertTrue(level.undo());
+
+        assertEquals(new Position(1, 1), level.getBoard().getPlayerPosition());
+        assertEquals(0, level.getStats().getMoves());
+    }
+
+    @Test
+    @DisplayName("6. Solo hay 3 undos seguidos; el cuarto no hace nada")
+    void onlyThreeConsecutiveUndos() {
+        Level level = corridor();
+        for (int i = 0; i < 10; i++) {
+            level.move(Direction.RIGHT);
+            level.move(Direction.LEFT);
         }
 
         assertTrue(level.undo());
@@ -86,16 +121,27 @@ class UndoTest {
         assertTrue(level.undo());
         assertFalse(level.undo());
 
-        assertEquals(new Position(1, 2), level.getBoard().getPlayerPosition());
+        assertEquals(5, level.getStats().getMoves());
         assertEquals(0, level.getRemainingUndos());
     }
 
     @Test
-    @DisplayName("5. Cada undo suma 1 a LevelStats.undos")
+    @DisplayName("7. Un movimiento nuevo vuelve a habilitar los 3 undos")
+    void newMoveResetsTheUndos() {
+        Level level = corridor();
+        moveRight(level, 2);
+        level.undo();
+
+        level.move(Direction.RIGHT);
+
+        assertEquals(UndoHistory.MAX_CONSECUTIVE_UNDOS, level.getRemainingUndos());
+    }
+
+    @Test
+    @DisplayName("8. Cada undo suma 1 a LevelStats.undos")
     void eachUndoIsCounted() {
         Level level = corridor();
-        level.move(Direction.RIGHT);
-        level.move(Direction.RIGHT);
+        moveRight(level, 7);
 
         level.undo();
         assertEquals(1, level.getStats().getUndos());
@@ -104,7 +150,7 @@ class UndoTest {
     }
 
     @Test
-    @DisplayName("6. Con el historial vacio, el undo no hace nada")
+    @DisplayName("9. Con el historial vacio, el undo no hace nada")
     void undoWithEmptyHistoryDoesNothing() {
         Level level = corridor();
 
@@ -112,6 +158,16 @@ class UndoTest {
 
         assertEquals(new Position(1, 1), level.getBoard().getPlayerPosition());
         assertEquals(0, level.getStats().getUndos());
-        assertEquals(3, level.getRemainingUndos());
+        assertEquals(UndoHistory.MAX_CONSECUTIVE_UNDOS, level.getRemainingUndos());
+    }
+
+    @Test
+    @DisplayName("10. Un movimiento bloqueado no se puede deshacer")
+    void blockedMoveIsNotRecorded() {
+        Level level = corridor();
+
+        level.move(Direction.UP);
+
+        assertFalse(level.undo());
     }
 }

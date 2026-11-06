@@ -14,14 +14,8 @@ import model.game.LevelStats;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Rule: one user action = 1 move, and 1 push if a box was pushed, however many cells
- * the player or the box slide. A blocked move counts nothing.
- */
 class IceCountingTest {
 
     private static void assertCounts(Level level, int moves, int pushes) {
@@ -86,7 +80,6 @@ class IceCountingTest {
         assertCounts(level, 1, 1);
     }
 
-    /** The player enters ice while pushing: the box moves one cell, the player stops before it. */
     @Test
     @DisplayName("El jugador y la caja sobre hielo a la vez: 1 movimiento y 1 empuje")
     void playerOnIceAndPushedBoxAtTheSameTime() {
@@ -95,9 +88,10 @@ class IceCountingTest {
                 new Cell(new Position(0, 1), new Ice()),
                 new Cell(new Position(0, 2), new Floor()),
                 new Cell(new Position(0, 3), new Floor())}};
-        cells[0][0].place(new Player(Direction.RIGHT));
+        Player player = new Player(Direction.RIGHT);
+        cells[0][0].place(player);
         cells[0][1].place(new NormalBox());
-        Level level = new Level("hand-built", 60, 100, new Board(cells, new Position(0, 0)), List.of());
+        Level level = new Level("hand-built", 60, 100, new Board(cells, player, new Position(0, 0)));
 
         MoveResult result = level.move(Direction.RIGHT);
 

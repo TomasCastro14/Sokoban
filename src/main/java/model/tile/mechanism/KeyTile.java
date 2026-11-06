@@ -1,16 +1,14 @@
 package model.tile.mechanism;
 
 import model.box.Box;
+import model.history.Memento;
 import model.tile.Tile;
+import model.tile.TileKind;
+import model.tile.TileLook;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Observer subject: the first key box that lands on the tile activates it and
- * the doors of its group are told, without the tile knowing where they are.
- * A key tile works only once.
- */
 public class KeyTile extends Tile {
     private final char group;
     private final List<KeyTileListener> listeners = new ArrayList<>();
@@ -20,18 +18,11 @@ public class KeyTile extends Tile {
         this.group = Character.toUpperCase(group);
     }
 
-    /** Group letter in upper case: key tile 'a' opens doors 'A'. */
     public char getGroup() {
         return group;
     }
 
     public boolean isUsed() {
-        return used;
-    }
-
-    /** A key tile works once: after it opens its doors the board replaces it with floor. */
-    @Override
-    public boolean isConsumed() {
         return used;
     }
 
@@ -47,9 +38,34 @@ public class KeyTile extends Tile {
         }
     }
 
+    @Override
+    public TileLook look() {
+        return TileLook.of(TileKind.KEY, used);
+    }
+
+    @Override
+    public Memento save() {
+        return new KeyTileMemento(this, used);
+    }
+
     private void notifyListeners() {
         for (KeyTileListener listener : listeners) {
             listener.keyTileActivated(group);
+        }
+    }
+
+    private static final class KeyTileMemento implements Memento {
+        private final KeyTile tile;
+        private final boolean used;
+
+        private KeyTileMemento(KeyTile tile, boolean used) {
+            this.tile = tile;
+            this.used = used;
+        }
+
+        @Override
+        public void restore() {
+            tile.used = used;
         }
     }
 }

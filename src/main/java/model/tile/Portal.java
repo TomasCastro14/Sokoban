@@ -7,7 +7,6 @@ import model.tile.effect.TeleportEffect;
 
 import java.util.Set;
 
-/** Information Expert: knows where its pair is. Pairs are linked once, when the level is built. */
 public class Portal extends Tile {
     private final char letter;
     private Position pairPosition;
@@ -21,10 +20,6 @@ public class Portal extends Tile {
         return letter;
     }
 
-    /**
-     * The only way to pair portals: links both directions in one step, so a pair is always
-     * symmetric. Done once, when the level is built; a linked portal can never be relinked.
-     */
     public static void link(Portal a, Position atA, Portal b, Position atB) {
         a.requireUnlinked();
         b.requireUnlinked();
@@ -43,15 +38,18 @@ public class Portal extends Tile {
         this.entryEffect = new TeleportEffect(pairPosition);
     }
 
-    /** An unpaired portal behaves like floor. */
     @Override
     protected EntryEffect entryEffect() {
         return entryEffect;
     }
 
-    /** The pair's position, or nothing while the portal is unpaired. */
     @Override
     public Set<Position> linkedPositions() {
         return pairPosition == null ? Set.of() : Set.of(pairPosition);
+    }
+
+    @Override
+    public TileLook look() {
+        return TileLook.of(TileKind.PORTAL);
     }
 }

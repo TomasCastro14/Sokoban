@@ -1,5 +1,7 @@
 package model.game;
 
+import model.history.Memento;
+
 public class LevelStats {
     private int moves;
     private int pushes;
@@ -20,6 +22,17 @@ public class LevelStats {
 
     public void addStoredBox() {
         storedBoxes++;
+    }
+
+    public Memento save() {
+        int savedMoves = moves;
+        int savedPushes = pushes;
+        int savedStoredBoxes = storedBoxes;
+        return () -> {
+            moves = savedMoves;
+            pushes = savedPushes;
+            storedBoxes = savedStoredBoxes;
+        };
     }
 
     public int getMoves() {

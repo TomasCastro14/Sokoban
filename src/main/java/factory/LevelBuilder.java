@@ -7,9 +7,10 @@ import model.board.Position;
 import model.box.Player;
 import model.game.Level;
 import model.game.LevelHeader;
-import model.game.loss.EarlyKeyStorageCondition;
-import model.game.loss.TimeOutCondition;
-import model.game.loss.WrongStorageCondition;
+import model.game.loss.LossEvaluator;
+import model.game.loss.LossRules;
+import model.game.loss.MoveLossListener;
+import model.game.loss.TimeLossListener;
 import model.tile.Inaccessible;
 import model.tile.Portal;
 import model.tile.mechanism.Door;
@@ -22,21 +23,25 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /** Builder + Creator (GRASP): collects the parsed cells and assembles the Level. */
 public class LevelBuilder {
-    /** Checked in this order before building; the first broken rule is reported. */
     private static final List<LevelRule> RULES = List.of(new BorderRule(), new OnePlayerRule(), new PortalPairRule(),
             new DoorKeyGroupRule());
 
+    private final LossRules lossRules;
     private LevelHeader header;
     private final Map<Position, CellContent> contents = new LinkedHashMap<>();
     private int rows;
     private int cols;
     private int firstMapLine = 1;
 
-    /** 1-based line of the file where the first map row is, so rules can report file lines. */
+    public LevelBuilder(LossRules lossRules) {
+        this.lossRules = Objects.requireNonNull(lossRules, "lossRules");
+    }
+
     public LevelBuilder withMapStartLine(int line) {
         this.firstMapLine = line;
         return this;
@@ -58,29 +63,37 @@ public class LevelBuilder {
         validate();
         Cell[][] cells = new Cell[rows][cols];
         Position playerPosition = null;
+        Player player = null;
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
                 Position p = new Position(row, col);
                 CellContent content = contents.get(p);
                 if (content == null) {
-                    cells[row][col] = new Cell(p, new Inaccessible()); // short rows are padded with inaccessible tiles
+                    cells[row][col] = new Cell(p, new Inaccessible());
                     continue;
                 }
                 cells[row][col] = new Cell(p, content.tile());
                 if (content.occupant() != null) {
                     cells[row][col].place(content.occupant());
                 }
-                if (content.occupant() instanceof Player) {
+                if (content.occupant() instanceof Player found) {
+                    player = found;
                     playerPosition = p;
                 }
             }
         }
         Collection<DoorGroup> doorGroups = linkDoorGroups();
         linkPortals();
-        Level level = new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(), new Board(cells, playerPosition),
-                List.of(new WrongStorageCondition(), new EarlyKeyStorageCondition(), new TimeOutCondition()));
+        Level level = new Level(header.name(), (int) header.timeLimit().toSeconds(), header.targetScore(),
+                new Board(cells, player, playerPosition));
         doorGroups.forEach(group -> group.addReachabilityListener(level));
+        subscribeLossListeners(level);
         return level;
+    }
+
+    private void subscribeLossListeners(Level level) {
+        level.addBoardListener(new MoveLossListener(new LossEvaluator(level, lossRules.onPush(), level)));
+        level.addTimeListener(new TimeLossListener(new LossEvaluator(level, lossRules.onTime(), level)));
     }
 
     /** Wires the Observer: every key tile notifies the door group of its letter. */
@@ -122,7 +135,6 @@ public class LevelBuilder {
         return positionsByGroup(KeyTile.class, KeyTile::getGroup);
     }
 
-    /** Door positions grouped by group letter (upper case), in reading order. */
     Map<Character, List<Position>> doorsByGroup() {
         return positionsByGroup(Door.class, Door::getGroup);
     }
@@ -143,8 +155,6 @@ public class LevelBuilder {
             rule.check(this);
         }
     }
-
-    // Read-only view of the parsed map for the rules.
 
     int rows() {
         return rows;
