@@ -15,6 +15,14 @@ public class MenuView {
     private static final double BUTTON_SPACING = 16;
     private static final double TITLE_SPACING = 40;
     private static final String TITLE = "NEW SOKOBAN";
+    private static final String CONTINUE_TEXT = CONTINUE_TEXT;
+    private static final String LEVELS_TEXT = LEVELS_TEXT;
+    private static final String NEW_GAME_TEXT = NEW_GAME_TEXT;
+    private static final String SETTINGS_TEXT = SETTINGS_TEXT;
+    private static final String EXIT_TEXT = EXIT_TEXT;
+    private static final String ROOT_STYLE = "menu-view";
+    private static final String TITLE_STYLE = "title";
+    private static final String PANEL_STYLE = "panel";
 
     private final StackPane root = new StackPane();
 
@@ -23,17 +31,17 @@ public class MenuView {
         Objects.requireNonNull(buttons, "buttons");
 
         Label title = new Label(TITLE);
-        root.getStyleClass().add("menu-view");
-        title.getStyleClass().add("title");
+        root.getStyleClass().add(ROOT_STYLE);
+        title.getStyleClass().add(TITLE_STYLE);
 
         VBox panel = new VBox(BUTTON_SPACING,
-                buttons.create("CONTINUAR", ButtonStyle.PRIMARY, menuListener::onContinue),
-                buttons.create("NIVELES", ButtonStyle.SECONDARY, menuListener::onLevels),
-                buttons.create("NUEVA PARTIDA", ButtonStyle.SECONDARY, menuListener::onNewGame),
-                buttons.create("AJUSTES", ButtonStyle.SECONDARY, menuListener::onSettings),
-                buttons.create("SALIR", ButtonStyle.SECONDARY, menuListener::onExit));
+                buttons.create(CONTINUE_TEXT, ButtonStyle.PRIMARY, menuListener::onContinue),
+                buttons.create(LEVELS_TEXT, ButtonStyle.SECONDARY, menuListener::onLevels),
+                buttons.create(NEW_GAME_TEXT, ButtonStyle.SECONDARY, menuListener::onNewGame),
+                buttons.create(SETTINGS_TEXT, ButtonStyle.SECONDARY, menuListener::onSettings),
+                buttons.create(EXIT_TEXT, ButtonStyle.SECONDARY, menuListener::onExit));
 
-        panel.getStyleClass().add("panel");
+        panel.getStyleClass().add(PANEL_STYLE);
         panel.setAlignment(Pos.CENTER);
         panel.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 

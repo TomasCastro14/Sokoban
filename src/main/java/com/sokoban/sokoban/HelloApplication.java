@@ -41,6 +41,8 @@ import java.util.stream.IntStream;
 /** Composition root: the only place that knows every piece and wires them together. */
 public class HelloApplication extends Application {
     private static final int LEVEL_COUNT = 5;
+    private static final String FONT_PATH = "/assets/Kenney Future.ttf";
+    private static final double FONT_SIZE = 14;
     private static final String PROGRESS_FOLDER = ".new-sokoban";
     private static final String PROGRESS_FILE = "progress.json";
     private static final Runnable NO_ESCAPE = () -> { };
@@ -48,7 +50,7 @@ public class HelloApplication extends Application {
 
     @Override
     public void start(Stage stage) {
-        Font.loadFont(getClass().getResourceAsStream("/assets/Kenney Future.ttf"), 14);
+        Font.loadFont(getClass().getResourceAsStream(FONT_PATH), FONT_SIZE);
         UiImages images = new UiImages(new ImageLoader());
         ButtonFactory buttons = new ButtonFactory(images);
         PopupLayout popups = new PopupLayout(buttons);

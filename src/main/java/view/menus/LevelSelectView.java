@@ -19,7 +19,9 @@ import view.components.images.LevelPreview;
 import view.components.images.UiImage;
 import view.components.images.UiImages;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.IntConsumer;
 
 public class LevelSelectView {
@@ -45,106 +47,141 @@ public class LevelSelectView {
     private static final double SHOWN = 1;
     private static final Duration CARD_FADE = Duration.millis(90);
 
+    private static final String PLAY_TEXT = "¡A TRABAJAR!";
+    private static final String ROOT_STYLE = "level-select";
+    private static final String BACKGROUND_STYLE = "background";
+    private static final String LEVEL_NAME_STYLE = "level-name";
+    private static final String TITLE_BAR_STYLE = "level-title-bar";
+    private static final String FRAME_STYLE = "frame-blue";
+    private static final String PANEL_STYLE = "panel";
+
     private final List<LevelInfo> levels;
     private final IntConsumer onPlay;
     private final UiImages images;
 
     private final StackPane root = new StackPane();
-    private final StackPane card;
     private final Label name = new Label();
-    private final HBox stars = new HBox(STAR_SPACING);
+    private final List<ImageView> stars = new ArrayList<>(MAX_STARS);
     private final ImageView preview = new ImageView();
+    private final StackPane card;
     private final Button play;
     private final Button prev;
     private final Button next;
 
     private int index;
-    private boolean busy;
+    private boolean transitioning;
 
     public LevelSelectView(List<LevelInfo> levels, IntConsumer onPlay, int startIndex, Runnable onClose,
                            UiImages images, ButtonFactory buttons, PopupLayout popups) {
-        this.levels = levels;
-        this.onPlay = onPlay;
+        this.levels = List.copyOf(Objects.requireNonNull(levels, "levels"));
+        this.onPlay = Objects.requireNonNull(onPlay, "onPlay");
+        this.images = Objects.requireNonNull(images, "images");
+        Objects.requireNonNull(onClose, "onClose");
+        Objects.requireNonNull(buttons, "buttons");
+        Objects.requireNonNull(popups, "popups");
         this.index = startIndex;
-        this.images = images;
 
-        root.getStyleClass().add("level-select");
+        card = card();
+        play = playButton(buttons);
+        prev = arrowButton(buttons, ArrowDirection.LEFT, PREVIOUS, Pos.CENTER_LEFT, new Insets(0, 0, 0, ARROW_OUTSET));
+        next = arrowButton(buttons, ArrowDirection.RIGHT, NEXT, Pos.CENTER_RIGHT, new Insets(0, ARROW_OUTSET, 0, 0));
 
-        name.getStyleClass().add("level-name");
-        for (int i = 0; i < MAX_STARS; i++) {
-            ImageView s = new ImageView(images.get(UiImage.STAR_OFF));
-            s.setFitHeight(STAR_HEIGHT);
-            s.setPreserveRatio(true);
-            stars.getChildren().add(s);
-        }
-        StackPane titleBar = new StackPane(name, stars);
-        titleBar.getStyleClass().add("level-title-bar");
-        titleBar.setPrefHeight(TITLE_BAR_HEIGHT);
-        titleBar.setMaxHeight(Region.USE_PREF_SIZE);
-        StackPane.setAlignment(name, Pos.CENTER_LEFT);
-        StackPane.setAlignment(stars, Pos.CENTER_RIGHT);
-        stars.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-
-        preview.setPreserveRatio(true);
-        preview.setFitWidth(PREVIEW_W);
-        preview.setFitHeight(PREVIEW_H);
-        StackPane frame = new StackPane(preview);
-        frame.getStyleClass().add("frame-blue");
-        StackPane.setMargin(frame, new Insets(FRAME_TOP_OVERLAP, 0, 0, 0));
-
-        card = new StackPane(titleBar, frame);
-        card.setAlignment(Pos.TOP_CENTER);
-
-        StackPane panel = new StackPane(card);
-        panel.getStyleClass().add("panel");
-        panel.setPrefSize(PANEL_WIDTH, PANEL_HEIGHT);
-        panel.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-
-        play = buttons.create("¡A TRABAJAR!", ButtonStyle.GOLD, () -> this.onPlay.accept(levelNumberAt(index)));
-        StackPane.setAlignment(play, Pos.BOTTOM_CENTER);
-        StackPane.setMargin(play, new Insets(0, 0, PLAY_BUTTON_OUTSET, 0));
-
-        prev = buttons.createArrow(ArrowDirection.LEFT, () -> go(PREVIOUS));
-        next = buttons.createArrow(ArrowDirection.RIGHT, () -> go(NEXT));
-        StackPane.setAlignment(prev, Pos.CENTER_LEFT);
-        StackPane.setAlignment(next, Pos.CENTER_RIGHT);
-        StackPane.setMargin(prev, new Insets(0, 0, 0, ARROW_OUTSET));
-        StackPane.setMargin(next, new Insets(0, ARROW_OUTSET, 0, 0));
-
-        StackPane window = new StackPane(panel, play, prev, next);
+        StackPane window = new StackPane(panel(card), play, prev, next);
         window.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
-        root.getStyleClass().add("background.level-select");
-
+        root.getStyleClass().addAll(BACKGROUND_STYLE, ROOT_STYLE);
         popups.install(root, window, onClose);
 
         refresh();
     }
 
-    private void go(int delta) {
-        if (busy) return;
-        busy = true;
-        FadeTransition out = new FadeTransition(CARD_FADE, card);
-        out.setToValue(HIDDEN);
-        out.setOnFinished(e -> {
-            index += delta;
+    private StackPane card() {
+        StackPane content = new StackPane(titleBar(), previewFrame());
+        content.setAlignment(Pos.TOP_CENTER);
+        return content;
+    }
+
+    private StackPane titleBar() {
+        name.getStyleClass().add(LEVEL_NAME_STYLE);
+
+        HBox starRow = new HBox(STAR_SPACING);
+        for (int i = 0; i < MAX_STARS; i++) {
+            ImageView star = new ImageView(images.get(UiImage.STAR_OFF));
+            star.setFitHeight(STAR_HEIGHT);
+            star.setPreserveRatio(true);
+            stars.add(star);
+        }
+        starRow.getChildren().setAll(stars);
+        starRow.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+
+        StackPane titleBar = new StackPane(name, starRow);
+        titleBar.getStyleClass().add(TITLE_BAR_STYLE);
+        titleBar.setPrefHeight(TITLE_BAR_HEIGHT);
+        titleBar.setMaxHeight(Region.USE_PREF_SIZE);
+        StackPane.setAlignment(name, Pos.CENTER_LEFT);
+        StackPane.setAlignment(starRow, Pos.CENTER_RIGHT);
+        return titleBar;
+    }
+
+    private StackPane previewFrame() {
+        preview.setPreserveRatio(true);
+        preview.setFitWidth(PREVIEW_W);
+        preview.setFitHeight(PREVIEW_H);
+
+        StackPane frame = new StackPane(preview);
+        frame.getStyleClass().add(FRAME_STYLE);
+        StackPane.setMargin(frame, new Insets(FRAME_TOP_OVERLAP, 0, 0, 0));
+        return frame;
+    }
+
+    private static StackPane panel(StackPane content) {
+        StackPane panel = new StackPane(content);
+        panel.getStyleClass().add(PANEL_STYLE);
+        panel.setPrefSize(PANEL_WIDTH, PANEL_HEIGHT);
+        panel.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        return panel;
+    }
+
+    private Button playButton(ButtonFactory buttons) {
+        Button button = buttons.create(PLAY_TEXT, ButtonStyle.GOLD, () -> onPlay.accept(levelNumberAt(index)));
+        StackPane.setAlignment(button, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(button, new Insets(0, 0, PLAY_BUTTON_OUTSET, 0));
+        return button;
+    }
+
+    private Button arrowButton(ButtonFactory buttons, ArrowDirection direction, int step,
+                               Pos alignment, Insets margin) {
+        Button button = buttons.createArrow(direction, () -> moveBy(step));
+        StackPane.setAlignment(button, alignment);
+        StackPane.setMargin(button, margin);
+        return button;
+    }
+
+    private void moveBy(int step) {
+        if (transitioning) return;
+        transitioning = true;
+        fade(HIDDEN, () -> {
+            index += step;
             refresh();
-            FadeTransition in = new FadeTransition(CARD_FADE, card);
-            in.setToValue(SHOWN);
-            in.setOnFinished(ev -> busy = false);
-            in.play();
+            fade(SHOWN, () -> transitioning = false);
         });
-        out.play();
+    }
+
+    private void fade(double opacity, Runnable whenDone) {
+        FadeTransition transition = new FadeTransition(CARD_FADE, card);
+        transition.setToValue(opacity);
+        transition.setOnFinished(event -> whenDone.run());
+        transition.play();
     }
 
     private void refresh() {
-        LevelInfo l = levels.get(index);
-        name.setText(l.name());
-        for (int i = 0; i < MAX_STARS; i++) {
-            ((ImageView) stars.getChildren().get(i)).setImage(images.get(i < l.stars() ? UiImage.STAR_ON : UiImage.STAR_OFF));
+        LevelInfo level = levels.get(index);
+        name.setText(level.name());
+        for (int i = 0; i < stars.size(); i++) {
+            stars.get(i).setImage(images.get(i < level.stars() ? UiImage.STAR_ON : UiImage.STAR_OFF));
         }
         preview.setImage(images.find(new LevelPreview(levelNumberAt(index))).orElse(null));
-        play.setDisable(!l.unlocked());
+        play.setDisable(!level.unlocked());
         prev.setVisible(index > FIRST_INDEX);
         next.setVisible(index < levels.size() - 1);
     }
@@ -153,5 +190,7 @@ public class LevelSelectView {
         return index + FIRST_LEVEL_NUMBER;
     }
 
-    public Parent getRoot() { return root; }
+    public Parent getRoot() {
+        return root;
+    }
 }

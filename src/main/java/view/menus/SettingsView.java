@@ -17,6 +17,7 @@ public class SettingsView {
     private static final double SPACING = 16;
     private static final String VOLUME_LABEL = "VOLUMEN";
     private static final String MUTE_LABEL = "SILENCIAR";
+    private static final String PANEL_STYLE = "panel";
 
     private final StackPane root = new StackPane();
 
@@ -25,7 +26,7 @@ public class SettingsView {
         Objects.requireNonNull(popups, "popups");
 
         VBox panel = new VBox(SPACING, new Label(VOLUME_LABEL), volumeSlider(listener), muteCheckBox(listener));
-        panel.getStyleClass().add("panel");
+        panel.getStyleClass().add(PANEL_STYLE);
         panel.setAlignment(Pos.CENTER);
         panel.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
