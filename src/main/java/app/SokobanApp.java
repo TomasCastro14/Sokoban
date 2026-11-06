@@ -1,4 +1,4 @@
-package com.sokoban.sokoban;
+package app;
 
 import controller.GameClock;
 import controller.GamePresenter;
@@ -42,14 +42,14 @@ import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
 /** Composition root: the only place that knows every piece and wires them together. */
-public class HelloApplication extends Application {
+public class SokobanApp extends Application {
     private static final int LEVEL_COUNT = 5;
     private static final String FONT_PATH = "/assets/Kenney Future.ttf";
     private static final double FONT_SIZE = 14;
     private static final String PROGRESS_FOLDER = ".new-sokoban";
     private static final String PROGRESS_FILE = "progress.json";
     private static final Runnable NO_ESCAPE = () -> { };
-    private static final Logger LOG = System.getLogger(HelloApplication.class.getName());
+    private static final Logger LOG = System.getLogger(SokobanApp.class.getName());
 
     @Override
     public void start(Stage stage) {
