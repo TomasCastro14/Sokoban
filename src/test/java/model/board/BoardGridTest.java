@@ -20,6 +20,7 @@ class BoardGridTest {
     private static final int ROWS = 3;
     private static final int COLS = 4;
     private static final Position PLAYER = new Position(1, 1);
+    private static final Player SOKOBAN = new Player(Direction.DOWN);
 
     /** 3x4: walls on the border, floor inside, a storage point at (1,2), the player at (1,1). */
     private static Cell[][] grid() {
@@ -32,12 +33,12 @@ class BoardGridTest {
                 cells[row][col] = new Cell(p, p.equals(new Position(1, 2)) ? new StoragePoint(BoxType.NORMAL) : tile);
             }
         }
-        cells[PLAYER.row()][PLAYER.col()].place(new Player(Direction.DOWN));
+        cells[PLAYER.row()][PLAYER.col()].place(SOKOBAN);
         return cells;
     }
 
     private static Board board() {
-        return new Board(grid(), PLAYER);
+        return new Board(grid(), SOKOBAN, PLAYER);
     }
 
     @Test
@@ -158,7 +159,7 @@ class BoardGridTest {
     @DisplayName("11. Modificar el arreglo que se le paso al constructor no cambia el tablero (copia defensiva)")
     void constructorCopiesTheGrid() {
         Cell[][] grid = grid();
-        Board board = new Board(grid, PLAYER);
+        Board board = new Board(grid, SOKOBAN, PLAYER);
         Cell original = board.cellAt(new Position(1, 2));
 
         grid[1][2] = new Cell(new Position(1, 2), new Wall());
@@ -169,18 +170,29 @@ class BoardGridTest {
     @Test
     @DisplayName("12. Datos invalidos al construir fallan enseguida: null, grilla vacia, filas desparejas o jugador fuera")
     void invalidGridsAreRejected() {
-        assertThrows(NullPointerException.class, () -> new Board(null, PLAYER));
-        assertThrows(NullPointerException.class, () -> new Board(grid(), null));
-        assertThrows(IllegalArgumentException.class, () -> new Board(new Cell[0][0], PLAYER));
+        assertThrows(NullPointerException.class, () -> new Board(null, SOKOBAN, PLAYER));
+        assertThrows(NullPointerException.class, () -> new Board(grid(), null, PLAYER));
+        assertThrows(NullPointerException.class, () -> new Board(grid(), SOKOBAN, null));
+        assertThrows(IllegalArgumentException.class, () -> new Board(grid(), new Player(Direction.DOWN), PLAYER));
+        assertThrows(IllegalArgumentException.class, () -> new Board(new Cell[0][0], SOKOBAN, PLAYER));
 
         Cell[][] ragged = grid();
         ragged[2] = new Cell[COLS - 1];
-        assertThrows(IllegalArgumentException.class, () -> new Board(ragged, PLAYER));
+        assertThrows(IllegalArgumentException.class, () -> new Board(ragged, SOKOBAN, PLAYER));
 
         Cell[][] withHole = grid();
         withHole[2][2] = null;
-        assertThrows(IllegalArgumentException.class, () -> new Board(withHole, PLAYER));
+        assertThrows(IllegalArgumentException.class, () -> new Board(withHole, SOKOBAN, PLAYER));
 
-        assertThrows(IllegalArgumentException.class, () -> new Board(grid(), new Position(ROWS, 0)));
+        assertThrows(IllegalArgumentException.class, () -> new Board(grid(), SOKOBAN, new Position(ROWS, 0)));
+    }
+
+    @Test
+    @DisplayName("13. getPlayer devuelve el jugador del tablero, sin buscarlo en las celdas")
+    void getPlayerReturnsThePlayer() {
+        Board board = board();
+
+        assertSame(SOKOBAN, board.getPlayer());
+        assertSame(board.getPlayer(), board.cellAt(board.getPlayerPosition()).getOccupant());
     }
 }

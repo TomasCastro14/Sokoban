@@ -1,24 +1,9 @@
 package model.game.state;
 
-public class MenuState implements GameState {
+public final class MenuState implements GameState {
 
-    @Override
-    public boolean acceptsInput() {
-        return false;
-    }
+    public static final MenuState INSTANCE = new MenuState();
 
-    @Override
-    public boolean allowsUndo() {
-        return false;
-    }
-
-    @Override
-    public boolean allowsRestart() {
-        return false;
-    }
-
-    @Override
-    public boolean allowsNextLevel() {
-        return false;
+    private MenuState() {
     }
 }

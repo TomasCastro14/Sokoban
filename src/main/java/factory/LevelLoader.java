@@ -9,6 +9,7 @@ import model.box.KeyBox;
 import model.box.NormalBox;
 import model.box.Player;
 import model.game.Level;
+import model.game.loss.LossRules;
 import model.tile.Floor;
 import model.tile.Ice;
 import model.tile.StoragePoint;
@@ -19,6 +20,7 @@ import service.ClasspathLevelSource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** Builder director: reads the level text and tells the builder what to create. */
 public class LevelLoader {
@@ -29,14 +31,16 @@ public class LevelLoader {
     private final Map<Character, CellCreator> creators = new HashMap<>();
     private final HeaderParser headerParser = new HeaderParser();
     private final LevelSource source;
+    private final LossRules lossRules;
 
     /** Reads the game levels from the classpath (levels/nivelNN.txt). */
-    public LevelLoader() {
-        this(new ClasspathLevelSource());
+    public LevelLoader(LossRules lossRules) {
+        this(new ClasspathLevelSource(), lossRules);
     }
 
-    public LevelLoader(LevelSource source) {
+    public LevelLoader(LevelSource source, LossRules lossRules) {
         this.source = source;
+        this.lossRules = Objects.requireNonNull(lossRules, "lossRules");
         register("#", new WallCreator());
         register("%", (p, symbol) -> new CellContent(new Inaccessible(), null));
         register(" ", (p, symbol) -> new CellContent(new Floor(), null));
@@ -78,7 +82,7 @@ public class LevelLoader {
         if (separator < 0) {
             throw new InvalidLevelException("Missing '" + SEPARATOR + "' between header and map", -1);
         }
-        LevelBuilder builder = new LevelBuilder().withMapStartLine(separator + 2); // 1-based line after "---"
+        LevelBuilder builder = new LevelBuilder(lossRules).withMapStartLine(separator + 2); // 1-based line after "---"
         builder.withHeader(headerParser.parse(lines.subList(0, separator)));
         parseMap(lines, separator + 1, builder);
         return builder.build();

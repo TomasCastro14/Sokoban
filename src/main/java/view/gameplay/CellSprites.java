@@ -17,16 +17,10 @@ import view.SpriteKey;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Traduce una celda del modelo a "qué hay que dibujar". Es pura: no toca JavaFX ni imágenes,
- * así que se testea con el modelo. Si aparece un casillero nuevo, se toca solo esta clase.
- */
 public final class CellSprites {
 
     public enum Appearance {
-        /** Fuera del warehouse (Inaccessible): no se dibuja, se ve el pasto de fondo. */
         OUTSIDE,
-        /** Dentro del warehouse pero todavía no visto (tras una puerta cerrada). */
         HIDDEN,
         VISIBLE
     }
@@ -40,11 +34,6 @@ public final class CellSprites {
         return visibility.isVisible(cell.getPosition()) ? Appearance.VISIBLE : Appearance.HIDDEN;
     }
 
-    /**
-     * Capas de abajo hacia arriba: piso, decoración del casillero y caja.
-     * El jugador no está acá: se dibuja aparte porque se anima entre casilleros.
-     * Un punto de guardado lleno ya trae su caja dibujada en el sprite del casillero.
-     */
     public static List<SpriteKey> layers(Cell cell) {
         Tile tile = cell.getTile();
         List<SpriteKey> layers = new ArrayList<>(3);
@@ -73,7 +62,11 @@ public final class CellSprites {
                     layers.add(SpriteKey.DOOR);
                 }
             }
-            case KeyTile k -> layers.add(SpriteKey.KEY_ITEM);   // al usarse el tablero la cambia por piso
+            case KeyTile key -> {
+                if (!key.isUsed()) {
+                    layers.add(SpriteKey.KEY_ITEM);
+                }
+            }
             case Portal p -> layers.add(SpriteKey.PORTAL);
             default -> { }
         }

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import model.game.loss.LossRules;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -83,7 +84,7 @@ class WeakBoxLoadingTest {
     @DisplayName("6. '0' no crea una WeakBox: llega a la validacion de caracter desconocido")
     void zeroIsUnknownCharacter() {
         InvalidLevelException e = assertThrows(InvalidLevelException.class,
-                () -> new LevelLoader().parse(TestLevels.text("#####", "#@0 #", "#####")));
+                () -> new LevelLoader(LossRules.none()).parse(TestLevels.text("#####", "#@0 #", "#####")));
 
         assertTrue(e.getMessage().startsWith("Unknown character '0'"), e.getMessage());
     }

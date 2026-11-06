@@ -1,12 +1,19 @@
 package model.game.loss;
 
-import model.game.Level;
+import model.board.Board;
+import model.board.MoveResult;
+import model.board.Push;
 
-public class BrokenBoxCondition implements LossCondition {
+public class BrokenBoxCondition extends AbstractLossCondition {
 
     @Override
-    public boolean isMet(Level level) {
-        throw new UnsupportedOperationException("TODO");
+    protected boolean appliesTo(Push push) {
+        return push.result() == MoveResult.BROKEN;
+    }
+
+    @Override
+    protected boolean holds(Board board, Push push) {
+        return true;
     }
 
     @Override

@@ -19,15 +19,16 @@ import model.tile.mechanism.KeyTile;
 import service.ClasspathLevelSource;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import model.game.loss.LossRules;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class LevelLoaderTest {
 
-    private final LevelLoader loader = new LevelLoader();
+    private final LevelLoader loader = new LevelLoader(LossRules.none());
     /** Small test level kept apart from the real game levels. */
     private final LevelLoader testLevelLoader =
-            new LevelLoader(new ClasspathLevelSource("/level-source/loader/nivel%02d.txt"));
+            new LevelLoader(new ClasspathLevelSource("/level-source/loader/nivel%02d.txt"), LossRules.none());
 
     private InvalidLevelException assertInvalid(String... rows) {
         return assertThrows(InvalidLevelException.class, () -> loader.parse(TestLevels.text(rows)));

@@ -4,6 +4,7 @@ import exception.InvalidLevelException;
 import exception.LevelFormatRule;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import model.game.loss.LossRules;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,11 +14,11 @@ class DoorKeyGroupRuleTest {
     private static final int FIRST_MAP_LINE = TestLevels.HEADER_LINES + 1;
 
     private static InvalidLevelException loadInvalid(String... rows) {
-        return assertThrows(InvalidLevelException.class, () -> new LevelLoader().parse(TestLevels.text(rows)));
+        return assertThrows(InvalidLevelException.class, () -> new LevelLoader(LossRules.none()).parse(TestLevels.text(rows)));
     }
 
     private static void assertValid(String... rows) {
-        assertDoesNotThrow(() -> new LevelLoader().parse(TestLevels.text(rows)));
+        assertDoesNotThrow(() -> new LevelLoader(LossRules.none()).parse(TestLevels.text(rows)));
     }
 
     @Test

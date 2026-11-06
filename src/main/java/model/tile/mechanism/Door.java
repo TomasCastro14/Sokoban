@@ -1,7 +1,10 @@
 package model.tile.mechanism;
 
 import model.box.Box;
+import model.history.Memento;
 import model.tile.Tile;
+import model.tile.TileKind;
+import model.tile.TileLook;
 
 public class Door extends Tile {
     private final char group;
@@ -28,6 +31,17 @@ public class Door extends Tile {
     }
 
     @Override
+    public TileLook look() {
+        return TileLook.of(TileKind.DOOR, open);
+    }
+
+    @Override
+    public Memento save() {
+        boolean savedOpen = open;
+        return () -> open = savedOpen;
+    }
+
+    @Override
     public boolean allowsPlayer() {
         return open;
     }
@@ -37,7 +51,6 @@ public class Door extends Tile {
         return open;
     }
 
-    /** A closed door hides what is behind it, like a wall. */
     @Override
     public boolean blocksVision() {
         return !open;

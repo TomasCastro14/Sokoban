@@ -122,8 +122,9 @@ class IceTest {
         Cell[][] cells = {{
                 new Cell(new Position(0, 0), new Floor()),
                 new Cell(new Position(0, 1), new Ice())}};
-        cells[0][0].place(new Player(Direction.RIGHT));
-        Board board = new Board(cells, new Position(0, 0));
+        Player player = new Player(Direction.RIGHT);
+        cells[0][0].place(player);
+        Board board = new Board(cells, player, new Position(0, 0));
 
         MoveResult result = board.movePlayer(Direction.RIGHT);
 
