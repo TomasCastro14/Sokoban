@@ -9,6 +9,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import service.sound.Volume;
+import view.components.container.PopupInstaller;
 
 import java.util.Objects;
 
@@ -16,19 +17,21 @@ public class SettingsView {
     private static final double SPACING = 16;
     private static final String VOLUME_LABEL = "VOLUMEN";
     private static final String MUTE_LABEL = "SILENCIAR";
+    private static final String PANEL_STYLE = "panel";
 
     private final StackPane root = new StackPane();
 
-    public SettingsView(SettingsListener listener, Runnable onClose) {
+    public SettingsView(SettingsListener listener, Runnable onClose, PopupInstaller popups) {
         Objects.requireNonNull(listener, "listener");
+        Objects.requireNonNull(popups, "popups");
 
         VBox panel = new VBox(SPACING, new Label(VOLUME_LABEL), volumeSlider(listener), muteCheckBox(listener));
-        panel.getStyleClass().add("panel");
+        panel.getStyleClass().add(PANEL_STYLE);
         panel.setAlignment(Pos.CENTER);
         panel.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         StackPane content = new StackPane(panel);
-        PopupLayout.install(root, content, onClose);
+        popups.install(root, content, onClose);
     }
 
     private static Slider volumeSlider(SettingsListener listener) {

@@ -22,6 +22,13 @@ import service.sound.SoundService;
 import view.GameWindow;
 import view.Screen;
 import view.SpriteCatalog;
+import view.components.buttons.ButtonFactory;
+import view.components.buttons.ButtonProvider;
+import view.components.container.PopupInstaller;
+import view.components.container.PopupLayout;
+import view.components.images.ImageLoader;
+import view.components.images.ImageProvider;
+import view.components.images.UiImages;
 import view.gameplay.GameView;
 import view.menus.LevelSelectView;
 import view.menus.LevelSelectView.LevelInfo;
@@ -37,6 +44,8 @@ import java.util.stream.IntStream;
 /** Composition root: the only place that knows every piece and wires them together. */
 public class HelloApplication extends Application {
     private static final int LEVEL_COUNT = 5;
+    private static final String FONT_PATH = "/assets/Kenney Future.ttf";
+    private static final double FONT_SIZE = 14;
     private static final String PROGRESS_FOLDER = ".new-sokoban";
     private static final String PROGRESS_FILE = "progress.json";
     private static final Runnable NO_ESCAPE = () -> { };
@@ -44,8 +53,11 @@ public class HelloApplication extends Application {
 
     @Override
     public void start(Stage stage) {
-        Font.loadFont(getClass().getResourceAsStream("/assets/Kenney Future.ttf"), 14);
-        SpriteCatalog sprites = new SpriteCatalog();
+        Font.loadFont(getClass().getResourceAsStream(FONT_PATH), FONT_SIZE);
+        ImageProvider images = new UiImages(new ImageLoader());
+        ButtonProvider buttons = new ButtonFactory(images);
+        PopupInstaller popups = new PopupLayout(buttons);
+        SpriteCatalog sprites = new SpriteCatalog(images);
 
         GameWindow window = new GameWindow(stage, sprites);
         Game game = new Game(levelsFrom(new LevelLoader(StandardLossRules.create())), LEVEL_COUNT);
@@ -56,12 +68,13 @@ public class HelloApplication extends Application {
         GamePresenter gamePresenter = createGamePresenter(game, gameView);
         MenuController menus = new MenuController(game, window, Platform::exit);
 
-        window.register(Screen.MAIN_MENU, new MenuView(menus).getRoot(), NO_ESCAPE);
+        window.register(Screen.MAIN_MENU, new MenuView(menus, buttons).getRoot(), NO_ESCAPE);
         window.register(Screen.LEVEL_SELECT,
-                new LevelSelectView(levelInfos(), menus::onLevelChosen, 0, window::back).getRoot(), window::back);
+                new LevelSelectView(levelInfos(), menus::onLevelChosen, LevelSelectView.FIRST_INDEX, window::back,
+                        images, buttons, popups).getRoot(), window::back);
         window.register(Screen.GAME, gameView.getRoot(), gamePresenter::onEscape);
         window.register(Screen.SETTINGS,
-                new SettingsView(new SettingsPresenter(sound), window::back).getRoot(), window::back);
+                new SettingsView(new SettingsPresenter(sound), window::back, popups).getRoot(), window::back);
 
         window.show(Screen.MAIN_MENU);
         window.open();
