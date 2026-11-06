@@ -12,12 +12,12 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 import view.components.buttons.ArrowDirection;
-import view.components.buttons.ButtonFactory;
+import view.components.buttons.ButtonProvider;
 import view.components.buttons.ButtonStyle;
-import view.components.container.PopupLayout;
+import view.components.container.PopupInstaller;
 import view.components.images.LevelPreview;
 import view.components.images.UiImage;
-import view.components.images.UiImages;
+import view.components.images.ImageProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,7 @@ public class LevelSelectView {
 
     private final List<LevelInfo> levels;
     private final IntConsumer onPlay;
-    private final UiImages images;
+    private final ImageProvider images;
 
     private final StackPane root = new StackPane();
     private final Label name = new Label();
@@ -72,7 +72,7 @@ public class LevelSelectView {
     private boolean transitioning;
 
     public LevelSelectView(List<LevelInfo> levels, IntConsumer onPlay, int startIndex, Runnable onClose,
-                           UiImages images, ButtonFactory buttons, PopupLayout popups) {
+                           ImageProvider images, ButtonProvider buttons, PopupInstaller popups) {
         this.levels = List.copyOf(Objects.requireNonNull(levels, "levels"));
         this.onPlay = Objects.requireNonNull(onPlay, "onPlay");
         this.images = Objects.requireNonNull(images, "images");
@@ -142,14 +142,14 @@ public class LevelSelectView {
         return panel;
     }
 
-    private Button playButton(ButtonFactory buttons) {
+    private Button playButton(ButtonProvider buttons) {
         Button button = buttons.create(PLAY_TEXT, ButtonStyle.GOLD, () -> onPlay.accept(levelNumberAt(index)));
         StackPane.setAlignment(button, Pos.BOTTOM_CENTER);
         StackPane.setMargin(button, new Insets(0, 0, PLAY_BUTTON_OUTSET, 0));
         return button;
     }
 
-    private Button arrowButton(ButtonFactory buttons, ArrowDirection direction, int step,
+    private Button arrowButton(ButtonProvider buttons, ArrowDirection direction, int step,
                                Pos alignment, Insets margin) {
         Button button = buttons.createArrow(direction, () -> moveBy(step));
         StackPane.setAlignment(button, alignment);

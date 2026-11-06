@@ -5,21 +5,22 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import view.components.buttons.ButtonFactory;
+import view.components.buttons.ButtonProvider;
 
 import java.util.Objects;
 
-public final class PopupLayout {
+public final class PopupLayout implements PopupInstaller {
     private static final String OVERLAY_STYLE = "popup-overlay";
     private static final double CLOSE_BUTTON_PEEK = 44;
     private static final double CLOSE_BUTTON_RIGHT_INSET = 32;
 
-    private final ButtonFactory buttons;
+    private final ButtonProvider buttons;
 
-    public PopupLayout(ButtonFactory buttons) {
+    public PopupLayout(ButtonProvider buttons) {
         this.buttons = Objects.requireNonNull(buttons, "buttons");
     }
 
+    @Override
     public void install(StackPane root, StackPane content, Runnable onClose) {
         root.getChildren().addAll(overlay(), content);
         content.getChildren().add(0, closeButton(onClose));

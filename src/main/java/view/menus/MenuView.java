@@ -6,7 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import view.components.buttons.ButtonFactory;
+import view.components.buttons.ButtonProvider;
 import view.components.buttons.ButtonStyle;
 
 import java.util.Objects;
@@ -26,7 +26,7 @@ public class MenuView {
 
     private final StackPane root = new StackPane();
 
-    public MenuView(MenuListener menuListener, ButtonFactory buttons) {
+    public MenuView(MenuListener menuListener, ButtonProvider buttons) {
         Objects.requireNonNull(menuListener, "listener");
         Objects.requireNonNull(buttons, "buttons");
 

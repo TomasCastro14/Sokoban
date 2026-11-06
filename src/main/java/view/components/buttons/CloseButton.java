@@ -8,7 +8,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import view.components.images.UiImage;
-import view.components.images.UiImages;
+import view.components.images.ImageProvider;
 
 class CloseButton extends Button {
     private static final String STYLE_CLASS = "close-button";
@@ -16,7 +16,7 @@ class CloseButton extends Button {
     private static final double CROSS_WIDTH_RATIO = 0.30;
     private static final double CROSS_CENTER_RATIO = 0.36;
 
-    CloseButton(UiImages images) {
+    CloseButton(ImageProvider images) {
         Image round = images.get(UiImage.CLOSE_ROUND);
         Image square = images.get(UiImage.CLOSE_SQUARE);
 

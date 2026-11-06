@@ -3,21 +3,22 @@ package view.components.buttons;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import view.components.images.UiImage;
-import view.components.images.UiImages;
+import view.components.images.ImageProvider;
 
 import java.util.Objects;
 
-public final class ButtonFactory {
+public final class ButtonFactory implements ButtonProvider {
     private static final String MENU_BUTTON = "menu-button";
     private static final String ROUND_BUTTON = "button-round";
     private static final double ARROW_WIDTH = 32;
 
-    private final UiImages images;
+    private final ImageProvider images;
 
-    public ButtonFactory(UiImages images) {
+    public ButtonFactory(ImageProvider images) {
         this.images = Objects.requireNonNull(images, "images");
     }
 
+    @Override
     public Button create(String text, ButtonStyle style, Runnable action) {
         Button button = new Button(text);
         button.getStyleClass().addAll(MENU_BUTTON, style.cssClass());
@@ -25,6 +26,7 @@ public final class ButtonFactory {
         return button;
     }
 
+    @Override
     public Button createArrow(ArrowDirection direction, Runnable action) {
         ImageView arrow = new ImageView(images.get(UiImage.ARROW));
         arrow.setFitWidth(ARROW_WIDTH);
@@ -37,6 +39,7 @@ public final class ButtonFactory {
         return button;
     }
 
+    @Override
     public Button createClose(Runnable action) {
         Button button = new CloseButton(images);
         onClick(button, action);

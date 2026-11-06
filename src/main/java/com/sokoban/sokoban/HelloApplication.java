@@ -23,8 +23,11 @@ import view.GameWindow;
 import view.Screen;
 import view.SpriteCatalog;
 import view.components.buttons.ButtonFactory;
+import view.components.buttons.ButtonProvider;
+import view.components.container.PopupInstaller;
 import view.components.container.PopupLayout;
 import view.components.images.ImageLoader;
+import view.components.images.ImageProvider;
 import view.components.images.UiImages;
 import view.gameplay.GameView;
 import view.menus.LevelSelectView;
@@ -51,9 +54,9 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) {
         Font.loadFont(getClass().getResourceAsStream(FONT_PATH), FONT_SIZE);
-        UiImages images = new UiImages(new ImageLoader());
-        ButtonFactory buttons = new ButtonFactory(images);
-        PopupLayout popups = new PopupLayout(buttons);
+        ImageProvider images = new UiImages(new ImageLoader());
+        ButtonProvider buttons = new ButtonFactory(images);
+        PopupInstaller popups = new PopupLayout(buttons);
         SpriteCatalog sprites = new SpriteCatalog(images);
 
         GameWindow window = new GameWindow(stage, sprites);

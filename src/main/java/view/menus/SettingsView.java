@@ -9,7 +9,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import service.sound.Volume;
-import view.components.container.PopupLayout;
+import view.components.container.PopupInstaller;
 
 import java.util.Objects;
 
@@ -21,7 +21,7 @@ public class SettingsView {
 
     private final StackPane root = new StackPane();
 
-    public SettingsView(SettingsListener listener, Runnable onClose, PopupLayout popups) {
+    public SettingsView(SettingsListener listener, Runnable onClose, PopupInstaller popups) {
         Objects.requireNonNull(listener, "listener");
         Objects.requireNonNull(popups, "popups");
 
