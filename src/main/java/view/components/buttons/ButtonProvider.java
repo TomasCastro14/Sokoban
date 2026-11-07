@@ -2,11 +2,12 @@ package view.components.buttons;
 
 import javafx.scene.control.Button;
 
-/** Crea los botones de la interfaz con el estilo del juego. */
+/**
+ * Creates the game buttons. Every rectangular button and every round button is made in one
+ * single way: color, icon and size are only parameters, never a new button class.
+ */
 public interface ButtonProvider {
-    Button create(String text, ButtonStyle style, Runnable action);
+    Button createRectangular(String text, ButtonStyle style, Runnable action);
 
-    Button createArrow(ArrowDirection direction, Runnable action);
-
-    Button createClose(Runnable action);
+    Button createRound(RoundStyle style, ButtonIcon icon, ButtonSize size, Runnable action);
 }

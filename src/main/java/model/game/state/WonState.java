@@ -1,6 +1,6 @@
 package model.game.state;
 
-public final class WonState implements GameState {
+public final class WonState extends AbstractGameState {
 
     public static final WonState INSTANCE = new WonState();
 

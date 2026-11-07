@@ -220,7 +220,7 @@ public class Game {
 
         @Override
         public void levelLost(LossReason reason) {
-            state = state.onLevelLost(reason);
+            state = state.onLevelLost(context, reason);
             notifyOutcome(listener -> listener.levelLost(reason));
         }
     }
@@ -246,6 +246,11 @@ public class Game {
                 notifyFlow(listener -> listener.boardRestored(level));
             }
             return undone;
+        }
+
+        @Override
+        public boolean canRecoverFrom(LossReason reason) {
+            return level.canRecoverFrom(reason);
         }
 
         @Override

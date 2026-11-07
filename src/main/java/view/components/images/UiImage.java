@@ -3,10 +3,18 @@ package view.components.images;
 public enum UiImage implements ImageAsset {
     STAR_ON("Items/star.png"),
     STAR_OFF("Items/star_outline.png"),
-    ARROW("buttons/rounded_gold/arrow_decorative_e.png"),
-    CLOSE_ROUND("buttons/rounded_close/button_round_border.png"),
-    CLOSE_SQUARE("buttons/rounded_close/button_square_border.png"),
-    CLOSE_CROSS("buttons/rounded_close/icon_cross.png");
+    BIG_STAR_ON("Items/big_star/star.png"),
+    BIG_STAR_OFF("Items/big_star/star_outline.png"),
+    GOAL_MET("Items/objetives/check_square_grey_checkmark.png"),
+    GOAL_MISSED("Items/objetives/check_square_grey_cross.png"),
+    MASCOT("Items/sokoban/player_03.png"),
+    EMOTE_HAPPY("Items/emotes/emote_faceHappy.png"),
+    EMOTE_SAD("Items/emotes/emote_faceSad.png"),
+    EMOTE_HEART("Items/emotes/emote_heart.png"),
+    ICON_ARROW("buttons/icons/arrow_decorative_e.png"),
+    ICON_PLAY("buttons/icons/icon_play_outline.png"),
+    ICON_REPLAY("buttons/icons/icon_repeat_outline.png"),
+    ICON_CLOSE("buttons/icons/icon_outline_cross.png");
 
     static final String ROOT = "/assets/images/UI/";
 

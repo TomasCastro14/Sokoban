@@ -1,6 +1,6 @@
 package model.game.state;
 
-public final class MenuState implements GameState {
+public final class MenuState extends AbstractGameState {
 
     public static final MenuState INSTANCE = new MenuState();
 

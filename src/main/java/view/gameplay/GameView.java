@@ -13,16 +13,19 @@ import java.util.Objects;
 public class GameView implements GameScreen {
     private static final String PAUSED_TEXT = "PAUSA";
 
-    private final BorderPane root = new BorderPane();
+    private final StackPane root = new StackPane();
+    private final BorderPane layout = new BorderPane();
     private final BoardView board;
     private final Label pausedBanner = new Label(PAUSED_TEXT);
     private ScreenLifecycleListener lifecycle;
 
-    public GameView(SpriteCatalog sprites) {
+    /** The dialog layer goes over the whole screen, HUD included, so a popup covers everything. */
+    public GameView(SpriteCatalog sprites, Node dialogLayer) {
         this.board = new BoardView(Objects.requireNonNull(sprites, "sprites"));
         pausedBanner.getStyleClass().add("paused-banner");
         pausedBanner.setVisible(false);
-        root.setCenter(new StackPane(board, pausedBanner));
+        layout.setCenter(new StackPane(board, pausedBanner));
+        root.getChildren().addAll(layout, Objects.requireNonNull(dialogLayer, "dialogLayer"));
         root.getStyleClass().add("game-view");
         root.getStylesheets().add(
                 Objects.requireNonNull(getClass().getResource("/view/gameplay.css"),
@@ -45,7 +48,7 @@ public class GameView implements GameScreen {
     }
 
     public void setHud(Node hud) {
-        root.setTop(hud);
+        layout.setTop(hud);
     }
 
     @Override

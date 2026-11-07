@@ -1,6 +1,6 @@
 package model.game.state;
 
-public final class PausedState implements GameState {
+public final class PausedState extends AbstractGameState {
 
     public static final PausedState INSTANCE = new PausedState();
 

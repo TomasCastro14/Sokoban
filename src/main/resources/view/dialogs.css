@@ -1,0 +1,110 @@
+/* Popups over the game: goals, defeat and victory. Boxes are nine-slice, like the menu panels. */
+
+/* Only the outer grey edge and the white line of the image; the inside is plain light grey. */
+.dialog-panel {
+    -fx-border-image-source: url("../assets/images/UI/containers/button_square_depth_line.png");
+    -fx-border-image-slice: 8 8 16 8;
+    -fx-border-image-width: 8 8 16 8;
+    -fx-background-color: #dadce7;
+    -fx-background-insets: 8 8 16 8;
+}
+
+.dialog-name {
+    -fx-border-image-source: url("../assets/images/UI/buttons/secondary_blue/button_square_depth_border.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
+    -fx-padding: 18 16 26 16;
+}
+
+.dialog-header {
+    -fx-border-image-source: url("../assets/images/UI/containers/grey/button_square_flat.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-border-image-width: 10;
+    -fx-padding: 10 14 22 14;
+}
+
+.dialog-list {
+    -fx-border-image-source: url("../assets/images/UI/containers/grey/button_square_depth_line.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 10 10 15 10;
+    -fx-padding: 16 18 22 14;
+}
+
+.dialog-defeat-title {
+    -fx-border-image-source: url("../assets/images/UI/containers/red/button_square_depth_flat.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
+    -fx-padding: 22 16 30 16;
+}
+
+.dialog-defeat-message {
+    -fx-border-image-source: url("../assets/images/UI/containers/red/button_square_depth_border.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
+    -fx-padding: 30 20 26 20;
+    -fx-min-height: 110;
+}
+
+.dialog-victory-title {
+    -fx-border-image-source: url("../assets/images/UI/containers/gold/button_square_border.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-border-image-width: 12;
+    -fx-padding: 12 14 24 14;
+}
+
+.dialog-score {
+    -fx-border-image-source: url("../assets/images/UI/containers/gold/button_square_depth_flat.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
+    -fx-padding: 10 14 20 14;
+}
+
+/* Titles may take two lines (long level names); the score and the rows never wrap. */
+.dialog-title {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 28px;
+    -fx-text-fill: #1b1b22;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+}
+
+.dialog-title-light {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 44px;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(one-pass-box, #8c0f22, 0, 1, 0, 4);
+}
+
+.dialog-score-text {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 40px;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(one-pass-box, #b7860b, 0, 1, 0, 4);
+}
+
+.dialog-message {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 20px;
+    -fx-text-fill: #1b1b22;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+}
+
+.goal-name,
+.goal-value {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 20px;
+}
+
+.goal-name,
+.goal-neutral {
+    -fx-text-fill: #62637a;
+}
+
+.goal-met {
+    -fx-text-fill: #17703a;
+}
+
+.goal-missed {
+    -fx-text-fill: #a3132b;
+}

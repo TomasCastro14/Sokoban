@@ -32,7 +32,7 @@ public final class UndoHistory {
         return MAX_CONSECUTIVE_UNDOS - consecutiveUndos;
     }
 
-    private boolean canUndo() {
+    public boolean canUndo() {
         return !commands.isEmpty() && remainingUndos() > 0;
     }
 

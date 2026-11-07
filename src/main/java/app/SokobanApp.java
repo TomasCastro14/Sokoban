@@ -3,7 +3,10 @@ package app;
 import controller.GameClock;
 import controller.GamePresenter;
 import controller.InputController;
+import controller.LevelDialogPresenter;
+import controller.LevelProgression;
 import controller.MenuController;
+import controller.PlaySession;
 import controller.SettingsPresenter;
 import controller.SoundEventListener;
 import factory.LevelLoader;
@@ -14,6 +17,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import model.game.Game;
 import model.game.Level;
+import model.game.score.StandardScoreCalculator;
 import service.JsonProgressRepository;
 import service.ProgressSaver;
 import service.sound.JavaFxSoundService;
@@ -30,6 +34,7 @@ import view.components.images.ImageLoader;
 import view.components.images.ImageProvider;
 import view.components.images.UiImages;
 import view.gameplay.GameView;
+import view.gameplay.dialog.LevelDialogsView;
 import view.menus.LevelSelectView;
 import view.menus.LevelSelectView.LevelInfo;
 import view.menus.MenuView;
@@ -64,8 +69,12 @@ public class SokobanApp extends Application {
         saveProgressOf(game);
         SoundService sound = createSoundService();
         playSoundsOf(game, sound);
-        GameView gameView = new GameView(sprites);
-        GamePresenter gamePresenter = createGamePresenter(game, gameView);
+        LevelDialogsView dialogs = new LevelDialogsView(images, buttons);
+        GameView gameView = new GameView(sprites, dialogs.getRoot());
+        PlaySession session = new PlaySession(new InputController(game), new GameClock(game));
+        GamePresenter gamePresenter = new GamePresenter(game, gameView, session);
+        new LevelDialogPresenter(game, dialogs, session, new StandardScoreCalculator(), window);
+        new LevelProgression(game, window);
         MenuController menus = new MenuController(game, window, Platform::exit);
 
         window.register(Screen.MAIN_MENU, new MenuView(menus, buttons).getRoot(), NO_ESCAPE);
@@ -78,11 +87,6 @@ public class SokobanApp extends Application {
 
         window.show(Screen.MAIN_MENU);
         window.open();
-    }
-
-    /** The view is passive: the presenter is what joins it to the model, the keyboard and the clock. */
-    private static GamePresenter createGamePresenter(Game game, GameView gameView) {
-        return new GamePresenter(game, gameView, new InputController(game), new GameClock(game));
     }
 
     /** Levels are read from the classpath; progress is written outside the .jar, in the user's home. */

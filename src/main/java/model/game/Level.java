@@ -14,6 +14,9 @@ import model.game.event.LevelOutcomeListener;
 import model.game.event.TimeListener;
 import model.game.loss.LossReason;
 import model.game.loss.LossReporter;
+import model.game.score.LevelGoals;
+import model.game.score.ScoreCalculator;
+import model.game.score.ScoreResult;
 import model.history.LevelMemento;
 import model.history.Memento;
 import model.history.MoveCommand;
@@ -22,13 +25,20 @@ import model.history.UndoHistory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
-/** Also listens to the board: when the reachable area grows, it reveals it once the move ends. */
+/**
+ * Also listens to the board: when the reachable area grows, it reveals it once the move ends.
+ * Win and loss are announced once a move is committed (undo history included), so a listener
+ * that asks whether the loss can still be undone gets the real answer.
+ */
 public class Level implements ReachabilityListener, LossReporter {
+    private static final Consumer<LevelOutcomeListener> NO_OUTCOME = listener -> { };
+
     private final String name;
     private final int timeLimitSeconds;
-    private final int targetScore;
+    private final LevelGoals goals;
     private final Board board;
     private final LevelStats stats = new LevelStats();
     private final List<BoardListener> boardListeners = new ArrayList<>();
@@ -43,11 +53,13 @@ public class Level implements ReachabilityListener, LossReporter {
     private int remainingSeconds;
     private final UndoHistory history = new UndoHistory();
     private final MoveReceiver receiver = new LevelMoveReceiver();
+    private boolean committingMove;
+    private Consumer<LevelOutcomeListener> pendingOutcome = NO_OUTCOME;
 
-    public Level(String name, int timeLimitSeconds, int targetScore, Board board) {
+    public Level(String name, int timeLimitSeconds, LevelGoals goals, Board board) {
         this.name = name;
         this.timeLimitSeconds = timeLimitSeconds;
-        this.targetScore = targetScore;
+        this.goals = Objects.requireNonNull(goals, "goals");
         this.board = board;
         this.totalBoxes = board.countBoxes();
         this.remainingSeconds = timeLimitSeconds;
@@ -62,8 +74,13 @@ public class Level implements ReachabilityListener, LossReporter {
         return timeLimitSeconds;
     }
 
-    public int getTargetScore() {
-        return targetScore;
+    public LevelGoals getGoals() {
+        return goals;
+    }
+
+    /** Information Expert: the level holds the goals, the stats and the clock the score is made of. */
+    public ScoreResult score(ScoreCalculator calculator) {
+        return calculator.calculate(goals, stats, remainingSeconds);
     }
 
     public Board getBoard() {
@@ -76,11 +93,17 @@ public class Level implements ReachabilityListener, LossReporter {
 
     public MoveResult move(Direction direction) {
         MoveCommand command = new MoveCommand(receiver, direction);
-        MoveResult result = command.execute();
-        if (result != MoveResult.BLOCKED) {
-            history.record(command);
+        committingMove = true;
+        try {
+            MoveResult result = command.execute();
+            if (result != MoveResult.BLOCKED) {
+                history.record(command);
+            }
+            return result;
+        } finally {
+            committingMove = false;
+            announcePendingOutcome();
         }
-        return result;
     }
 
     public LevelMemento save() {
@@ -161,7 +184,17 @@ public class Level implements ReachabilityListener, LossReporter {
         List.copyOf(boardListeners).forEach(notification);
     }
 
+    /** During a move the outcome waits until the move is in the history; otherwise it goes out now. */
     private void notifyOutcome(Consumer<LevelOutcomeListener> notification) {
+        pendingOutcome = notification;
+        if (!committingMove) {
+            announcePendingOutcome();
+        }
+    }
+
+    private void announcePendingOutcome() {
+        Consumer<LevelOutcomeListener> notification = pendingOutcome;
+        pendingOutcome = NO_OUTCOME;
         List.copyOf(outcomeListeners).forEach(notification);
     }
 
@@ -175,6 +208,11 @@ public class Level implements ReachabilityListener, LossReporter {
 
     public int getRemainingUndos() {
         return history.remainingUndos();
+    }
+
+    /** A loss only stops the level for good when its reason allows no undo or no undo is left. */
+    public boolean canRecoverFrom(LossReason reason) {
+        return reason.isRecoverable() && history.canUndo();
     }
 
     public LevelStatus getStatus() {

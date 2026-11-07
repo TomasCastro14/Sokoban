@@ -1,3 +1,5 @@
+@import "dialogs.css";
+
 .game-view {
     -fx-background-color: #3aa55a;
     -fx-background-image: url("../assets/images/map/ground_03.png");

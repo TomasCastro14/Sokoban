@@ -66,26 +66,45 @@
 
 .button-round {
     -fx-background-color: transparent;
-    -fx-background-image: url("../assets/images/UI/buttons/rounded_gold/button_round_depth_gloss.png");
+    -fx-background-insets: 0;
     -fx-background-size: 100% 100%;
     -fx-background-repeat: no-repeat;
-    -fx-pref-width: 72px;
-    -fx-pref-height: 72px;
     -fx-padding: 0 0 4 0;
     -fx-cursor: hand;
 }
 
 .button-round:pressed {
-    -fx-background-image: url("../assets/images/UI/buttons/rounded_gold/button_round_gloss.png");
     -fx-translate-y: 3;
 }
 
-.close-button {
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
-    -fx-padding: 0;
-    -fx-background-radius: 0;
-    -fx-border-color: transparent;
-    -fx-focus-color: transparent;
-    -fx-faint-focus-color: transparent;
+.round-blue {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_blue/button_round_depth_gloss.png");
+}
+
+.round-blue:pressed {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_blue/button_round_gloss.png");
+}
+
+.round-gold {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_gold/button_round_depth_gloss.png");
+}
+
+.round-gold:pressed {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_gold/button_round_gloss.png");
+}
+
+.round-grey {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_grey/button_round_depth_gloss.png");
+}
+
+.round-grey:pressed {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_grey/button_round_gloss.png");
+}
+
+.round-red {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_red/button_round_depth_gloss.png");
+}
+
+.round-red:pressed {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_red/button_round_gloss.png");
 }

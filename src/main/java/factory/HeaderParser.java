@@ -3,6 +3,8 @@ package factory;
 import exception.InvalidLevelException;
 import exception.LevelFormatRule;
 import model.game.LevelHeader;
+import model.game.score.Goal;
+import model.game.score.LevelGoals;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -25,10 +27,15 @@ class HeaderParser {
     private static final Field<String> NAME = new Field<>("nombre", LevelHeader::requireName);
     private static final Field<Duration> TIME_LIMIT = new Field<>("tiempo",
             text -> LevelHeader.requireTimeLimit(Duration.ofSeconds(Integer.parseInt(text))));
-    private static final Field<Integer> TARGET_SCORE = new Field<>("objetivo",
-            text -> LevelHeader.requireTargetScore(Integer.parseInt(text)));
+    private static final Field<Integer> MAX_MOVES = goalLimit("movimientos");
+    private static final Field<Integer> MAX_PUSHES = goalLimit("empujes");
+    private static final Field<Integer> MAX_UNDOS = goalLimit("undo");
     /** Order in which missing fields are reported. */
-    private static final List<Field<?>> FIELDS = List.of(NAME, TIME_LIMIT, TARGET_SCORE);
+    private static final List<Field<?>> FIELDS = List.of(NAME, TIME_LIMIT, MAX_MOVES, MAX_PUSHES, MAX_UNDOS);
+
+    private static Field<Integer> goalLimit(String key) {
+        return new Field<>(key, text -> Goal.requireLimit(Integer.parseInt(text)));
+    }
 
     LevelHeader parse(List<String> lines) throws InvalidLevelException {
         Map<Field<?>, Object> values = new HashMap<>();
@@ -42,7 +49,8 @@ class HeaderParser {
                 throw new InvalidLevelException(LevelFormatRule.HEADER_MISSING_FIELD, field.key());
             }
         }
-        return new LevelHeader(valueOf(values, NAME), valueOf(values, TIME_LIMIT), valueOf(values, TARGET_SCORE));
+        LevelGoals goals = new LevelGoals(valueOf(values, MAX_MOVES), valueOf(values, MAX_PUSHES), valueOf(values, MAX_UNDOS));
+        return new LevelHeader(valueOf(values, NAME), valueOf(values, TIME_LIMIT), goals);
     }
 
     private void readLine(String line, int fileLine, Map<Field<?>, Object> values) throws InvalidLevelException {

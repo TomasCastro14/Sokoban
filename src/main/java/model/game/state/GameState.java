@@ -4,37 +4,22 @@ import model.board.Direction;
 import model.game.LevelStats;
 import model.game.loss.LossReason;
 
+/** State (GoF): each state answers every input. AbstractGameState gives the "ignore it" answer. */
 public interface GameState {
 
-    default GameState move(GameContext game, Direction direction) {
-        return this;
-    }
+    GameState move(GameContext game, Direction direction);
 
-    default GameState undo(GameContext game) {
-        return this;
-    }
+    GameState undo(GameContext game);
 
-    default GameState restart(GameContext game) {
-        return this;
-    }
+    GameState restart(GameContext game);
 
-    default GameState nextLevel(GameContext game) {
-        return this;
-    }
+    GameState nextLevel(GameContext game);
 
-    default GameState togglePause(GameContext game) {
-        return this;
-    }
+    GameState togglePause(GameContext game);
 
-    default GameState tick(GameContext game) {
-        return this;
-    }
+    GameState tick(GameContext game);
 
-    default GameState onLevelWon(LevelStats stats) {
-        return this;
-    }
+    GameState onLevelWon(LevelStats stats);
 
-    default GameState onLevelLost(LossReason reason) {
-        return this;
-    }
+    GameState onLevelLost(GameContext game, LossReason reason);
 }

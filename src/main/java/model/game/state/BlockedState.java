@@ -1,7 +1,7 @@
 package model.game.state;
 
 /** Deadlock: la partida se frena, pero un undo la recupera. También se puede reiniciar. */
-public final class BlockedState implements GameState {
+public final class BlockedState extends AbstractGameState {
 
     public static final BlockedState INSTANCE = new BlockedState();
 

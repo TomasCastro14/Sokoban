@@ -11,9 +11,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-import view.components.buttons.ArrowDirection;
+import view.components.buttons.ButtonIcon;
 import view.components.buttons.ButtonProvider;
+import view.components.buttons.ButtonSize;
 import view.components.buttons.ButtonStyle;
+import view.components.buttons.RoundStyle;
 import view.components.container.PopupInstaller;
 import view.components.images.LevelPreview;
 import view.components.images.UiImage;
@@ -83,8 +85,8 @@ public class LevelSelectView {
 
         card = card();
         play = playButton(buttons);
-        prev = arrowButton(buttons, ArrowDirection.LEFT, PREVIOUS, Pos.CENTER_LEFT, new Insets(0, 0, 0, ARROW_OUTSET));
-        next = arrowButton(buttons, ArrowDirection.RIGHT, NEXT, Pos.CENTER_RIGHT, new Insets(0, ARROW_OUTSET, 0, 0));
+        prev = arrowButton(buttons, ButtonIcon.ARROW_LEFT, PREVIOUS, Pos.CENTER_LEFT, new Insets(0, 0, 0, ARROW_OUTSET));
+        next = arrowButton(buttons, ButtonIcon.ARROW_RIGHT, NEXT, Pos.CENTER_RIGHT, new Insets(0, ARROW_OUTSET, 0, 0));
 
         StackPane window = new StackPane(panel(card), play, prev, next);
         window.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
@@ -143,15 +145,15 @@ public class LevelSelectView {
     }
 
     private Button playButton(ButtonProvider buttons) {
-        Button button = buttons.create(PLAY_TEXT, ButtonStyle.GOLD, () -> onPlay.accept(levelNumberAt(index)));
+        Button button = buttons.createRectangular(PLAY_TEXT, ButtonStyle.GOLD, () -> onPlay.accept(levelNumberAt(index)));
         StackPane.setAlignment(button, Pos.BOTTOM_CENTER);
         StackPane.setMargin(button, new Insets(0, 0, PLAY_BUTTON_OUTSET, 0));
         return button;
     }
 
-    private Button arrowButton(ButtonProvider buttons, ArrowDirection direction, int step,
+    private Button arrowButton(ButtonProvider buttons, ButtonIcon arrow, int step,
                                Pos alignment, Insets margin) {
-        Button button = buttons.createArrow(direction, () -> moveBy(step));
+        Button button = buttons.createRound(RoundStyle.GOLD, arrow, ButtonSize.REGULAR, () -> moveBy(step));
         StackPane.setAlignment(button, alignment);
         StackPane.setMargin(button, margin);
         return button;

@@ -1,6 +1,7 @@
 package model.game.state;
 
 import model.board.Direction;
+import model.game.loss.LossReason;
 
 public interface GameContext {
 
@@ -9,6 +10,8 @@ public interface GameContext {
     GameState elapseSecond();
 
     boolean undoLastMove();
+
+    boolean canRecoverFrom(LossReason reason);
 
     void reloadLevel();
 
