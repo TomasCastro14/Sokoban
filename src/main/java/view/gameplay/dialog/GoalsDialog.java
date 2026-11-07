@@ -11,7 +11,7 @@ import java.util.List;
 
 /** Shown before playing: the level name and what each of the three stars asks for. */
 final class GoalsDialog {
-    private static final double TOP_PADDING = 18;
+    private static final double TOP_PADDING = 24;
     private static final String NAME_BOX = "dialog-name";
     private static final String NEUTRAL_VALUE = "goal-neutral";
 
@@ -26,6 +26,7 @@ final class GoalsDialog {
         StackPane dialog = parts.panel(TOP_PADDING,
                 parts.textBox(levelName, NAME_BOX, DialogParts.TITLE_TEXT),
                 parts.list(DialogTexts.GOALS_TITLE, rows));
+        parts.addMascot(dialog, MascotPose.OVER_THE_TOP, UiImage.EMOTE_HAPPY);
         parts.addActions(dialog, parts.action(RoundStyle.GOLD, ButtonIcon.PLAY, onPlay));
         return dialog;
     }

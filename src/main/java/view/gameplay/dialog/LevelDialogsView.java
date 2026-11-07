@@ -12,7 +12,10 @@ import java.util.List;
 
 /** Passive view: builds the requested popup and puts it in the layer over the game. */
 public final class LevelDialogsView implements LevelDialogs {
-    private final DialogLayer layer = new DialogLayer();
+    /** The dialogs are built at mockup size; on screen they look better a bit smaller. */
+    private static final double DIALOG_SCALE = 0.8;
+
+    private final DialogLayer layer = new DialogLayer(DIALOG_SCALE);
     private final GoalsDialog goals;
     private final DefeatDialog defeat;
     private final VictoryDialog victory;

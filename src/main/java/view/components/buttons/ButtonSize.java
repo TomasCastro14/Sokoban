@@ -4,7 +4,7 @@ package view.components.buttons;
 public enum ButtonSize {
     SMALL(56),
     REGULAR(72),
-    LARGE(88);
+    LARGE(110);
 
     private final double diameter;
 
