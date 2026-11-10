@@ -34,13 +34,13 @@
 }
 
 .button-secondary:pressed {
-    -fx-border-image-source: url("../assets/images/UI/buttons/secondary_blue/button_square_border.png");
+    -fx-border-image-source: url("../assets/images/UI/buttons/secondary_blue/button_square_gloss.png");
     -fx-border-image-slice: 16 fill;
     -fx-border-image-width: 8;
 }
 
 .button-secondary {
-    -fx-border-image-source: url("../assets/images/UI/buttons/secondary_blue/button_square_depth_border.png");
+    -fx-border-image-source: url("../assets/images/UI/buttons/secondary_blue/button_square_depth_gloss.png");
 }
 
 .button-gold {
