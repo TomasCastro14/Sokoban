@@ -1,14 +1,6 @@
 package service.sound;
 
-public interface SoundService {
+public interface SoundService extends AudioControl {
 
     void play(SoundEffect effect);
-
-    void setVolume(double level);
-
-    double volume();
-
-    void setMuted(boolean muted);
-
-    boolean isMuted();
 }

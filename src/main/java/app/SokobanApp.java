@@ -39,6 +39,13 @@ import view.menus.LevelSelectView;
 import view.menus.LevelSelectView.LevelInfo;
 import view.menus.MenuView;
 import view.menus.SettingsView;
+import service.sound.AudioMixer;
+import service.sound.JavaFxMusicService;
+import service.sound.MusicService;
+import service.sound.MusicTrack;
+import service.sound.Playlist;
+import service.sound.SilentMusicService;
+import java.util.random.RandomGenerator;
 
 import java.lang.System.Logger;
 import java.nio.file.Path;
@@ -69,6 +76,9 @@ public class SokobanApp extends Application {
         saveProgressOf(game);
         SoundService sound = createSoundService();
         playSoundsOf(game, sound);
+        MusicService music = createMusicService();
+        AudioMixer audio = new AudioMixer(List.of(sound, music));
+        music.start();
         LevelDialogsView dialogs = new LevelDialogsView(images, buttons);
         GameView gameView = new GameView(sprites, dialogs.getRoot());
         PlaySession session = new PlaySession(new InputController(game), new GameClock(game));
@@ -83,7 +93,7 @@ public class SokobanApp extends Application {
                         images, buttons, popups).getRoot(), window::back);
         window.register(Screen.GAME, gameView.getRoot(), gamePresenter::onEscape);
         window.register(Screen.SETTINGS,
-                new SettingsView(new SettingsPresenter(sound), window::back, popups).getRoot(), window::back);
+                new SettingsView(new SettingsPresenter(audio), window::back, popups).getRoot(), window::back);
 
         window.show(Screen.MAIN_MENU);
         window.open();
@@ -102,6 +112,17 @@ public class SokobanApp extends Application {
         } catch (RuntimeException | LinkageError e) {
             LOG.log(Logger.Level.WARNING, "Audio is not available, the game continues without sound", e);
             return new SilentSoundService();
+        }
+    }
+
+    /** The first track is picked at random on every launch; after that the playlist rotates in order. */
+    private static MusicService createMusicService() {
+        try {
+            Playlist playlist = Playlist.randomStart(List.of(MusicTrack.values()), RandomGenerator.getDefault());
+            return new JavaFxMusicService(playlist);
+        } catch (RuntimeException | LinkageError e) {
+            LOG.log(Logger.Level.WARNING, "Music is not available, the game continues without it", e);
+            return new SilentMusicService();
         }
     }
 

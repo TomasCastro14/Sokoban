@@ -37,7 +37,6 @@ public class MenuView {
         VBox panel = new VBox(BUTTON_SPACING,
                 buttons.createRectangular(CONTINUE_TEXT, ButtonStyle.PRIMARY, menuListener::onContinue),
                 buttons.createRectangular(LEVELS_TEXT, ButtonStyle.SECONDARY, menuListener::onLevels),
-                buttons.createRectangular(NEW_GAME_TEXT, ButtonStyle.SECONDARY, menuListener::onNewGame),
                 buttons.createRectangular(SETTINGS_TEXT, ButtonStyle.SECONDARY, menuListener::onSettings),
                 buttons.createRectangular(EXIT_TEXT, ButtonStyle.SECONDARY, menuListener::onExit));
 

@@ -1,14 +1,15 @@
 package controller;
 
+import service.sound.AudioControl;
 import service.sound.SoundService;
 import view.menus.SettingsListener;
 
 import java.util.Objects;
 
 public final class SettingsPresenter implements SettingsListener {
-    private final SoundService sound;
+    private final AudioControl sound;
 
-    public SettingsPresenter(SoundService sound) {
+    public SettingsPresenter(AudioControl sound) {
         this.sound = Objects.requireNonNull(sound, "sound");
     }
 
