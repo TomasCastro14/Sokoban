@@ -7,9 +7,7 @@ public enum SoundEffect {
     DOOR_OPEN("door_open.wav"),
     UNDO("undo.wav"),
     LEVEL_WON("level_won.wav"),
-    LEVEL_LOST("level_lost.wav"),
-    MAIN_THEME_ONE("main_theme1.wav"),
-    MAIN_THEME_TWO("main_theme2.wav");
+    LEVEL_LOST("level_lost.wav");
 
     private static final String AUDIO_FOLDER = "/assets/audio/";
 
