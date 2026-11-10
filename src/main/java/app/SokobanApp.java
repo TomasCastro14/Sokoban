@@ -45,6 +45,8 @@ import service.sound.MusicService;
 import service.sound.MusicTrack;
 import service.sound.Playlist;
 import service.sound.SilentMusicService;
+import view.menus.SplashView;
+
 import java.util.random.RandomGenerator;
 
 import java.lang.System.Logger;
@@ -78,7 +80,6 @@ public class SokobanApp extends Application {
         playSoundsOf(game, sound);
         MusicService music = createMusicService();
         AudioMixer audio = new AudioMixer(List.of(sound, music));
-        music.start();
         LevelDialogsView dialogs = new LevelDialogsView(images, buttons);
         GameView gameView = new GameView(sprites, dialogs.getRoot());
         PlaySession session = new PlaySession(new InputController(game), new GameClock(game));
@@ -87,7 +88,9 @@ public class SokobanApp extends Application {
         new LevelProgression(game, window);
         MenuController menus = new MenuController(game, window, Platform::exit);
 
-        window.register(Screen.MAIN_MENU, new MenuView(menus, buttons).getRoot(), NO_ESCAPE);
+        SplashView splash = new SplashView(images, music::start, () -> window.replace(Screen.MAIN_MENU));
+        window.register(Screen.SPLASH, splash.getRoot(), NO_ESCAPE);
+        window.register(Screen.MAIN_MENU, new MenuView(menus, buttons, images).getRoot(), NO_ESCAPE);
         window.register(Screen.LEVEL_SELECT,
                 new LevelSelectView(levelInfos(), menus::onLevelChosen, LevelSelectView.FIRST_INDEX, window::back,
                         images, buttons, popups).getRoot(), window::back);
@@ -95,8 +98,9 @@ public class SokobanApp extends Application {
         window.register(Screen.SETTINGS,
                 new SettingsView(new SettingsPresenter(audio), window::back, popups).getRoot(), window::back);
 
-        window.show(Screen.MAIN_MENU);
+        window.show(Screen.SPLASH);
         window.open();
+        splash.play();
     }
 
     /** Levels are read from the classpath; progress is written outside the .jar, in the user's home. */

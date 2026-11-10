@@ -68,6 +68,11 @@ public class GameWindow implements Navigator {
         swap(next);
     }
 
+    /** Cambia de pantalla sin guardar la actual en el historial (al splash no se vuelve). */
+    public void replace(Screen next) {
+        swap(next);
+    }
+
     @Override
     public void back() {
         if (!history.isEmpty()) swap(history.pop());
