@@ -8,10 +8,11 @@ import java.util.Locale;
 
 /** Every text the level popups show to the player, in one place. */
 final class DialogTexts {
+    static final String SUMMARY_TITLE = "Resumen";
+    static final String PAUSE_TITLE = "¡PAUSA!";
     static final String GOALS_TITLE = "Objetivos";
     static final String DEFEAT_TITLE = "¡Perdiste!";
     static final String VICTORY_TITLE = "¡Nivel completado!";
-    static final String SUMMARY_TITLE = "Resumen";
 
     private static final String POINTS_SUFFIX = "pts";
     private static final String RESULT_SEPARATOR = " / ";

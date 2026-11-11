@@ -6,7 +6,7 @@ import model.game.score.ScoreResult;
 
 import java.util.List;
 
-/** The popups shown over the game at the start and at the end of a level. Only one is open at a time. */
+/** The popups shown over the game: at the start and end of a level, and while paused. Only one is open at a time. */
 public interface LevelDialogs {
 
     void showGoals(String levelName, List<Goal> goals, Runnable onPlay);
@@ -14,6 +14,9 @@ public interface LevelDialogs {
     void showDefeat(LossReason reason, Runnable onLeave, Runnable onRetry);
 
     void showVictory(ScoreResult result, Runnable onRetry, Runnable onNext);
+
+    /** onResume runs when the player clicks the dark veil around the popup. */
+    void showPause(Runnable onLeave, Runnable onRestart, Runnable onResume);
 
     void close();
 }

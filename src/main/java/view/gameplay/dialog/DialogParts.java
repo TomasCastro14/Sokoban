@@ -42,8 +42,6 @@ final class DialogParts {
     private static final double ACTION_OVERHANG = ACTION_SIZE.diameter() / 2;
     private static final double ACTION_SPACING = 100;
     private static final double PANEL_SPACING = 16;
-    private static final double PANEL_SIDE_PADDING = 22;
-    private static final double PANEL_BOTTOM_PADDING = ACTION_OVERHANG + 10;
     private static final double ROW_ICON_SIZE = 36;
     private static final double ROW_SPACING = 14;
     private static final double LIST_SPACING = 22;
@@ -72,11 +70,10 @@ final class DialogParts {
      * The grey panel with its content stacked. The returned pane is exactly the panel's size,
      * so decorations can be placed in panel coordinates and buttons can stick out of it.
      */
-    StackPane panel(double topPadding, Node... content) {
+    StackPane panel(String variantStyle, Node... content) {
         VBox column = new VBox(PANEL_SPACING, content);
-        column.getStyleClass().add(PANEL_STYLE);
+        column.getStyleClass().addAll(PANEL_STYLE, variantStyle);
         column.setAlignment(Pos.TOP_CENTER);
-        column.setPadding(new Insets(topPadding, PANEL_SIDE_PADDING, PANEL_BOTTOM_PADDING, PANEL_SIDE_PADDING));
         column.setPrefWidth(PANEL_WIDTH);
         column.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 

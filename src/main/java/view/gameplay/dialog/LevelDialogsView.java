@@ -19,12 +19,14 @@ public final class LevelDialogsView implements LevelDialogs {
     private final GoalsDialog goals;
     private final DefeatDialog defeat;
     private final VictoryDialog victory;
+    private final PauseDialog pause;
 
     public LevelDialogsView(ImageProvider images, ButtonProvider buttons) {
         DialogParts parts = new DialogParts(images, buttons);
         this.goals = new GoalsDialog(parts);
         this.defeat = new DefeatDialog(parts);
         this.victory = new VictoryDialog(parts);
+        this.pause = new PauseDialog(parts);
     }
 
     public Node getRoot() {
@@ -44,6 +46,11 @@ public final class LevelDialogsView implements LevelDialogs {
     @Override
     public void showVictory(ScoreResult result, Runnable onRetry, Runnable onNext) {
         layer.show(victory.build(result, onRetry, onNext));
+    }
+
+    @Override
+    public void showPause(Runnable onLeave, Runnable onRestart, Runnable onResume) {
+        layer.show(pause.build(onLeave, onRestart), onResume);
     }
 
     @Override

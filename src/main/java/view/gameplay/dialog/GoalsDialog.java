@@ -11,7 +11,7 @@ import java.util.List;
 
 /** Shown before playing: the level name and what each of the three stars asks for. */
 final class GoalsDialog {
-    private static final double TOP_PADDING = 24;
+    private static final String PANEL_VARIANT = "dialog-goals";
     private static final String NAME_BOX = "dialog-name";
     private static final String NEUTRAL_VALUE = "goal-neutral";
 
@@ -23,7 +23,7 @@ final class GoalsDialog {
 
     Node build(String levelName, List<Goal> goals, Runnable onPlay) {
         Node[] rows = goals.stream().map(this::row).toArray(Node[]::new);
-        StackPane dialog = parts.panel(TOP_PADDING,
+        StackPane dialog = parts.panel(PANEL_VARIANT,
                 parts.textBox(levelName, NAME_BOX, DialogParts.TITLE_TEXT),
                 parts.list(DialogTexts.GOALS_TITLE, rows));
         parts.addMascot(dialog, MascotPose.OVER_THE_TOP, UiImage.EMOTE_HAPPY);

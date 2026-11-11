@@ -31,11 +31,19 @@
     -fx-padding: 10 12 12 8;
 }
 
-.dialog-defeat-title {
+.dialog-defeat-title,
+.dialog-pause-title {
     -fx-border-image-source: url("../assets/images/UI/containers/red/button_square_depth_flat.png");
     -fx-border-image-slice: 16 16 24 16 fill;
     -fx-border-image-width: 16 16 24 16;
     -fx-padding: 14 8 18 8;
+}
+
+.dialog-pause-scene {
+    -fx-border-image-source: url("../assets/images/UI/containers/red/button_square_depth_border.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 16 16 24 16;
+    -fx-min-height: 250;
 }
 
 .dialog-defeat-message {
@@ -108,4 +116,18 @@
 
 .goal-missed {
     -fx-text-fill: #a3132b;
+}
+
+.dialog-goals {
+    -fx-padding: 24 22 65 22;
+}
+
+.dialog-defeat,
+.dialog-pause {
+    -fx-padding: 22 22 65 22;
+}
+
+/* Tall top: the three big stars sit over it. */
+.dialog-victory {
+    -fx-padding: 158 22 65 22;
 }

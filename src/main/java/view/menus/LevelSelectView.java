@@ -17,6 +17,7 @@ import view.components.buttons.ButtonSize;
 import view.components.buttons.ButtonStyle;
 import view.components.buttons.RoundStyle;
 import view.components.container.PopupInstaller;
+import view.components.container.TitledPanel;
 import view.components.images.LevelPreview;
 import view.components.images.UiImage;
 import view.components.images.ImageProvider;
@@ -88,7 +89,9 @@ public class LevelSelectView {
         prev = arrowButton(buttons, ButtonIcon.ARROW_LEFT, PREVIOUS, Pos.CENTER_LEFT, new Insets(0, 0, 0, ARROW_OUTSET));
         next = arrowButton(buttons, ButtonIcon.ARROW_RIGHT, NEXT, Pos.CENTER_RIGHT, new Insets(0, ARROW_OUTSET, 0, 0));
 
-        StackPane window = new StackPane(panel(card), play, prev, next);
+        StackPane panel = TitledPanel.panel(card);
+        panel.setPrefSize(PANEL_WIDTH, PANEL_HEIGHT);
+        StackPane window = new StackPane(panel, play, prev, next);
         window.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         root.getStyleClass().addAll(BACKGROUND_STYLE, ROOT_STYLE);
@@ -98,9 +101,10 @@ public class LevelSelectView {
     }
 
     private StackPane card() {
-        StackPane content = new StackPane(titleBar(), previewFrame());
-        content.setAlignment(Pos.TOP_CENTER);
-        return content;
+        preview.setPreserveRatio(true);
+        preview.setFitWidth(PREVIEW_W);
+        preview.setFitHeight(PREVIEW_H);
+        return TitledPanel.card(titleBar(), preview);
     }
 
     private StackPane titleBar() {
@@ -116,32 +120,13 @@ public class LevelSelectView {
         starRow.getChildren().setAll(stars);
         starRow.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
-        StackPane titleBar = new StackPane(name, starRow);
+        StackPane titleBar = TitledPanel.titleBar(name, starRow);
         titleBar.getStyleClass().add(TITLE_BAR_STYLE);
         titleBar.setPrefHeight(TITLE_BAR_HEIGHT);
         titleBar.setMaxHeight(Region.USE_PREF_SIZE);
         StackPane.setAlignment(name, Pos.CENTER_LEFT);
         StackPane.setAlignment(starRow, Pos.CENTER_RIGHT);
         return titleBar;
-    }
-
-    private StackPane previewFrame() {
-        preview.setPreserveRatio(true);
-        preview.setFitWidth(PREVIEW_W);
-        preview.setFitHeight(PREVIEW_H);
-
-        StackPane frame = new StackPane(preview);
-        frame.getStyleClass().add(FRAME_STYLE);
-        StackPane.setMargin(frame, new Insets(FRAME_TOP_OVERLAP, 0, 0, 0));
-        return frame;
-    }
-
-    private static StackPane panel(StackPane content) {
-        StackPane panel = new StackPane(content);
-        panel.getStyleClass().add(PANEL_STYLE);
-        panel.setPrefSize(PANEL_WIDTH, PANEL_HEIGHT);
-        panel.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        return panel;
     }
 
     private Button playButton(ButtonProvider buttons) {

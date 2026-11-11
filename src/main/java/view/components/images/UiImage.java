@@ -11,6 +11,7 @@ public enum UiImage implements ImageAsset {
     EMOTE_HAPPY("Items/emotes/emote_faceHappy.png"),
     EMOTE_SAD("Items/emotes/emote_faceSad.png"),
     EMOTE_HEART("Items/emotes/emote_heart.png"),
+    EMOTE_EXCLAMATION("Items/emotes/emote_exclamation.png"),
     ICON_ARROW("buttons/icons/arrow_decorative_e.png"),
     ICON_PLAY("buttons/icons/icon_play_outline.png"),
     ICON_REPLAY("buttons/icons/icon_repeat_outline.png"),
