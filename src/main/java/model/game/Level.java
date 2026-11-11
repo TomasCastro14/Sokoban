@@ -271,6 +271,14 @@ public class Level implements ReachabilityListener, LossReporter {
         return remainingSeconds;
     }
 
+    public boolean canUndo() {
+        return committingMove || history.canUndo();
+    }
+
+    public int getElapsedSeconds() {
+        return timeLimitSeconds - remainingSeconds;
+    }
+
     private final class LevelMoveReceiver implements MoveReceiver {
 
         @Override
