@@ -5,6 +5,7 @@ import model.game.Level;
 import model.game.LevelStats;
 import model.game.event.LevelFlowListener;
 import model.game.event.LevelOutcomeListener;
+import model.game.event.PauseListener;
 import model.game.loss.LossReason;
 import model.game.score.ScoreCalculator;
 import view.Navigator;
@@ -17,7 +18,7 @@ import java.util.Objects;
  * the goals before a level starts, the defeat when a loss is final and the summary on a win.
  * The popups close because the game moved on (a level started or restarted), not because a button was pressed.
  */
-public final class LevelDialogPresenter implements LevelFlowListener, LevelOutcomeListener {
+public final class LevelDialogPresenter implements LevelFlowListener, LevelOutcomeListener, PauseListener {
     private final Game game;
     private final LevelDialogs dialogs;
     private final PlaySession session;
@@ -33,6 +34,7 @@ public final class LevelDialogPresenter implements LevelFlowListener, LevelOutco
         this.navigator = Objects.requireNonNull(navigator, "navigator");
         game.addLevelFlowListener(this);
         game.addLevelOutcomeListener(this);
+        game.addPauseListener(this);
     }
 
     @Override
@@ -48,6 +50,16 @@ public final class LevelDialogPresenter implements LevelFlowListener, LevelOutco
 
     @Override
     public void boardRestored(Level level) {
+    }
+
+    @Override
+    public void gamePaused() {
+        dialogs.showPause(navigator::back, game::restart, game::togglePause);
+    }
+
+    @Override
+    public void gameResumed() {
+        dialogs.close();
     }
 
     @Override

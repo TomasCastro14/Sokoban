@@ -16,7 +16,7 @@ final class VictoryDialog {
     private static final double STAR_CENTER_Y = 75;
     private static final double MIDDLE_STAR_RISE = 25;
     private static final double SIDE_STAR_TILT = 12;
-    private static final double TOP_PADDING = 158;
+    private static final String PANEL_VARIANT = "dialog-victory";
     private static final String TITLE_BOX = "dialog-victory-title";
     private static final String SCORE_BOX = "dialog-score";
     private static final String SCORE_TEXT = "dialog-score-text";
@@ -31,7 +31,7 @@ final class VictoryDialog {
 
     Node build(ScoreResult result, Runnable onRetry, Runnable onNext) {
         Node[] rows = result.goals().stream().map(this::row).toArray(Node[]::new);
-        StackPane dialog = parts.panel(TOP_PADDING,
+        StackPane dialog = parts.panel(PANEL_VARIANT,
                 parts.overlapped(DialogParts.Overlap.LOWER_IN_FRONT,
                         parts.textBox(DialogTexts.VICTORY_TITLE, TITLE_BOX, DialogParts.TITLE_TEXT),
                         parts.textBox(DialogTexts.points(result.score()), SCORE_BOX, SCORE_TEXT)),

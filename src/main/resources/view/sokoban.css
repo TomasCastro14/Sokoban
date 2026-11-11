@@ -10,7 +10,8 @@
     -fx-background-repeat: repeat;
 }
 
-.background.level-select {
+.background.level-select,
+.background.settings {
     -fx-background-color: #3aa55a;
     -fx-background-image: url("../assets/images/map/ground_03.png");
     -fx-background-repeat: repeat;
@@ -45,7 +46,7 @@
     -fx-padding: 8;
 }
 
-.level-title-bar {
+.title-bar {
     -fx-border-image-source: url("../assets/images/UI/containers/blue/button_square_gradient.png");
     -fx-border-image-slice: 16 fill;
     -fx-border-image-width: 12;
@@ -56,4 +57,64 @@
     -fx-font-family: "Kenney Future";
     -fx-font-size: 24px;
     -fx-text-fill: white;
+}
+
+.settings-title {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 32px;
+    -fx-text-fill: white;
+}
+
+.settings-label {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 24px;
+    -fx-text-fill: #1b1b22;
+}
+
+/* Nine-slice so the round ends never stretch. The radius makes the slider lay the track 16px past
+   each end of the thumb's path: at 0 and 100 the thumb sits right on an end circle. */
+.settings-slider .track {
+    -fx-background-color: transparent;
+    -fx-background-radius: 16;
+    -fx-background-insets: 0;
+    -fx-border-image-source: url("../assets/images/UI/buttons/slide/slide_horizontal_grey.png");
+    -fx-border-image-slice: 16 32 16 32 fill;
+    -fx-border-image-width: 16 32 16 32;
+    -fx-pref-height: 32px;
+    -fx-padding: 0;
+}
+
+.settings-slider .thumb {
+    -fx-background-color: transparent;
+    -fx-background-image: url("../assets/images/UI/buttons/slide/check_round_grey_circle.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-insets: 0;
+    -fx-effect: null;
+    -fx-padding: 16;
+    -fx-cursor: hand;
+}
+
+/* The box draws the images; the mark (the default tick) only gives it its size and stays invisible. */
+.settings-check .box {
+    -fx-background-color: transparent;
+    -fx-background-image: url("../assets/images/UI/buttons/checkmark/check_square_grey.png");
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.settings-check:selected .box {
+    -fx-background-image: url("../assets/images/UI/buttons/checkmark/check_square_grey_checkmark.png");
+}
+
+.settings-check .mark {
+    -fx-background-color: transparent;
+    -fx-padding: 18;
+}
+
+.settings-check {
+    -fx-label-padding: 0;
 }

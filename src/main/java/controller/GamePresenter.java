@@ -7,14 +7,13 @@ import model.game.Game;
 import model.game.Level;
 import model.game.event.BoardListener;
 import model.game.event.LevelFlowListener;
-import model.game.event.PauseListener;
 import view.gameplay.GameScreen;
 import view.gameplay.ScreenLifecycleListener;
 
 import java.util.Objects;
 
-/** Joins the board view to the model and the screen lifecycle to the play session. Popups live in LevelDialogPresenter. */
-public final class GamePresenter implements BoardListener, LevelFlowListener, PauseListener, ScreenLifecycleListener {
+/** Joins the board view to the model and the screen lifecycle to the play session. Popups (pause included) live in LevelDialogPresenter. */
+public final class GamePresenter implements BoardListener, LevelFlowListener, ScreenLifecycleListener {
     private final Game game;
     private final GameScreen screen;
     private final PlaySession session;
@@ -26,7 +25,6 @@ public final class GamePresenter implements BoardListener, LevelFlowListener, Pa
         this.session = Objects.requireNonNull(session, "session");
         game.addBoardListener(this);
         game.addLevelFlowListener(this);
-        game.addPauseListener(this);
         screen.setLifecycleListener(this);
     }
 
@@ -35,10 +33,9 @@ public final class GamePresenter implements BoardListener, LevelFlowListener, Pa
         session.stop();
         game.removeBoardListener(this);
         game.removeLevelFlowListener(this);
-        game.removePauseListener(this);
     }
 
-    /** ESC only pauses while playing: with a popup open there is nothing to pause. */
+    /** ESC pauses and resumes only while playing: with the goals, defeat or victory popup open it does nothing. */
     public void onEscape() {
         if (session.isActive()) {
             game.togglePause();
@@ -60,7 +57,6 @@ public final class GamePresenter implements BoardListener, LevelFlowListener, Pa
 
     @Override
     public void levelStarted(int levelNumber, Level level) {
-        screen.showPaused(false);
         if (visible) {
             screen.showLevel(level);
         }
@@ -104,15 +100,5 @@ public final class GamePresenter implements BoardListener, LevelFlowListener, Pa
         if (visible) {
             screen.boardChanged();
         }
-    }
-
-    @Override
-    public void gamePaused() {
-        screen.showPaused(true);
-    }
-
-    @Override
-    public void gameResumed() {
-        screen.showPaused(false);
     }
 }

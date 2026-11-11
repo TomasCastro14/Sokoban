@@ -8,6 +8,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
+import java.util.Objects;
+
 /**
  * A popup slot on top of a screen: one dialog at a time over the dark veil, or nothing at all.
  * Dialogs are built at one fixed design size and the layer scales them as a whole, so every
@@ -19,6 +21,7 @@ public final class DialogLayer {
     private static final double SHOWN = 1;
     /** Share of the window a dialog may take at most, so it never touches the edges. */
     private static final double MAX_SCREEN_SHARE = 0.9;
+    private static final Runnable NOTHING = () -> { };
 
     private final StackPane root = new StackPane();
     private final Region overlay = Overlay.create();
@@ -38,6 +41,13 @@ public final class DialogLayer {
     }
 
     public void show(Node dialog) {
+        show(dialog, NOTHING);
+    }
+
+    /** Like show(dialog), but a click on the veil around the dialog runs onVeilClicked (the pause closes that way). */
+    public void show(Node dialog, Runnable onVeilClicked) {
+        Objects.requireNonNull(onVeilClicked, "onVeilClicked");
+        overlay.setOnMouseClicked(event -> onVeilClicked.run());
         fitToWindow(dialog);
         root.getChildren().setAll(overlay, dialog);
         root.setVisible(true);
