@@ -11,6 +11,7 @@ import java.util.Objects;
 public final class ButtonFactory implements ButtonProvider {
     private static final String RECTANGULAR_BUTTON = "menu-button";
     private static final String ROUND_BUTTON = "button-round";
+    private static final double MIRROR = -1;
 
     private final ImageProvider images;
 
@@ -46,6 +47,9 @@ public final class ButtonFactory implements ButtonProvider {
         view.setFitWidth(icon.widthFor(size));
         view.setPreserveRatio(true);
         view.setRotate(icon.rotation());
+        if (icon.mirrored()) {
+            view.setScaleX(MIRROR);
+        }
         return view;
     }
 

@@ -5,3 +5,38 @@
     -fx-background-image: url("../assets/images/map/ground_03.png");
     -fx-background-repeat: repeat;
 }
+
+.hud {
+    -fx-padding: 20 24 16 24;
+}
+
+.hud-bar {
+    -fx-border-image-source: url("../assets/images/UI/containers/button_square_depth_line.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 12 12 18 12;
+    -fx-padding: 6 28 6 8;
+}
+
+.hud-name-tag {
+    -fx-border-image-source: url("../assets/images/UI/containers/blue/button_square_gradient.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-border-image-width: 10;
+    -fx-padding: 8 18 6 18;
+}
+
+.hud-level-name {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 22px;
+    -fx-text-fill: white;
+}
+
+.hud-stat {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 22px;
+    -fx-text-fill: #1b1b22;
+}
+
+/* Four digits of the widest figure (0.852 em each in Kenney Future): "0001" and "0000" take the same room. */
+.hud-counter {
+    -fx-min-width: 3.45em;
+}

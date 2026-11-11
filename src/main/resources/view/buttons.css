@@ -59,6 +59,13 @@
     -fx-text-fill: #9a9a9a;
 }
 
+.button-round:disabled {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_grey/button_round_depth_gloss.png");
+    -fx-opacity: 1;
+    -fx-translate-y: 0;
+    -fx-cursor: default;
+}
+
 .menu-button:disabled {
     -fx-effect: null;
     -fx-cursor: default;

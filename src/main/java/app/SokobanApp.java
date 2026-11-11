@@ -1,14 +1,6 @@
 package app;
 
-import controller.GameClock;
-import controller.GamePresenter;
-import controller.InputController;
-import controller.LevelDialogPresenter;
-import controller.LevelProgression;
-import controller.MenuController;
-import controller.PlaySession;
-import controller.SettingsPresenter;
-import controller.SoundEventListener;
+import controller.*;
 import factory.LevelLoader;
 import factory.StandardLossRules;
 import javafx.application.Application;
@@ -34,6 +26,7 @@ import view.components.images.ImageLoader;
 import view.components.images.ImageProvider;
 import view.components.images.UiImages;
 import view.gameplay.GameView;
+import view.gameplay.HudView;
 import view.gameplay.dialog.LevelDialogsView;
 import view.menus.LevelSelectView;
 import view.menus.LevelSelectView.LevelInfo;
@@ -84,6 +77,9 @@ public class SokobanApp extends Application {
         GameView gameView = new GameView(sprites, dialogs.getRoot());
         PlaySession session = new PlaySession(new InputController(game), new GameClock(game));
         GamePresenter gamePresenter = new GamePresenter(game, gameView, session);
+        HudView hud = new HudView(buttons);
+        gameView.setHud(hud.getRoot());
+        new HudController(game, hud, gamePresenter::onEscape);
         new LevelDialogPresenter(game, dialogs, session, new StandardScoreCalculator(), window);
         new LevelProgression(game, window);
         MenuController menus = new MenuController(game, window, Platform::exit);

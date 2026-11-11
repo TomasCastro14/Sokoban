@@ -16,7 +16,7 @@ import java.util.Objects;
 
 
 public class BoardView extends Region {
-    
+
     static final double TILE = 64;
     private static final Color UNSEEN = Color.BLACK;
 
@@ -29,15 +29,16 @@ public class BoardView extends Region {
             long now = System.nanoTime();
             draw(now);
             if (!player.isMoving(now)) {
-                stop();                       
+                stop();
             }
         }
     };
     private Level level;
+    private double topInset;
 
     public BoardView(SpriteCatalog sprites) {
         this.sprites = Objects.requireNonNull(sprites, "sprites");
-        setMinSize(0, 0);                     // que pueda achicarse dentro de un BorderPane
+        setMinSize(0, 0);                     // que pueda achicarse con la ventana
         getChildren().add(canvas);
     }
 
@@ -60,6 +61,14 @@ public class BoardView extends Region {
         draw(System.nanoTime());
     }
 
+    /** Alto (px) de la franja de arriba que tapa el HUD: la cámara no deja el mapa debajo de ella. */
+    public void setTopInset(double topInset) {
+        if (topInset != this.topInset) {
+            this.topInset = topInset;
+            draw(System.nanoTime());
+        }
+    }
+
     @Override
     protected void layoutChildren() {
         canvas.setWidth(getWidth());
@@ -80,7 +89,8 @@ public class BoardView extends Region {
 
         Camera.Offset camera = Camera.follow(
                 (player.col(now) + 0.5) * TILE, (player.row(now) + 0.5) * TILE,
-                viewW, viewH, board.getCols() * TILE, board.getRows() * TILE);
+                viewW, viewH, board.getCols() * TILE, board.getRows() * TILE, topInset);
+
         double offX = Math.round(camera.x());          // enteros: sin costuras entre casilleros
         double offY = Math.round(camera.y());
 
