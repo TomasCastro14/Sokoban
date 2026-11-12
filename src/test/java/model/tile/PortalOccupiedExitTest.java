@@ -14,22 +14,28 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Rule: the exit is the pair portal's cell. If something is already there,
- * the move is BLOCKED and nothing changes, like pushing two boxes in a row.
+ * Rule: the exit is the cell below the pair portal. If a box is there, the player shoves it one
+ * cell down when that cell is free floor; otherwise the move is BLOCKED and nothing changes.
+ * A box coming through a portal never shoves: an occupied exit always blocks it.
  */
 class PortalOccupiedExitTest {
 
-    /** P at (1,2) and its pair at (1,6). */
+    /** P at (1,2) and its pair at (1,6): the exit is (2,6), with a wall below it. */
     private static final String[] PLAYER_NEXT_TO_PORTAL = {
             "#########",
             "#@P   P #",
+            "#       #",
             "#########"};
 
-    /** Box at (1,2) in front of P (1,3); pair at (1,7). */
+    /** Box at (1,2) in front of P (1,3); pair at (1,7), so the exit is (2,7). */
     private static final String[] BOX_NEXT_TO_PORTAL = {
             "##########",
             "#@$P   P #",
+            "#        #",
             "##########"};
+
+    private static final Position PLAYER_EXIT = new Position(2, 6);
+    private static final Position BOX_EXIT = new Position(2, 7);
 
     private static final Position PLAYER_START = new Position(1, 1);
 
@@ -42,7 +48,7 @@ class PortalOccupiedExitTest {
     @Test
     @DisplayName("Jugador entra al portal con una caja en la salida: BLOCKED")
     void playerIntoOccupiedExitIsBlocked() {
-        Level level = levelWithBoxAt(new Position(1, 6), PLAYER_NEXT_TO_PORTAL);
+        Level level = levelWithBoxAt(PLAYER_EXIT, PLAYER_NEXT_TO_PORTAL);
 
         assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
     }
@@ -50,7 +56,7 @@ class PortalOccupiedExitTest {
     @Test
     @DisplayName("Jugador bloqueado por la salida ocupada: no se mueve")
     void blockedPlayerStaysPut() {
-        Level level = levelWithBoxAt(new Position(1, 6), PLAYER_NEXT_TO_PORTAL);
+        Level level = levelWithBoxAt(PLAYER_EXIT, PLAYER_NEXT_TO_PORTAL);
 
         level.move(Direction.RIGHT);
 
@@ -60,18 +66,17 @@ class PortalOccupiedExitTest {
     @Test
     @DisplayName("Jugador bloqueado por la salida ocupada: la caja de la salida no se mueve")
     void boxAtExitStaysPut() {
-        Level level = levelWithBoxAt(new Position(1, 6), PLAYER_NEXT_TO_PORTAL);
+        Level level = levelWithBoxAt(PLAYER_EXIT, PLAYER_NEXT_TO_PORTAL);
 
         level.move(Direction.RIGHT);
 
-        assertNotNull(level.getBoard().getBoxAt(new Position(1, 6)));
-        assertNull(level.getBoard().getBoxAt(new Position(1, 7)));
+        assertNotNull(level.getBoard().getBoxAt(PLAYER_EXIT));
     }
 
     @Test
     @DisplayName("Jugador bloqueado por la salida ocupada: no suma movimientos ni empujes")
     void blockedPlayerCountsNothing() {
-        Level level = levelWithBoxAt(new Position(1, 6), PLAYER_NEXT_TO_PORTAL);
+        Level level = levelWithBoxAt(PLAYER_EXIT, PLAYER_NEXT_TO_PORTAL);
 
         level.move(Direction.RIGHT);
 
@@ -84,7 +89,7 @@ class PortalOccupiedExitTest {
     void weakBoxAtExitKeepsItsPushes() {
         Level level = TestLevels.level(PLAYER_NEXT_TO_PORTAL);
         WeakBox weak = new WeakBox(3);
-        level.getBoard().placeBox(new Position(1, 6), weak);
+        level.getBoard().placeBox(PLAYER_EXIT, weak);
 
         level.move(Direction.RIGHT);
 
@@ -94,7 +99,7 @@ class PortalOccupiedExitTest {
     @Test
     @DisplayName("Caja empujada al portal con otra caja en la salida: BLOCKED")
     void boxIntoOccupiedExitIsBlocked() {
-        Level level = levelWithBoxAt(new Position(1, 7), BOX_NEXT_TO_PORTAL);
+        Level level = levelWithBoxAt(BOX_EXIT, BOX_NEXT_TO_PORTAL);
 
         assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
     }
@@ -102,20 +107,20 @@ class PortalOccupiedExitTest {
     @Test
     @DisplayName("Caja bloqueada por la salida ocupada: las dos cajas y el jugador quedan donde estaban")
     void blockedBoxPushChangesNoPosition() {
-        Level level = levelWithBoxAt(new Position(1, 7), BOX_NEXT_TO_PORTAL);
+        Level level = levelWithBoxAt(BOX_EXIT, BOX_NEXT_TO_PORTAL);
         Board board = level.getBoard();
 
         level.move(Direction.RIGHT);
 
         assertNotNull(board.getBoxAt(new Position(1, 2)));
-        assertNotNull(board.getBoxAt(new Position(1, 7)));
+        assertNotNull(board.getBoxAt(BOX_EXIT));
         assertEquals(PLAYER_START, board.getPlayerPosition());
     }
 
     @Test
     @DisplayName("Caja bloqueada por la salida ocupada: no suma movimientos ni empujes")
     void blockedBoxPushCountsNothing() {
-        Level level = levelWithBoxAt(new Position(1, 7), BOX_NEXT_TO_PORTAL);
+        Level level = levelWithBoxAt(BOX_EXIT, BOX_NEXT_TO_PORTAL);
 
         level.move(Direction.RIGHT);
 
@@ -129,8 +134,9 @@ class PortalOccupiedExitTest {
         Level level = TestLevels.level(
                 "##########",
                 "#@3P   P #",
+                "#        #",
                 "##########");
-        level.getBoard().placeBox(new Position(1, 7), new NormalBox());
+        level.getBoard().placeBox(BOX_EXIT, new NormalBox());
         WeakBox weak = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
 
         level.move(Direction.RIGHT);
@@ -141,9 +147,10 @@ class PortalOccupiedExitTest {
     @Test
     @DisplayName("En la otra direccion: entrando por la pareja con una caja en P, tambien BLOCKED")
     void occupiedExitBlocksTheOtherWayToo() {
-        Level level = levelWithBoxAt(new Position(1, 2),
+        Level level = levelWithBoxAt(new Position(2, 2),
                 "#########",
                 "# P   P@#",
+                "#       #",
                 "#########");
 
         assertEquals(MoveResult.BLOCKED, level.move(Direction.LEFT));
@@ -153,14 +160,14 @@ class PortalOccupiedExitTest {
     @Test
     @DisplayName("Con varios pares, la salida ocupada de P no afecta a Q")
     void occupiedExitOfPDoesNotAffectQ() {
-        Level level = levelWithBoxAt(new Position(1, 8),
+        Level level = levelWithBoxAt(new Position(2, 8),   // exit of P
                 "##########",
                 "#@P   Q P#",
                 "#Q       #",
                 "##########");
 
-        assertEquals(MoveResult.OK, level.move(Direction.DOWN));
-        assertEquals(new Position(1, 6), level.getBoard().getPlayerPosition());
+        assertEquals(MoveResult.OK, level.move(Direction.DOWN));        // enters Q (2,1)
+        assertEquals(new Position(2, 6), level.getBoard().getPlayerPosition());
     }
 
     @Test
@@ -169,7 +176,7 @@ class PortalOccupiedExitTest {
         Level level = TestLevels.level(PLAYER_NEXT_TO_PORTAL);
 
         assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
-        assertEquals(new Position(1, 6), level.getBoard().getPlayerPosition());
+        assertEquals(PLAYER_EXIT, level.getBoard().getPlayerPosition());
     }
 
     @Test
@@ -178,7 +185,23 @@ class PortalOccupiedExitTest {
         Level level = TestLevels.level(BOX_NEXT_TO_PORTAL);
 
         assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
-        assertNotNull(level.getBoard().getBoxAt(new Position(1, 7)));
+        assertNotNull(level.getBoard().getBoxAt(BOX_EXIT));
         assertEquals(1, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("Si hay piso libre debajo, el jugador corre la caja de la salida una casilla hacia abajo")
+    void playerShovesBoxAtExitDown() {
+        Level level = levelWithBoxAt(PLAYER_EXIT,
+                "#########",
+                "#@P   P #",
+                "#       #",
+                "#       #",
+                "#########");
+
+        assertNotEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
+
+        assertEquals(PLAYER_EXIT, level.getBoard().getPlayerPosition());
+        assertNotNull(level.getBoard().getBoxAt(new Position(3, 6)));
     }
 }

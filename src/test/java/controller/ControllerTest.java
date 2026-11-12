@@ -4,6 +4,8 @@ import javafx.scene.input.KeyCode;
 import model.board.Direction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import view.gameplay.HudListener;
+import view.gameplay.HudScreen;
 
 import java.util.List;
 
@@ -47,12 +49,35 @@ class ControllerTest {
         assertTrue(game.calls.isEmpty());
     }
 
+    /** A HUD that shows nothing: these tests only check what reaches the game. */
+    private static final HudScreen SILENT_HUD = new HudScreen() {
+        @Override
+        public void showLevelName(String name) {
+        }
+
+        @Override
+        public void showStats(int elapsedSeconds, int pushes, int moves) {
+        }
+
+        @Override
+        public void setUndoEnabled(boolean enabled) {
+        }
+
+        @Override
+        public void setListener(HudListener listener) {
+        }
+    };
+
+    private static HudController hudFor(RecordingGame game) {
+        return new HudController(game, SILENT_HUD, () -> game.calls.add("togglePause"));
+    }
+
     @Test
     @DisplayName("5. El boton Deshacer le pide undo a Game")
     void undoButtonDelegatesToGame() {
         RecordingGame game = new RecordingGame();
 
-        new HudController(game).onUndoPressed();
+        hudFor(game).onUndoPressed();
 
         assertEquals(List.of("undo"), game.calls);
     }
@@ -62,9 +87,19 @@ class ControllerTest {
     void restartButtonDelegatesToGame() {
         RecordingGame game = new RecordingGame();
 
-        new HudController(game).onRestartPressed();
+        hudFor(game).onRestartPressed();
 
         assertEquals(List.of("restart"), game.calls);
+    }
+
+    @Test
+    @DisplayName("6b. El boton Pausa hace lo mismo que ESC")
+    void pauseButtonRunsTheSameActionAsEscape() {
+        RecordingGame game = new RecordingGame();
+
+        hudFor(game).onPausePressed();
+
+        assertEquals(List.of("togglePause"), game.calls);
     }
 
     @Test

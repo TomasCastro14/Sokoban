@@ -5,6 +5,7 @@ import model.board.Direction;
 import model.game.Game;
 import model.game.Level;
 import model.game.state.PausedState;
+import model.game.state.PlayingState;
 import model.game.state.WonState;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,6 @@ class GamePresenterTest {
 
     private static final class FakeScreen implements GameScreen {
         final List<String> calls = new ArrayList<>();
-        boolean paused;
 
         @Override
         public void showLevel(Level level) {
@@ -40,19 +40,17 @@ class GamePresenterTest {
         }
 
         @Override
-        public void showPaused(boolean paused) {
-            this.paused = paused;
-        }
-
-        @Override
         public void setLifecycleListener(ScreenLifecycleListener listener) {
         }
     }
 
     private final FakeScreen screen = new FakeScreen();
 
+    private PlaySession session;
+
     private GamePresenter presenterFor(Game game) {
-        return new GamePresenter(game, screen, new InputController(game), new GameClock(game));
+        session = new PlaySession(new InputController(game), new GameClock(game));
+        return new GamePresenter(game, screen, session);
     }
 
     private static Game startedGame(Level level) {
@@ -62,17 +60,29 @@ class GamePresenterTest {
     }
 
     @Test
-    @DisplayName("ESC en el juego pausa y muestra la pausa; otro ESC reanuda")
+    @DisplayName("ESC mientras se juega pausa; otro ESC reanuda")
     void escapePausesAndResumes() {
         Game game = startedGame(TestLevels.level("########", "#@     #", "#  $.  #", "########"));
         GamePresenter presenter = presenterFor(game);
+        session.resume();
 
         presenter.onEscape();
         assertSame(PausedState.INSTANCE, game.getState());
-        assertTrue(screen.paused);
 
         presenter.onEscape();
-        assertFalse(screen.paused);
+        assertSame(PlayingState.INSTANCE, game.getState());
+    }
+
+    @Test
+    @DisplayName("ESC no hace nada con un popup abierto (sesion retenida)")
+    void escapeIsIgnoredWhileHeld() {
+        Game game = startedGame(TestLevels.level("########", "#@     #", "#  $.  #", "########"));
+        GamePresenter presenter = presenterFor(game);
+        session.hold();
+
+        presenter.onEscape();
+
+        assertSame(PlayingState.INSTANCE, game.getState());
     }
 
     @Test
