@@ -18,8 +18,6 @@ import java.util.Objects;
 public class BoardView extends Region {
 
     static final double TILE = 64;
-    /** Si el mapa no entra en pantalla los casilleros se achican, pero nunca por debajo de esto (ahí scrollea la cámara). */
-    static final double MIN_TILE = 24;
     private static final Color UNSEEN = Color.BLACK;
 
     private final Canvas canvas = new Canvas();
@@ -89,44 +87,37 @@ public class BoardView extends Region {
         Board board = level.getBoard();
         Visibility visibility = level.getVisibility();
 
-        double tile = tileSize(board, viewW, viewH);
         Camera.Offset camera = Camera.follow(
-                (player.col(now) + 0.5) * tile, (player.row(now) + 0.5) * tile,
-                viewW, viewH, board.getCols() * tile, board.getRows() * tile, topInset);
+                (player.col(now) + 0.5) * TILE, (player.row(now) + 0.5) * TILE,
+                viewW, viewH, board.getCols() * TILE, board.getRows() * TILE, topInset);
 
         double offX = Math.round(camera.x());          // enteros: sin costuras entre casilleros
         double offY = Math.round(camera.y());
 
-        int firstRow = Math.max(0, (int) Math.floor(offY / tile));
-        int lastRow = Math.min(board.getRows() - 1, (int) Math.floor((offY + viewH) / tile));
-        int firstCol = Math.max(0, (int) Math.floor(offX / tile));
-        int lastCol = Math.min(board.getCols() - 1, (int) Math.floor((offX + viewW) / tile));
+        int firstRow = Math.max(0, (int) Math.floor(offY / TILE));
+        int lastRow = Math.min(board.getRows() - 1, (int) Math.floor((offY + viewH) / TILE));
+        int firstCol = Math.max(0, (int) Math.floor(offX / TILE));
+        int lastCol = Math.min(board.getCols() - 1, (int) Math.floor((offX + viewW) / TILE));
 
         for (int row = firstRow; row <= lastRow; row++) {
             for (int col = firstCol; col <= lastCol; col++) {
                 drawCell(g, board.cellAt(new Position(row, col)), visibility,
-                        col * tile - offX, row * tile - offY, tile);
+                        col * TILE - offX, row * TILE - offY);
             }
         }
         g.drawImage(sprites.get(player.sprite(now)),
-                player.col(now) * tile - offX, player.row(now) * tile - offY, tile, tile);
+                player.col(now) * TILE - offX, player.row(now) * TILE - offY, TILE, TILE);
     }
 
-    /** Lado del casillero: 64px si el mapa entra; si no, lo justo para que entre entero debajo del HUD. */
-    private double tileSize(Board board, double viewW, double viewH) {
-        double fit = Math.min(viewW / board.getCols(), (viewH - topInset) / board.getRows());
-        return Math.clamp(Math.floor(fit), MIN_TILE, TILE);   // entero: sin costuras entre casilleros
-    }
-
-    private void drawCell(GraphicsContext g, Cell cell, Visibility visibility, double x, double y, double tile) {
+    private void drawCell(GraphicsContext g, Cell cell, Visibility visibility, double x, double y) {
         switch (CellSprites.appearanceOf(cell, visibility)) {
             case OUTSIDE -> { }                                  // se ve el pasto del fondo
             case HIDDEN -> {
                 g.setFill(UNSEEN);
-                g.fillRect(x, y, tile, tile);
+                g.fillRect(x, y, TILE, TILE);
             }
             case VISIBLE -> CellSprites.layers(cell)
-                    .forEach(key -> g.drawImage(sprites.get(key), x, y, tile, tile));
+                    .forEach(key -> g.drawImage(sprites.get(key), x, y, TILE, TILE));
         }
     }
 }
