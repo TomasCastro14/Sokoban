@@ -1,5 +1,6 @@
 package model.game;
 
+import model.game.score.LevelGoals;
 import factory.TestLevels;
 import model.board.Board;
 import model.board.Direction;
@@ -22,7 +23,7 @@ class LevelEventsTest {
 
     private static Level levelWithoutLossListeners(String... rows) {
         Board board = TestLevels.level(rows).getBoard();
-        return new Level("sin perdidas", TIME_LIMIT, 100, board);
+        return new Level("sin perdidas", TIME_LIMIT, new LevelGoals(100, 100, 100), board);
     }
 
     private static final class PushRecorder implements BoardListener {

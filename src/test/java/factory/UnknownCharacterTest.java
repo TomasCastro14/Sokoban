@@ -119,7 +119,9 @@ class UnknownCharacterTest {
     void headerIsNotChecked() {
         String text = "nombre: Nivel ¡raro! X*\n"
                 + "tiempo: 90\n"
-                + "objetivo: 500\n"
+                + "movimientos: 60\n"
+                + "empujes: 20\n"
+                + "undo: 1\n"
                 + "---\n"
                 + "######\n"
                 + "#@$. #\n"

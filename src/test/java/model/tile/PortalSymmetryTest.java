@@ -16,13 +16,16 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * A pair has no fixed entrance: entering either portal leads to the other one.
+ * A pair has no fixed entrance: entering either portal leads to the cell below the other one.
  * Boards that need several moves keep a box away from its storage point, so the level is not won at once.
  */
 class PortalSymmetryTest {
 
     private static final Position A = new Position(1, 2);
     private static final Position B = new Position(1, 6);
+    /** Where you appear when coming out of each portal: the cell below it. */
+    private static final Position BELOW_A = new Position(2, 2);
+    private static final Position BELOW_B = new Position(2, 6);
 
     /** Player left of A (1,2), pair B at (1,6). */
     private static final String[] PLAYER_NEXT_TO_A = {
@@ -46,23 +49,23 @@ class PortalSymmetryTest {
     }
 
     @Test
-    @DisplayName("Entrar en A lleva a B")
+    @DisplayName("Entrar en A lleva debajo de B")
     void enteringALeadsToB() {
-        assertEquals(B, move(TestLevels.level(PLAYER_NEXT_TO_A), Direction.RIGHT));
+        assertEquals(BELOW_B, move(TestLevels.level(PLAYER_NEXT_TO_A), Direction.RIGHT));
     }
 
     @Test
-    @DisplayName("Entrar en B lleva a A")
+    @DisplayName("Entrar en B lleva debajo de A")
     void enteringBLeadsToA() {
-        assertEquals(A, move(TestLevels.level(PLAYER_NEXT_TO_B), Direction.LEFT));
+        assertEquals(BELOW_A, move(TestLevels.level(PLAYER_NEXT_TO_B), Direction.LEFT));
     }
 
     @Test
-    @DisplayName("Ida y vuelta: A lleva a B, sale de B y al volver a entrar en B llega a A")
+    @DisplayName("Ida y vuelta: A lleva debajo de B y al subir a B se vuelve debajo de A")
     void roundTrip() {
         Level level = TestLevels.level(PLAYER_NEXT_TO_A);
 
-        assertEquals(A, move(level, Direction.RIGHT, Direction.RIGHT, Direction.LEFT));
+        assertEquals(BELOW_A, move(level, Direction.RIGHT, Direction.UP));
     }
 
     @Test
@@ -70,34 +73,36 @@ class PortalSymmetryTest {
     void arrivingDoesNotTeleportAgain() {
         Level level = TestLevels.level(PLAYER_NEXT_TO_A);
 
-        assertEquals(B, move(level, Direction.RIGHT));
+        assertEquals(BELOW_B, move(level, Direction.RIGHT));
         assertEquals(1, level.getStats().getMoves());
     }
 
     @Test
-    @DisplayName("Una caja empujada a A aparece en B")
+    @DisplayName("Una caja empujada a A aparece debajo de B")
     void boxIntoALandsOnB() {
         Level level = TestLevels.level(
                 "##########",
                 "#@$P   P #",
+                "#        #",
                 "##########");
 
         level.move(Direction.RIGHT);
 
-        assertNotNull(level.getBoard().getBoxAt(new Position(1, 7)));
+        assertNotNull(level.getBoard().getBoxAt(new Position(2, 7)));
     }
 
     @Test
-    @DisplayName("Una caja empujada a B aparece en A")
+    @DisplayName("Una caja empujada a B aparece debajo de A")
     void boxIntoBLandsOnA() {
         Level level = TestLevels.level(
                 "##########",
                 "# P   P$@#",
+                "#        #",
                 "##########");
 
         level.move(Direction.LEFT);
 
-        assertNotNull(level.getBoard().getBoxAt(new Position(1, 2)));
+        assertNotNull(level.getBoard().getBoxAt(new Position(2, 2)));
     }
 
     @Test
@@ -117,7 +122,7 @@ class PortalSymmetryTest {
     @DisplayName("Salida ocupada entrando por A: BLOCKED")
     void occupiedExitViaA() {
         Level level = TestLevels.level(PLAYER_NEXT_TO_A);
-        level.getBoard().placeBox(B, new NormalBox());
+        level.getBoard().placeBox(BELOW_B, new NormalBox()); // a wall below: it cannot be shoved
 
         assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
     }
@@ -126,13 +131,13 @@ class PortalSymmetryTest {
     @DisplayName("Salida ocupada entrando por B: BLOCKED")
     void occupiedExitViaB() {
         Level level = TestLevels.level(PLAYER_NEXT_TO_B);
-        level.getBoard().placeBox(A, new NormalBox());
+        level.getBoard().placeBox(BELOW_A, new NormalBox());
 
         assertEquals(MoveResult.BLOCKED, level.move(Direction.LEFT));
     }
 
     @Test
-    @DisplayName("Con varios pares, la simetria se cumple en cada par: entrar por la pareja de Q vuelve al primer Q")
+    @DisplayName("Con varios pares, la simetria se cumple en cada par: entrar por la pareja de Q vuelve debajo del primer Q")
     void symmetryPerPair() {
         Level level = TestLevels.level(
                 "###########",
@@ -141,11 +146,11 @@ class PortalSymmetryTest {
                 "#   $.    #",
                 "###########");
 
-        level.move(Direction.UP); // enters Q (1,1) -> Q (1,9)
-        level.move(Direction.DOWN);
-        level.move(Direction.UP); // enters Q (1,9) again -> Q (1,1)
+        level.move(Direction.UP); // enters Q (1,1) -> below Q (1,9) = (2,9)
+        assertEquals(new Position(2, 9), level.getBoard().getPlayerPosition());
 
-        assertEquals(new Position(1, 1), level.getBoard().getPlayerPosition());
+        level.move(Direction.UP); // enters Q (1,9) -> below Q (1,1) = (2,1)
+        assertEquals(new Position(2, 1), level.getBoard().getPlayerPosition());
     }
 
     @Test

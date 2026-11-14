@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Each folder under /level-source holds a tiny nivel01.txt named after what it tests. */
 class ClasspathLevelSourceTest {
     private static final List<String> BASIC_LINES = List.of(
-            "nombre: Nivel basico", "tiempo: 90", "objetivo: 500", "---", "#####", "#@$.#", "#####");
+            "nombre: Nivel basico", "tiempo: 90", "movimientos: 60", "empujes: 20", "undo: 1", "---", "#####", "#@$.#", "#####");
 
     private static ClasspathLevelSource sourceIn(String folder) {
         return new ClasspathLevelSource("/level-source/" + folder + "/nivel%02d.txt");
@@ -28,7 +28,7 @@ class ClasspathLevelSourceTest {
     void firstLastAndCountMatch() throws LevelNotFoundException {
         List<String> lines = sourceIn("basic").lines(1);
 
-        assertEquals(7, lines.size());
+        assertEquals(9, lines.size());
         assertEquals("nombre: Nivel basico", lines.get(0));
         assertEquals("#####", lines.get(lines.size() - 1));
     }
