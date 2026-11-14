@@ -6,6 +6,7 @@ import model.game.Game;
 import model.game.Level;
 import model.game.state.GameCompletedState;
 import model.game.state.PlayingState;
+import model.game.state.WonState;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import view.Navigator;
@@ -43,27 +44,32 @@ class LevelProgressionTest {
     private final Game game = new Game(n -> oneMoveLevel(), LEVEL_COUNT);
 
     LevelProgressionTest() {
-        new LevelProgression(game, navigator, Runnable::run);
+        new LevelProgression(game, navigator);
     }
 
     @Test
-    @DisplayName("Al ganar un nivel se pasa al siguiente por el evento levelWon")
-    void winningLoadsTheNextLevel() {
+    @DisplayName("Ganar un nivel no lo cambia solo: se espera a que el jugador pida el siguiente")
+    void winningWaitsForNextLevel() {
         game.start();
 
         game.move(Direction.RIGHT);
+        assertSame(WonState.INSTANCE, game.getState());
+        assertEquals(1, game.getCurrentLevelNumber());
 
+        game.nextLevel();
         assertEquals(2, game.getCurrentLevelNumber());
         assertSame(PlayingState.INSTANCE, game.getState());
         assertTrue(navigator.shown.isEmpty());
     }
 
     @Test
-    @DisplayName("Al ganar el ultimo nivel termina el juego y se vuelve al menu principal")
-    void winningTheLastLevelEndsTheGame() {
+    @DisplayName("Al pasar despues del ultimo nivel termina el juego y se vuelve al menu principal")
+    void finishingTheLastLevelEndsTheGame() {
         game.start(LEVEL_COUNT);
 
         game.move(Direction.RIGHT);
+        assertTrue(navigator.shown.isEmpty());
+        game.nextLevel();
 
         assertSame(GameCompletedState.INSTANCE, game.getState());
         assertEquals(List.of(Screen.MAIN_MENU), navigator.shown);
@@ -73,27 +79,13 @@ class LevelProgressionTest {
     @DisplayName("Perder no cambia de nivel ni de pantalla")
     void losingDoesNotNavigate() {
         Game losing = new Game(n -> TestLevels.level("######", "#@3. #", "######"), LEVEL_COUNT);
-        new LevelProgression(losing, navigator, Runnable::run);
+        new LevelProgression(losing, navigator);
         losing.start();
 
         losing.move(Direction.RIGHT);
+        losing.nextLevel();
 
         assertEquals(1, losing.getCurrentLevelNumber());
         assertTrue(navigator.shown.isEmpty());
-    }
-
-    @Test
-    @DisplayName("El paso de nivel espera a que termine el evento actual")
-    void advanceWaitsForTheCurrentEvent() {
-        List<Runnable> pending = new ArrayList<>();
-        Game deferred = new Game(n -> oneMoveLevel(), LEVEL_COUNT);
-        new LevelProgression(deferred, navigator, pending::add);
-        deferred.start();
-
-        deferred.move(Direction.RIGHT);
-        assertEquals(1, deferred.getCurrentLevelNumber());
-
-        pending.forEach(Runnable::run);
-        assertEquals(2, deferred.getCurrentLevelNumber());
     }
 }

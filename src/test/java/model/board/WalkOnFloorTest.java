@@ -12,14 +12,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class WalkOnFloorTest {
     private static final Position CENTER = new Position(2, 2);
 
-    /** 5x5 room with the player in the middle and free floor all around. */
+    /** Room with the player at (2,2) and free floor all around; the box only keeps the level from being won. */
     private static Level emptyRoom() {
         return TestLevels.level(
-                "#####",
-                "#   #",
-                "# @ #",
-                "#   #",
-                "#####");
+                "#######",
+                "#   $.#",
+                "# @   #",
+                "#     #",
+                "#######");
     }
 
     /** Long corridor so a slide of more than one cell would be noticed. */
@@ -27,7 +27,7 @@ class WalkOnFloorTest {
         return TestLevels.level(
                 "#########",
                 "#@      #",
-                "#       #",
+                "#     $.#",
                 "#########");
     }
 

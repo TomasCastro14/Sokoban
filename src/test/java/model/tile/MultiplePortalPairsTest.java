@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Several pairs in the same level: each portal leads only to the other portal with its letter. */
+/** Several pairs in the same level: each portal leads only below the other portal with its letter. */
 class MultiplePortalPairsTest {
 
     private static Position playerAfter(Level level, Direction... moves) {
@@ -22,73 +22,79 @@ class MultiplePortalPairsTest {
     }
 
     @Test
-    @DisplayName("Con P y Q, entrar en P lleva al otro P y no a un Q")
+    @DisplayName("Con P y Q, entrar en P lleva debajo del otro P y no de un Q")
     void pLeadsToPNotQ() {
         Level level = TestLevels.level(
                 "##########",
                 "#@PQ   QP#",
+                "#        #",
                 "##########");
 
-        assertEquals(new Position(1, 8), playerAfter(level, Direction.RIGHT));
+        assertEquals(new Position(2, 8), playerAfter(level, Direction.RIGHT));
     }
 
     @Test
-    @DisplayName("Con P y Q, entrar en Q lleva al otro Q")
+    @DisplayName("Con P y Q, entrar en Q lleva debajo del otro Q")
     void qLeadsToQ() {
         Level level = TestLevels.level(
                 "##########",
                 "#@QP   PQ#",
+                "#        #",
                 "##########");
 
-        assertEquals(new Position(1, 8), playerAfter(level, Direction.RIGHT));
+        assertEquals(new Position(2, 8), playerAfter(level, Direction.RIGHT));
     }
 
     @Test
-    @DisplayName("Entrar por el otro extremo de P lleva al primer P")
+    @DisplayName("Entrar por el otro extremo de P lleva debajo del primer P")
     void pWorksTheOtherWay() {
         Level level = TestLevels.level(
                 "##########",
                 "#P Q  QP@#",
+                "#        #",
                 "##########");
 
-        assertEquals(new Position(1, 1), playerAfter(level, Direction.LEFT));
+        assertEquals(new Position(2, 1), playerAfter(level, Direction.LEFT));
     }
 
     @Test
-    @DisplayName("Entrar por el otro extremo de Q lleva al primer Q")
+    @DisplayName("Entrar por el otro extremo de Q lleva debajo del primer Q")
     void qWorksTheOtherWay() {
         Level level = TestLevels.level(
                 "##########",
                 "#Q P  PQ@#",
+                "#        #",
                 "##########");
 
-        assertEquals(new Position(1, 1), playerAfter(level, Direction.LEFT));
+        assertEquals(new Position(2, 1), playerAfter(level, Direction.LEFT));
     }
 
     @Test
-    @DisplayName("Una caja empujada a P aparece en la pareja de P")
+    @DisplayName("Una caja empujada a P aparece debajo de la pareja de P")
     void boxIntoPAppearsAtP() {
         Level level = TestLevels.level(
                 "###########",
                 "#@$P Q  QP#",
+                "#         #",
                 "###########");
 
         level.move(Direction.RIGHT);
 
-        assertNotNull(level.getBoard().getBoxAt(new Position(1, 9)));
+        assertNotNull(level.getBoard().getBoxAt(new Position(2, 9)));
     }
 
     @Test
-    @DisplayName("Una caja empujada a Q aparece en la pareja de Q")
+    @DisplayName("Una caja empujada a Q aparece debajo de la pareja de Q")
     void boxIntoQAppearsAtQ() {
         Level level = TestLevels.level(
                 "###########",
                 "#@$Q P  PQ#",
+                "#         #",
                 "###########");
 
         level.move(Direction.RIGHT);
 
-        assertNotNull(level.getBoard().getBoxAt(new Position(1, 9)));
+        assertNotNull(level.getBoard().getBoxAt(new Position(2, 9)));
     }
 
     /**
@@ -100,9 +106,10 @@ class MultiplePortalPairsTest {
     void eachOfTheFourPairsLeadsToItsPair(char letter) {
         String others = "PQRS".replace(String.valueOf(letter), "");
         String row = "#@" + letter + others + new StringBuilder(others).reverse() + letter + "#";
-        Level level = TestLevels.level("#".repeat(row.length()), row, "#".repeat(row.length()));
+        String floor = "#" + " ".repeat(row.length() - 2) + "#";
+        Level level = TestLevels.level("#".repeat(row.length()), row, floor, "#".repeat(row.length()));
 
-        assertEquals(new Position(1, row.length() - 2), playerAfter(level, Direction.RIGHT));
+        assertEquals(new Position(2, row.length() - 2), playerAfter(level, Direction.RIGHT));
     }
 
     @Test
@@ -111,9 +118,10 @@ class MultiplePortalPairsTest {
         Level level = TestLevels.level(
                 "###########",
                 "#@P Q P Q #",
+                "#         #",
                 "###########");
 
-        assertEquals(new Position(1, 6), playerAfter(level, Direction.RIGHT));
+        assertEquals(new Position(2, 6), playerAfter(level, Direction.RIGHT));
     }
 
     @Test
@@ -122,9 +130,10 @@ class MultiplePortalPairsTest {
         Level level = TestLevels.level(
                 "###########",
                 "#@P P Q Q #",
+                "#         #",
                 "###########");
 
-        assertEquals(new Position(1, 4), playerAfter(level, Direction.RIGHT));
+        assertEquals(new Position(2, 4), playerAfter(level, Direction.RIGHT));
     }
 
 }

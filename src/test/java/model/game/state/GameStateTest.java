@@ -24,6 +24,7 @@ class GameStateTest {
         final List<String> calls = new ArrayList<>();
         GameState stateAfterLevelReacts = PlayingState.INSTANCE;
         boolean undoSucceeds = true;
+        boolean undosLeft = true;
         boolean lastLevel = false;
 
         @Override
@@ -42,6 +43,11 @@ class GameStateTest {
         public boolean undoLastMove() {
             calls.add("undoLastMove");
             return undoSucceeds;
+        }
+
+        @Override
+        public boolean canRecoverFrom(LossReason reason) {
+            return reason.isRecoverable() && undosLeft;
         }
 
         @Override
@@ -87,7 +93,7 @@ class GameStateTest {
         assertSame(state, state.tick(game));
         assertSame(state, state.togglePause(game));
         assertSame(state, state.onLevelWon(STATS));
-        assertSame(state, state.onLevelLost(LossReason.TIME_OUT));
+        assertSame(state, state.onLevelLost(game, LossReason.TIME_OUT));
         assertTrue(game.calls.isEmpty(), "no debe pedirle nada al juego: " + game.calls);
     }
 
@@ -167,7 +173,15 @@ class GameStateTest {
         @Test
         @DisplayName("PLAYING -> BLOCKED con un deadlock")
         void deadlockGoesToBlocked() {
-            assertSame(BlockedState.INSTANCE, PlayingState.INSTANCE.onLevelLost(LossReason.DEADLOCK));
+            assertSame(BlockedState.INSTANCE, PlayingState.INSTANCE.onLevelLost(game, LossReason.DEADLOCK));
+        }
+
+        @Test
+        @DisplayName("PLAYING -> LOST con un deadlock si ya no quedan undos")
+        void deadlockWithoutUndosGoesToLost() {
+            game.undosLeft = false;
+
+            assertSame(LostState.INSTANCE, PlayingState.INSTANCE.onLevelLost(game, LossReason.DEADLOCK));
         }
 
         @Test
@@ -175,7 +189,7 @@ class GameStateTest {
         void otherLossesGoToLost() {
             for (LossReason reason : List.of(LossReason.TIME_OUT, LossReason.BROKEN_BOX,
                     LossReason.WRONG_STORAGE, LossReason.EARLY_KEY_STORAGE)) {
-                assertSame(LostState.INSTANCE, PlayingState.INSTANCE.onLevelLost(reason), reason.name());
+                assertSame(LostState.INSTANCE, PlayingState.INSTANCE.onLevelLost(game, reason), reason.name());
             }
         }
     }
@@ -305,7 +319,7 @@ class GameStateTest {
             assertSame(WonState.INSTANCE, WonState.INSTANCE.undo(game));
             assertSame(WonState.INSTANCE, WonState.INSTANCE.tick(game));
             assertSame(WonState.INSTANCE, WonState.INSTANCE.togglePause(game));
-            assertSame(WonState.INSTANCE, WonState.INSTANCE.onLevelLost(LossReason.TIME_OUT));
+            assertSame(WonState.INSTANCE, WonState.INSTANCE.onLevelLost(game, LossReason.TIME_OUT));
             assertTrue(game.calls.isEmpty());
         }
     }

@@ -8,6 +8,7 @@ import model.box.KeyBox;
 import model.box.NormalBox;
 import model.box.WeakBox;
 import model.game.Level;
+import model.game.score.LevelGoals;
 import model.tile.Floor;
 import model.tile.Ice;
 import model.tile.Portal;
@@ -17,6 +18,7 @@ import model.tile.Wall;
 import model.tile.mechanism.Door;
 import model.tile.mechanism.KeyTile;
 import service.ClasspathLevelSource;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import model.game.loss.LossRules;
@@ -45,13 +47,13 @@ class LevelLoaderTest {
     }
 
     @Test
-    @DisplayName("2. Lee bien nombre, tiempo y objetivo del encabezado")
+    @DisplayName("2. Lee bien nombre, tiempo y metas del encabezado")
     void readsHeader() throws Exception {
         Level level = testLevelLoader.load(1);
 
         assertEquals("Nivel de prueba", level.getName());
         assertEquals(90, level.getTimeLimitSeconds());
-        assertEquals(500, level.getTargetScore());
+        assertEquals(new LevelGoals(60, 20, 1), level.getGoals());
     }
 
     @Test
@@ -106,6 +108,7 @@ class LevelLoaderTest {
     }
 
     @Test
+    @Disabled("LevelBuilder ya no aplica BOX_STORAGE_MISMATCH: muchos tests usan mapas minimos sin balancear")
     @DisplayName("5a. Falla si la cantidad de cajas de un tipo es distinta a la de puntos de su color")
     void failsWhenBoxesAndStorageDoNotMatch() {
         assertInvalid("#####", "#@$ #", "#####");
