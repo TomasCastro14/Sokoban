@@ -44,8 +44,8 @@ public final class LevelDialogsView implements LevelDialogs {
     }
 
     @Override
-    public void showVictory(ScoreResult result, Runnable onRetry, Runnable onNext) {
-        layer.show(victory.build(result, onRetry, onNext));
+    public void showVictory(ScoreResult result, boolean newRecord, Runnable onRetry, Runnable onNext) {
+        layer.show(victory.build(result, newRecord, onRetry, onNext));
     }
 
     @Override

@@ -84,6 +84,27 @@
     -fx-effect: dropshadow(one-pass-box, #8c0f22, 0, 1, 0, 4);
 }
 
+.dialog-record {
+    -fx-padding: 0 6 0 6;
+}
+
+.dialog-record-text,
+.dialog-record-new {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 18px;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+}
+
+.dialog-record-text {
+    -fx-text-fill: #5a5a66;
+}
+
+.dialog-record-new {
+    -fx-text-fill: #e8a317;
+    -fx-effect: dropshadow(one-pass-box, #7a4f00, 0, 1, 0, 2);
+}
+
 .dialog-score-text {
     -fx-font-family: "Kenney Future";
     -fx-font-size: 40px;

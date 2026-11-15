@@ -7,7 +7,9 @@ import model.game.event.LevelFlowListener;
 import model.game.event.LevelOutcomeListener;
 import model.game.event.PauseListener;
 import model.game.loss.LossReason;
+import model.game.progress.Progress;
 import model.game.score.ScoreCalculator;
+import model.game.score.ScoreResult;
 import view.Navigator;
 import view.gameplay.dialog.LevelDialogs;
 
@@ -17,6 +19,7 @@ import java.util.Objects;
  * Decides which popup the player sees and holds play while one is open:
  * the goals before a level starts, the defeat when a loss is final and the summary on a win.
  * The popups close because the game moved on (a level started or restarted), not because a button was pressed.
+ * It is also the only place that writes the progress, and only on a win: losing or leaving a level never touches it.
  */
 public final class LevelDialogPresenter implements LevelFlowListener, LevelOutcomeListener, PauseListener {
     private final Game game;
@@ -24,14 +27,16 @@ public final class LevelDialogPresenter implements LevelFlowListener, LevelOutco
     private final PlaySession session;
     private final ScoreCalculator scores;
     private final Navigator navigator;
+    private final Progress progress;
 
     public LevelDialogPresenter(Game game, LevelDialogs dialogs, PlaySession session,
-                                ScoreCalculator scores, Navigator navigator) {
+                                ScoreCalculator scores, Navigator navigator, Progress progress) {
         this.game = Objects.requireNonNull(game, "game");
         this.dialogs = Objects.requireNonNull(dialogs, "dialogs");
         this.session = Objects.requireNonNull(session, "session");
         this.scores = Objects.requireNonNull(scores, "scores");
         this.navigator = Objects.requireNonNull(navigator, "navigator");
+        this.progress = Objects.requireNonNull(progress, "progress");
         game.addLevelFlowListener(this);
         game.addLevelOutcomeListener(this);
         game.addPauseListener(this);
@@ -65,7 +70,9 @@ public final class LevelDialogPresenter implements LevelFlowListener, LevelOutco
     @Override
     public void levelWon(LevelStats stats) {
         session.stop();
-        dialogs.showVictory(game.getCurrentLevel().score(scores), game::restart, game::nextLevel);
+        ScoreResult result = game.getCurrentLevel().score(scores);
+        boolean newRecord = progress.registerResult(game.getCurrentLevelNumber(), result.stars(), result.score());
+        dialogs.showVictory(result, newRecord, game::restart, game::nextLevel);
     }
 
     /** A loss that undo can still fix (a deadlock with undos left) keeps the level going. */

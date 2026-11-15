@@ -6,10 +6,18 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Arc;
+import javafx.scene.shape.ArcType;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeLineCap;
 import javafx.util.Duration;
 import view.components.buttons.ButtonIcon;
 import view.components.buttons.ButtonProvider;
@@ -27,7 +35,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.IntConsumer;
 
-public class LevelSelectView {
+/**
+ * Passive view: it shows the levels it receives (padlock when locked, 0 to 3 stars when unlocked)
+ * and asks for confirmation before reporting a progress reset. It never reads the progress itself.
+ */
+public class LevelSelectView implements LevelSelectScreen {
 
     public record LevelInfo(String name, int stars, boolean unlocked) { }
 
@@ -49,6 +61,19 @@ public class LevelSelectView {
     private static final double HIDDEN = 0;
     private static final double SHOWN = 1;
     private static final Duration CARD_FADE = Duration.millis(90);
+    private static final double RESET_MARGIN = 32;
+    private static final double CONFIRM_SPACING = 24;
+    private static final double CONFIRM_WIDTH = 520;
+    private static final double LOCK_SPACING = 12;
+    private static final double LOCK_BODY_W = 72;
+    private static final double LOCK_BODY_H = 56;
+    private static final double LOCK_BODY_ARC = 14;
+    private static final double LOCK_SHACKLE_RADIUS = 22;
+    private static final double LOCK_SHACKLE_WIDTH = 10;
+    private static final double LOCK_KEYHOLE_RADIUS = 7;
+    private static final Color LOCK_COLOR = Color.WHITE;
+    private static final Color KEYHOLE_COLOR = Color.web("#1b1b22");
+    private static final ColorAdjust LOCKED_PREVIEW = new ColorAdjust(0, -1, -0.55, 0);
 
     private static final String PLAY_TEXT = "¡A TRABAJAR!";
     private static final String ROOT_STYLE = "level-select";
@@ -57,15 +82,30 @@ public class LevelSelectView {
     private static final String TITLE_BAR_STYLE = "level-title-bar";
     private static final String FRAME_STYLE = "frame-blue";
     private static final String PANEL_STYLE = "panel";
+    private static final String OVERLAY_STYLE = "popup-overlay";
+    private static final String LOCKED_TEXT_STYLE = "level-locked-text";
+    private static final String CONFIRM_TEXT_STYLE = "confirm-text";
+    private static final String WIDE_BUTTON_STYLE = "menu-button-wide";
+    private static final String LOCKED_TEXT = "Ganá el nivel anterior para desbloquearlo";
+    private static final String RESET_TEXT = "REINICIAR PROGRESO";
+    private static final String CONFIRM_TEXT =
+            "¿Reiniciar el progreso? Se pierden las estrellas y vuelve a quedar solo el nivel 1.";
+    private static final String CONFIRM_YES = "REINICIAR";
+    private static final String CONFIRM_NO = "CANCELAR";
+    private static final Runnable NO_RESET = () -> { };
 
-    private final List<LevelInfo> levels;
+    private List<LevelInfo> levels = List.of();
+    private Runnable onReset = NO_RESET;
     private final IntConsumer onPlay;
     private final ImageProvider images;
 
     private final StackPane root = new StackPane();
     private final Label name = new Label();
     private final List<ImageView> stars = new ArrayList<>(MAX_STARS);
+    private final HBox starRow = new HBox(STAR_SPACING);
     private final ImageView preview = new ImageView();
+    private final VBox lockBadge = lockBadge();
+    private final StackPane confirm;
     private final StackPane card;
     private final Button play;
     private final Button prev;
@@ -74,9 +114,8 @@ public class LevelSelectView {
     private int index;
     private boolean transitioning;
 
-    public LevelSelectView(List<LevelInfo> levels, IntConsumer onPlay, int startIndex, Runnable onClose,
+    public LevelSelectView(IntConsumer onPlay, int startIndex, Runnable onClose,
                            ImageProvider images, ButtonProvider buttons, PopupInstaller popups) {
-        this.levels = List.copyOf(Objects.requireNonNull(levels, "levels"));
         this.onPlay = Objects.requireNonNull(onPlay, "onPlay");
         this.images = Objects.requireNonNull(images, "images");
         Objects.requireNonNull(onClose, "onClose");
@@ -97,20 +136,95 @@ public class LevelSelectView {
         root.getStyleClass().addAll(BACKGROUND_STYLE, ROOT_STYLE);
         popups.install(root, window, onClose);
 
+        Button reset = buttons.createRectangular(RESET_TEXT, ButtonStyle.SECONDARY, this::askToReset);
+        reset.getStyleClass().add(WIDE_BUTTON_STYLE);
+        StackPane.setAlignment(reset, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(reset, new Insets(RESET_MARGIN));
+        confirm = confirmPopup(buttons);
+        root.getChildren().addAll(reset, confirm);
+    }
+
+    @Override
+    public void showLevels(List<LevelInfo> levels) {
+        this.levels = List.copyOf(Objects.requireNonNull(levels, "levels"));
+        index = Math.min(index, Math.max(FIRST_INDEX, this.levels.size() - 1));
         refresh();
+    }
+
+    @Override
+    public void setOnResetProgress(Runnable onReset) {
+        this.onReset = Objects.requireNonNull(onReset, "onReset");
+    }
+
+    private void askToReset() {
+        confirm.setVisible(true);
+    }
+
+    private StackPane confirmPopup(ButtonProvider buttons) {
+        Label question = new Label(CONFIRM_TEXT);
+        question.getStyleClass().add(CONFIRM_TEXT_STYLE);
+        question.setWrapText(true);
+
+        HBox answers = new HBox(CONFIRM_SPACING,
+                buttons.createRectangular(CONFIRM_NO, ButtonStyle.SECONDARY, () -> confirm.setVisible(false)),
+                buttons.createRectangular(CONFIRM_YES, ButtonStyle.PRIMARY, () -> {
+                    confirm.setVisible(false);
+                    onReset.run();
+                }));
+        answers.setAlignment(Pos.CENTER);
+
+        VBox box = new VBox(CONFIRM_SPACING, question, answers);
+        box.getStyleClass().add(PANEL_STYLE);
+        box.setAlignment(Pos.CENTER);
+        box.setPrefWidth(CONFIRM_WIDTH);
+        box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+
+        Region veil = new Region();
+        veil.getStyleClass().add(OVERLAY_STYLE);
+        veil.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        StackPane popup = new StackPane(veil, box);
+        popup.setVisible(false);
+        return popup;
+    }
+
+    /** A padlock drawn with shapes (there is no padlock image among the assets) and a hint below. */
+    private static VBox lockBadge() {
+        Arc shackle = new Arc(0, 0, LOCK_SHACKLE_RADIUS, LOCK_SHACKLE_RADIUS, 0, 180);
+        shackle.setType(ArcType.OPEN);
+        shackle.setFill(null);
+        shackle.setStroke(LOCK_COLOR);
+        shackle.setStrokeWidth(LOCK_SHACKLE_WIDTH);
+        shackle.setStrokeLineCap(StrokeLineCap.BUTT);
+
+        Rectangle body = new Rectangle(LOCK_BODY_W, LOCK_BODY_H, LOCK_COLOR);
+        body.setArcWidth(LOCK_BODY_ARC);
+        body.setArcHeight(LOCK_BODY_ARC);
+        StackPane bodyWithHole = new StackPane(body, new Circle(LOCK_KEYHOLE_RADIUS, KEYHOLE_COLOR));
+
+        VBox padlock = new VBox(-LOCK_SHACKLE_WIDTH / 2, shackle, bodyWithHole);
+        padlock.setAlignment(Pos.CENTER);
+
+        Label hint = new Label(LOCKED_TEXT);
+        hint.getStyleClass().add(LOCKED_TEXT_STYLE);
+
+        VBox badge = new VBox(LOCK_SPACING, padlock, hint);
+        badge.setAlignment(Pos.CENTER);
+        badge.setMouseTransparent(true);
+        badge.setVisible(false);
+        return badge;
     }
 
     private StackPane card() {
         preview.setPreserveRatio(true);
         preview.setFitWidth(PREVIEW_W);
         preview.setFitHeight(PREVIEW_H);
-        return TitledPanel.card(titleBar(), preview);
+        return TitledPanel.card(titleBar(), new StackPane(preview, lockBadge));
     }
 
     private StackPane titleBar() {
         name.getStyleClass().add(LEVEL_NAME_STYLE);
 
-        HBox starRow = new HBox(STAR_SPACING);
         for (int i = 0; i < MAX_STARS; i++) {
             ImageView star = new ImageView(images.get(UiImage.STAR_OFF));
             star.setFitHeight(STAR_HEIGHT);
@@ -145,7 +259,7 @@ public class LevelSelectView {
     }
 
     private void moveBy(int step) {
-        if (transitioning) return;
+        if (transitioning || levels.isEmpty()) return;
         transitioning = true;
         fade(HIDDEN, () -> {
             index += step;
@@ -162,8 +276,17 @@ public class LevelSelectView {
     }
 
     private void refresh() {
+        if (levels.isEmpty()) {
+            play.setDisable(true);
+            prev.setVisible(false);
+            next.setVisible(false);
+            return;
+        }
         LevelInfo level = levels.get(index);
         name.setText(level.name());
+        starRow.setVisible(level.unlocked());
+        lockBadge.setVisible(!level.unlocked());
+        preview.setEffect(level.unlocked() ? null : LOCKED_PREVIEW);
         for (int i = 0; i < stars.size(); i++) {
             stars.get(i).setImage(images.get(i < level.stars() ? UiImage.STAR_ON : UiImage.STAR_OFF));
         }

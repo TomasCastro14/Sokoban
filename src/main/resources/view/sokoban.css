@@ -59,6 +59,24 @@
     -fx-text-fill: white;
 }
 
+.level-locked-text {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 20px;
+    -fx-text-fill: white;
+}
+
+.confirm-text {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 22px;
+    -fx-text-fill: #1b1b22;
+    -fx-text-alignment: center;
+}
+
+.menu-button.menu-button-wide {
+    -fx-pref-width: 340px;
+    -fx-font-size: 20px;
+}
+
 .settings-title {
     -fx-font-family: "Kenney Future";
     -fx-font-size: 32px;
