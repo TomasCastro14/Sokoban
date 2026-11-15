@@ -60,4 +60,8 @@ public abstract class Tile {
     public StorageResult getStorageResult() {
         return null;
     }
+
+    public Position ejectionFrom(Position arrival) {
+        return arrival;
+    }
 }

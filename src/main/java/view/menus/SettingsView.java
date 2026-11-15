@@ -1,6 +1,5 @@
 package view.menus;
 
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.CheckBox;
@@ -19,10 +18,9 @@ import java.util.Objects;
 
 /** Volume and mute, in the same blue-and-grey window as the level select. The images live in sokoban.css. */
 public class SettingsView {
-    private static final double PANEL_WIDTH = 490;
-    private static final double LABEL_SPACING = 8;
-    private static final double SECTION_SPACING = 28;
-    private static final Insets BODY_PADDING = new Insets(28, 8, 12, 8);
+    private static final String PANEL_STYLE = "settings-panel";
+    private static final String BODY_STYLE = "settings-body";
+    private static final String VOLUME_STYLE = "settings-volume";
 
     private static final String TITLE = "AJUSTES";
     private static final String VOLUME_LABEL = "Volumen";
@@ -42,16 +40,17 @@ public class SettingsView {
         Objects.requireNonNull(popups, "popups");
 
         StackPane panel = TitledPanel.panel(TitledPanel.card(TitledPanel.titleBar(label(TITLE, TITLE_STYLE)), body(listener)));
-        panel.setPrefWidth(PANEL_WIDTH);
+        panel.getStyleClass().add(PANEL_STYLE);
 
         root.getStyleClass().addAll(BACKGROUND_STYLE, ROOT_STYLE);
         popups.install(root, new StackPane(panel), onClose);
     }
 
     private static VBox body(SettingsListener listener) {
-        VBox volume = new VBox(LABEL_SPACING, label(VOLUME_LABEL, LABEL_STYLE), volumeSlider(listener));
-        VBox body = new VBox(SECTION_SPACING, volume, muteRow(listener));
-        body.setPadding(BODY_PADDING);
+        VBox volume = new VBox(label(VOLUME_LABEL, LABEL_STYLE), volumeSlider(listener));
+        volume.getStyleClass().add(VOLUME_STYLE);
+        VBox body = new VBox(volume, muteRow(listener));
+        body.getStyleClass().add(BODY_STYLE);
         return body;
     }
 

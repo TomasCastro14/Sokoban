@@ -1,5 +1,6 @@
 package model.tile;
 
+import model.board.Direction;
 import model.board.Position;
 import model.tile.effect.EntryEffect;
 import model.tile.effect.NoEffect;
@@ -8,6 +9,8 @@ import model.tile.effect.TeleportEffect;
 import java.util.Set;
 
 public class Portal extends Tile {
+    private static final Direction EXIT_SIDE = Direction.DOWN;
+
     private final char letter;
     private Position pairPosition;
     private EntryEffect entryEffect = new NoEffect();
@@ -35,7 +38,12 @@ public class Portal extends Tile {
 
     private void pointTo(Position pairPosition) {
         this.pairPosition = pairPosition;
-        this.entryEffect = new TeleportEffect(pairPosition);
+        this.entryEffect = new TeleportEffect(pairPosition.move(EXIT_SIDE));
+    }
+
+    @Override
+    public Position ejectionFrom(Position arrival) {
+        return arrival.move(EXIT_SIDE);
     }
 
     @Override

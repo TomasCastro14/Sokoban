@@ -6,6 +6,7 @@ import model.box.Player;
 import model.box.PushResult;
 import model.history.BoxSnapshot;
 import model.history.Memento;
+import model.tile.Portal;
 import model.tile.Tile;
 
 import java.util.ArrayList;
@@ -169,7 +170,7 @@ public class Board {
             return MoveResult.BLOCKED;
         }
         if (!cellAt(arrival).isFree() && !arrival.equals(entered)) {
-            shove(arrival);
+            shove(arrival, entered);
         }
         PushResult push = boxArrival == null ? null : moveBox(entered, boxArrival);
         cellAt(playerPosition).remove();
@@ -196,21 +197,21 @@ public class Board {
     }
 
     private boolean canPlayerLand(Position arrival, Position entered, Position boxArrival) {
-        boolean freeAfterPush = arrival.equals(entered) || cellAt(arrival).isFree() || canShove(arrival, boxArrival);
+        boolean freeAfterPush = arrival.equals(entered) || cellAt(arrival).isFree()
+                || canShove(arrival, entered, boxArrival);
         return player.canEnter(getTile(arrival)) && freeAfterPush && !arrival.equals(boxArrival);
     }
 
-    private boolean canShove(Position at, Position boxArrival) {
+    private boolean canShove(Position at, Position entered, Position boxArrival) {
         Occupant occupant = cellAt(at).getOccupant();
-        Position below = at.move(Direction.DOWN);
-        return occupant.isPushable() && !below.equals(boxArrival)
-                && canEnter(occupant, below) && getTile(below).acceptsEjectedBox();
+        Position ejected = getTile(entered).ejectionFrom(at);
+        return occupant.isPushable() && !ejected.equals(at) && !ejected.equals(boxArrival)
+                && canEnter(occupant, ejected) && getTile(ejected).acceptsEjectedBox();
     }
 
-    private void shove(Position at) {
-        cellAt(at.move(Direction.DOWN)).place(cellAt(at).remove());
+    private void shove(Position at, Position entered) {
+        cellAt(getTile(entered).ejectionFrom(at)).place(cellAt(at).remove());
     }
-
     private Position boxArrival(Position from, Direction d) {
         Occupant occupant = cellAt(from).getOccupant();
         Position next = from.move(d);

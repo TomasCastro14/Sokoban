@@ -71,6 +71,19 @@
     -fx-text-fill: #1b1b22;
 }
 
+.settings-panel {
+    -fx-pref-width: 490px;
+}
+
+.settings-body {
+    -fx-spacing: 28px;
+    -fx-padding: 28px 8px 12px 8px;
+}
+
+.settings-volume {
+    -fx-spacing: 8px;
+}
+
 /* Nine-slice so the round ends never stretch. The radius makes the slider lay the track 16px past
    each end of the thumb's path: at 0 and 100 the thumb sits right on an end circle. */
 .settings-slider .track {
