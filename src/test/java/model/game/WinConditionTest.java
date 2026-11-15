@@ -26,7 +26,7 @@ class WinConditionTest {
         assertFalse(level.isWon());
 
         level.move(Direction.DOWN);  // player at (2,2)
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertTrue(level.isWon());
         assertEquals(new Position(2, 3), level.getBoard().getPlayerPosition());

@@ -57,7 +57,7 @@ class JsonProgressRepositoryTest {
     @Test
     @DisplayName("3. Un JSON corrupto da progreso inicial, sin excepcion, y el archivo se conserva aparte")
     void corruptJsonIsKeptAside() throws IOException {
-        String corrupt = "{ \"lastUnlockedLevel\": 3, \"levels\": [ {";
+        String corrupt = "{ \"unlockedLevel\": 3, \"levels\": [ {";
         Files.writeString(progressFile(), corrupt, StandardCharsets.UTF_8);
 
         Progress progress = assertDoesNotThrow(new JsonProgressRepository(progressFile())::load);
@@ -130,7 +130,7 @@ class JsonProgressRepositoryTest {
 
         String json = Files.readString(progressFile(), StandardCharsets.UTF_8);
 
-        assertTrue(json.contains("\"lastUnlockedLevel\": 3"));
+        assertTrue(json.contains("\"unlockedLevel\": 3"));
         assertTrue(json.contains("\"levelNumber\": 2"));
         assertTrue(json.contains("\"fewestMoves\": 35"));
         assertTrue(json.contains("\"fewestPushes\": 9"));

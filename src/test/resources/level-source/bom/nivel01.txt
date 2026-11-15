@@ -1,6 +1,8 @@
 ﻿nombre: Nivel basico
 tiempo: 90
-objetivo: 500
+movimientos: 60
+empujes: 20
+undo: 1
 ---
 #####
 #@$.#

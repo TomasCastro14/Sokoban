@@ -32,7 +32,9 @@ public class DeadlockCondition extends AbstractLossCondition {
     }
 
     private static boolean isObstacle(Board board, Position p) {
-        return board.isBoundaryAt(p) || board.hasBoxAt(p);
+        // Una caja ya guardada queda absorbida por su punto (se puede pasar por encima),
+        // asi que no bloquea: solo cuentan las cajas sueltas.
+        return board.isBoundaryAt(p) || board.hasLooseBoxAt(p);
     }
 
     @Override

@@ -77,6 +77,31 @@ class DeadlockConditionTest {
     }
 
     @Test
+    @DisplayName("Pasar una caja por encima de cajas ya guardadas no es deadlock")
+    void storedBoxesAreNotObstacles() {
+        Level level = TestLevels.level("########", "#   . .#", "# $ $  #", "#   @  #", "########");
+        level.move(Direction.UP);      // guarda la primera caja en (1,4)
+        level.move(Direction.DOWN);
+        level.move(Direction.LEFT);
+        level.move(Direction.LEFT);
+        level.move(Direction.UP);      // sube la segunda caja a (1,2)
+        level.move(Direction.LEFT);
+        level.move(Direction.UP);
+
+        // queda junto a la caja guardada, contra la pared: no es un bloque
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+        assertFalse(condition.isMet(level));
+        assertEquals(LevelStatus.PLAYING, level.getStatus());
+
+        // pasa por encima del punto ocupado y llega al otro objetivo
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+        assertEquals(LevelStatus.PLAYING, level.getStatus());
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+        assertEquals(LevelStatus.WON, level.getStatus());
+    }
+
+    @Test
     @DisplayName("Una caja en esquina que no se empujo no se evalua")
     void onlyThePushedBoxIsChecked() {
         Level level = TestLevels.level("#######", "#$   .#", "#     #", "#@$  .#", "#     #", "#######");

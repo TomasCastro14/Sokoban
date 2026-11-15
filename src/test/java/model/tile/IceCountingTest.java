@@ -1,5 +1,6 @@
 package model.tile;
 
+import model.game.score.LevelGoals;
 import factory.TestLevels;
 import model.board.Board;
 import model.board.Cell;
@@ -91,7 +92,7 @@ class IceCountingTest {
         Player player = new Player(Direction.RIGHT);
         cells[0][0].place(player);
         cells[0][1].place(new NormalBox());
-        Level level = new Level("hand-built", 60, 100, new Board(cells, player, new Position(0, 0)));
+        Level level = new Level("hand-built", 60, new LevelGoals(100, 100, 100), new Board(cells, player, new Position(0, 0)));
 
         MoveResult result = level.move(Direction.RIGHT);
 

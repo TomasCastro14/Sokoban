@@ -23,7 +23,7 @@ class LevelLoaderSourceTest {
             if (!exists(levelNumber)) {
                 throw new LevelNotFoundException("Level " + levelNumber + " not found in memory");
             }
-            return List.of("nombre: En memoria", "tiempo: 60", "objetivo: 100", "---",
+            return List.of("nombre: En memoria", "tiempo: 60", "movimientos: 60", "empujes: 20", "undo: 1", "---",
                     "#####", "#@$.#", "#####");
         }
 
@@ -63,7 +63,7 @@ class LevelLoaderSourceTest {
         LevelSource broken = new LevelSource() {
             @Override
             public List<String> lines(int levelNumber) {
-                return List.of("nombre: Roto", "tiempo: 60", "objetivo: 100", "---", "#X#");
+                return List.of("nombre: Roto", "tiempo: 60", "movimientos: 60", "empujes: 20", "undo: 1", "---", "#X#");
             }
 
             @Override
