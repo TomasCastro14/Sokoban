@@ -23,6 +23,7 @@ public class BoardView extends Region {
     private final Canvas canvas = new Canvas();
     private final SpriteCatalog sprites;
     private final PlayerAnimator player = new PlayerAnimator();
+    private final WearBubbles wearBubbles;
     private final AnimationTimer loop = new AnimationTimer() {
         @Override
         public void handle(long ignored) {
@@ -38,6 +39,7 @@ public class BoardView extends Region {
 
     public BoardView(SpriteCatalog sprites) {
         this.sprites = Objects.requireNonNull(sprites, "sprites");
+        this.wearBubbles = new WearBubbles(sprites, TILE);
         setMinSize(0, 0);                     // que pueda achicarse con la ventana
         getChildren().add(canvas);
     }
@@ -107,6 +109,7 @@ public class BoardView extends Region {
         }
         g.drawImage(sprites.get(player.sprite(now)),
                 player.col(now) * TILE - offX, player.row(now) * TILE - offY, TILE, TILE);
+        wearBubbles.draw(g, board, visibility, offX, offY);
     }
 
     private void drawCell(GraphicsContext g, Cell cell, Visibility visibility, double x, double y) {

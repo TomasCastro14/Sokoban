@@ -1,6 +1,7 @@
 package view;
 
 import model.box.BoxType;
+import model.box.WearState;
 import view.components.images.ImageAsset;
 
 public enum SpriteKey implements ImageAsset {
@@ -36,7 +37,12 @@ public enum SpriteKey implements ImageAsset {
     PLAYER_LEFT_B("player/player_14.png"),
     PLAYER_DOWN("player/player_21.png"),
     PLAYER_DOWN_A("player/player_22.png"),
-    PLAYER_DOWN_B("player/player_23.png");
+    PLAYER_DOWN_B("player/player_23.png"),
+
+    BUBBLE_EXCLAMATION("UI/Items/emotes/box_emote_exclamation.png"),
+    BUBBLE_DOTS_1("UI/Items/emotes/emote_dots1.png"),
+    BUBBLE_DOTS_2("UI/Items/emotes/emote_dots2.png"),
+    BUBBLE_DOTS_3("UI/Items/emotes/emote_dots3.png");
 
     private static final String ROOT = "/assets/images/";
     private final String path;
@@ -63,6 +69,15 @@ public enum SpriteKey implements ImageAsset {
             case NORMAL -> filled ? SAVEPOINT_FULL_NORMAL : SAVEPOINT_NORMAL;
             case WEAK -> filled ? SAVEPOINT_FULL_WEAK : SAVEPOINT_WEAK;
             case KEY -> filled ? SAVEPOINT_FULL_KEY : SAVEPOINT_KEY;
+        };
+    }
+
+    public static SpriteKey wearBubble(WearState state) {
+        return switch (state) {
+            case CRITICAL -> BUBBLE_EXCLAMATION;
+            case LOW -> BUBBLE_DOTS_1;
+            case MEDIUM -> BUBBLE_DOTS_2;
+            case HIGH -> BUBBLE_DOTS_3;
         };
     }
 }
