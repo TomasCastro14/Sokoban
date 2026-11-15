@@ -20,6 +20,10 @@ public class WeakBox extends Box {
         return remainingPushes;
     }
 
+    public WearState getWearState() {
+        return WearState.of(remainingPushes);
+    }
+
     @Override
     public BoxType getType() {
         return BoxType.WEAK;
