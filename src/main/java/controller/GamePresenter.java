@@ -19,13 +19,18 @@ public final class GamePresenter implements BoardListener, LevelFlowListener, Sc
     private final PlaySession session;
     private boolean visible;
 
-    public GamePresenter(Game game, GameScreen screen, PlaySession session) {
+    private GamePresenter(Game game, GameScreen screen, PlaySession session) {
         this.game = Objects.requireNonNull(game, "game");
         this.screen = Objects.requireNonNull(screen, "screen");
         this.session = Objects.requireNonNull(session, "session");
-        game.addBoardListener(this);
-        game.addLevelFlowListener(this);
-        screen.setLifecycleListener(this);
+    }
+
+    public static GamePresenter attach(Game game, GameScreen screen, PlaySession session) {
+        GamePresenter presenter = new GamePresenter(game, screen, session);
+        game.addBoardListener(presenter);
+        game.addLevelFlowListener(presenter);
+        screen.setLifecycleListener(presenter);
+        return presenter;
     }
 
     public void dispose() {

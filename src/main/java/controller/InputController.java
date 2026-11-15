@@ -10,10 +10,6 @@ import model.game.Game;
 import java.util.EnumMap;
 import java.util.Map;
 
-/**
- * MVC controller: translates the arrow keys into a Direction and hands it to the game.
- * It never decides whether a move is allowed; the game state does.
- */
 public class InputController {
     private static final Map<KeyCode, Direction> ARROWS = new EnumMap<>(Map.of(
             KeyCode.UP, Direction.UP,
@@ -27,10 +23,6 @@ public class InputController {
         this.game = game;
     }
 
-    /**
-     * Adds a handler instead of replacing the scene's own one (the window uses it for ESC).
-     * Returns the way to take it off again, so a screen that is hidden stops reacting to keys.
-     */
     public Runnable bindKeys(Scene scene) {
         EventHandler<KeyEvent> handler = event -> {
             if (onKey(event.getCode())) {

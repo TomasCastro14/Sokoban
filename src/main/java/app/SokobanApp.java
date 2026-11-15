@@ -76,12 +76,12 @@ public class SokobanApp extends Application {
         LevelDialogsView dialogs = new LevelDialogsView(images, buttons);
         GameView gameView = new GameView(sprites, dialogs.getRoot());
         PlaySession session = new PlaySession(new InputController(game), new GameClock(game));
-        GamePresenter gamePresenter = new GamePresenter(game, gameView, session);
+        GamePresenter gamePresenter = GamePresenter.attach(game, gameView, session);
         HudView hud = new HudView(buttons);
         gameView.setHud(hud.getRoot());
-        new HudController(game, hud, gamePresenter::onEscape);
-        new LevelDialogPresenter(game, dialogs, session, new StandardScoreCalculator(), window);
-        new LevelProgression(game, window);
+        HudController.attach(game, hud, gamePresenter::onEscape);
+        LevelDialogPresenter.attach(game, dialogs, session, new StandardScoreCalculator(), window);
+        LevelProgression.attach(game, window);
         MenuController menus = new MenuController(game, window, Platform::exit);
 
         SplashView splash = new SplashView(images, music::start, () -> window.replace(Screen.MAIN_MENU));

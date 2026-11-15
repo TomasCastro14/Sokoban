@@ -13,10 +13,6 @@ import view.gameplay.HudScreen;
 
 import java.util.Objects;
 
-/**
- * MVC controller of the HUD: it keeps the counters and the undo button up to date by listening to the
- * game (Observer), and sends the button presses on. Whether an undo or a pause is allowed is up to the game state.
- */
 public final class HudController implements HudListener, BoardListener, LevelFlowListener, PauseListener, TimeListener {
     private final Game game;
     private final HudScreen hud;
@@ -24,15 +20,20 @@ public final class HudController implements HudListener, BoardListener, LevelFlo
     private Level watched;
     private boolean paused;
 
-    /** togglePause is the same action as ESC, so the button and the key can never disagree. */
-    public HudController(Game game, HudScreen hud, Runnable togglePause) {
+    private HudController(Game game, HudScreen hud, Runnable togglePause) {
         this.game = Objects.requireNonNull(game, "game");
         this.hud = Objects.requireNonNull(hud, "hud");
         this.togglePause = Objects.requireNonNull(togglePause, "togglePause");
-        game.addBoardListener(this);
-        game.addLevelFlowListener(this);
-        game.addPauseListener(this);
-        hud.setListener(this);
+    }
+
+    /** togglePause is the same action as ESC, so the button and the key can never disagree. */
+    public static HudController attach(Game game, HudScreen hud, Runnable togglePause) {
+        HudController controller = new HudController(game, hud, togglePause);
+        game.addBoardListener(controller);
+        game.addLevelFlowListener(controller);
+        game.addPauseListener(controller);
+        hud.setListener(controller);
+        return controller;
     }
 
     @Override

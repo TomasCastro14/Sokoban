@@ -7,13 +7,17 @@ import view.Screen;
 
 import java.util.Objects;
 
-/** After the last level is won the game is over and the player goes back to the main menu. */
 public final class LevelProgression implements GameCompletionListener {
     private final Navigator navigator;
 
-    public LevelProgression(Game game, Navigator navigator) {
+    private LevelProgression(Navigator navigator) {
         this.navigator = Objects.requireNonNull(navigator, "navigator");
-        Objects.requireNonNull(game, "game").addCompletionListener(this);
+    }
+
+    public static LevelProgression attach(Game game, Navigator navigator) {
+        LevelProgression progression = new LevelProgression(navigator);
+        Objects.requireNonNull(game, "game").addCompletionListener(progression);
+        return progression;
     }
 
     @Override
