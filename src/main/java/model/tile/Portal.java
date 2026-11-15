@@ -48,8 +48,4 @@ public class Portal extends Tile {
         return pairPosition == null ? Set.of() : Set.of(pairPosition);
     }
 
-    @Override
-    public TileLook look() {
-        return TileLook.of(TileKind.PORTAL);
-    }
 }

@@ -10,9 +10,4 @@ public class Ice extends Tile {
     protected EntryEffect entryEffect() {
         return SLIDE;
     }
-
-    @Override
-    public TileLook look() {
-        return TileLook.of(TileKind.ICE);
-    }
 }
