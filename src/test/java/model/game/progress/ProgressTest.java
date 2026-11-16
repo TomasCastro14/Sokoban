@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalInt;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -184,5 +185,52 @@ class ProgressTest {
     @DisplayName("16. Un juego sin niveles se rechaza")
     void needsAtLeastOneLevel() {
         assertThrows(IllegalArgumentException.class, () -> new Progress(0));
+    }
+
+    @Test
+    @DisplayName("17. Una foto del progreso restaurada en otra instancia da el mismo progreso")
+    void snapshotAndRestore() {
+        progress.registerResult(1, 3, SCORE);
+        progress.registerResult(2, 1, SCORE + 1);
+
+        Progress nextRun = new Progress(LEVEL_COUNT);
+        nextRun.restore(progress.snapshot());
+
+        assertEquals(progress.snapshot(), nextRun.snapshot());
+        assertEquals(3, nextRun.getLastUnlockedLevel());
+        assertEquals(3, nextRun.getStars(1));
+        assertEquals(OptionalInt.of(SCORE + 1), nextRun.getBestScore(2));
+    }
+
+    @Test
+    @DisplayName("18. Restaurar datos invalidos ignora lo que esta fuera de rango")
+    void restoreIsLenient() {
+        progress.restore(new ProgressData(99,
+                Map.of(1, 7, 2, 2, 9, 3),
+                Map.of(1, SCORE, 2, -5, 9, SCORE)));
+
+        assertEquals(LEVEL_COUNT, progress.getLastUnlockedLevel());
+        assertEquals(0, progress.getStars(1), "estrellas invalidas cuentan como 0");
+        assertEquals(OptionalInt.of(SCORE), progress.getBestScore(1));
+        assertEquals(OptionalInt.empty(), progress.getBestScore(2), "puntaje negativo se ignora");
+    }
+
+    @Test
+    @DisplayName("19. Un nivel ganado deja desbloqueado el siguiente aunque el dato guardado diga otra cosa")
+    void restoreKeepsWonLevelsConsistent() {
+        progress.restore(new ProgressData(1, Map.of(2, 1), Map.of(2, SCORE)));
+
+        assertEquals(3, progress.getLastUnlockedLevel());
+    }
+
+    @Test
+    @DisplayName("20. Restaurar avisa a los observadores")
+    void restoreNotifies() {
+        List<Progress> notified = new ArrayList<>();
+        progress.addListener(notified::add);
+
+        progress.restore(new ProgressData(1, Map.of(), Map.of()));
+
+        assertEquals(List.of(progress), notified);
     }
 }

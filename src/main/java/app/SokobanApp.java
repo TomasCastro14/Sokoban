@@ -11,6 +11,7 @@ import model.game.Game;
 import model.game.Level;
 import model.game.progress.Progress;
 import model.game.score.StandardScoreCalculator;
+import service.FileProgressStore;
 import service.sound.JavaFxSoundService;
 import service.sound.SilentSoundService;
 import service.sound.SoundService;
@@ -62,8 +63,10 @@ public class SokobanApp extends Application {
 
         GameWindow window = new GameWindow(stage, sprites);
         Game game = new Game(levelsFrom(new LevelLoader(StandardLossRules.create())), LEVEL_COUNT);
-        // The only Progress of this run: in memory, injected into the controllers, lost when the app closes.
+        // The only Progress of this run, injected into the controllers. It is loaded from a local file
+        // (~/.sokoban/progress.properties) and saved again every time it changes, so it survives restarts.
         Progress progress = new Progress(LEVEL_COUNT);
+        ProgressAutosave.attach(progress, FileProgressStore.inUserHome());
         SoundService sound = createSoundService();
         playSoundsOf(game, sound);
         MusicService music = createMusicService();

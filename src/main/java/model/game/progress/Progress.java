@@ -8,12 +8,13 @@ import java.util.Objects;
 import java.util.OptionalInt;
 
 /**
- * What the player achieved during this run of the application, and nothing else:
+ * What the player achieved, and nothing else:
  * which levels are unlocked, the best stars and the best score of each level.
  *
- * It lives only in memory. Nothing is written to disk, so every launch starts from scratch:
- * level 1 unlocked and 0 stars everywhere. It never holds the state of a level being played
- * (board, boxes, moves, undo history): a level is always rebuilt from its .txt file.
+ * It knows nothing about disks or files: it can hand out a {@link ProgressData} snapshot and be
+ * restored from one, and whoever wants to persist it (see port.ProgressStore) listens to its changes.
+ * It never holds the state of a level being played (board, boxes, moves, undo history):
+ * a level is always rebuilt from its .txt file.
  *
  * One instance is created by the composition root and handed to the controllers that need it.
  */
@@ -48,13 +49,13 @@ public final class Progress {
         return level <= lastUnlockedLevel;
     }
 
-    /** The best stars of this session; 0 if the level was never won. */
+    /** The best stars; 0 if the level was never won. */
     public int getStars(int level) {
         requireLevel(level);
         return starsByLevel.getOrDefault(level, MIN_STARS);
     }
 
-    /** The best score of this session; empty if the level was never won. */
+    /** The best score; empty if the level was never won. */
     public OptionalInt getBestScore(int level) {
         requireLevel(level);
         Integer best = bestScoreByLevel.get(level);
@@ -62,10 +63,10 @@ public final class Progress {
     }
 
     /**
-     * Records a won level: keeps the stars and the score only if they beat this session's best,
+     * Records a won level: keeps the stars and the score only if they beat the best so far,
      * and unlocks the next level. Only a win is recorded; losing or leaving a level never calls this.
      *
-     * @return true if it is a new record for the session (first win, more stars or more points)
+     * @return true if it is a new record (first win, more stars or more points)
      */
     public boolean registerResult(int level, int stars, int score) {
         requireLevel(level);
@@ -85,6 +86,32 @@ public final class Progress {
         lastUnlockedLevel = Math.max(lastUnlockedLevel, Math.min(level + 1, levelCount));
         notifyChanged();
         return moreStars || morePoints;
+    }
+
+    /** A copy of everything this progress remembers, to be saved somewhere. */
+    public ProgressData snapshot() {
+        return new ProgressData(lastUnlockedLevel, starsByLevel, bestScoreByLevel);
+    }
+
+    /**
+     * Replaces this progress with a saved one. Saved data comes from outside (a file the user can edit
+     * or that was written by a version with more levels), so it is taken leniently: levels out of range,
+     * invalid stars and negative scores are ignored, and every won level keeps the next one unlocked.
+     */
+    public void restore(ProgressData data) {
+        Objects.requireNonNull(data, "data");
+        starsByLevel.clear();
+        bestScoreByLevel.clear();
+        lastUnlockedLevel = clampLevel(data.lastUnlockedLevel());
+        data.bestScoreByLevel().forEach((level, score) -> {
+            if (isValidLevel(level) && score != null && score >= 0) {
+                bestScoreByLevel.put(level, score);
+                int stars = data.starsByLevel().getOrDefault(level, MIN_STARS);
+                starsByLevel.put(level, isValidStars(stars) ? stars : MIN_STARS);
+                lastUnlockedLevel = Math.max(lastUnlockedLevel, clampLevel(level + 1));
+            }
+        });
+        notifyChanged();
     }
 
     /** Back to how the application starts: level 1 unlocked and no stars. */
@@ -107,14 +134,26 @@ public final class Progress {
         List.copyOf(listeners).forEach(listener -> listener.progressChanged(this));
     }
 
+    private boolean isValidLevel(Integer level) {
+        return level != null && level >= FIRST_LEVEL && level <= levelCount;
+    }
+
+    private static boolean isValidStars(Integer stars) {
+        return stars != null && stars >= MIN_STARS && stars <= MAX_STARS;
+    }
+
+    private int clampLevel(int level) {
+        return Math.max(FIRST_LEVEL, Math.min(level, levelCount));
+    }
+
     private void requireLevel(int level) {
-        if (level < FIRST_LEVEL || level > levelCount) {
+        if (!isValidLevel(level)) {
             throw new IllegalArgumentException("Level " + level + " is out of range " + FIRST_LEVEL + ".." + levelCount);
         }
     }
 
     private static void requireStars(int stars) {
-        if (stars < MIN_STARS || stars > MAX_STARS) {
+        if (!isValidStars(stars)) {
             throw new IllegalArgumentException("Stars must be between " + MIN_STARS + " and " + MAX_STARS + ", got " + stars);
         }
     }
