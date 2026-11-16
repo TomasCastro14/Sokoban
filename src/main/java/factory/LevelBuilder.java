@@ -4,6 +4,8 @@ import exception.InvalidLevelException;
 import model.board.Board;
 import model.board.Cell;
 import model.board.Position;
+import model.box.Box;
+import model.box.OccupantVisitor;
 import model.box.Player;
 import model.game.Level;
 import model.game.LevelHeader;
@@ -13,6 +15,8 @@ import model.game.loss.MoveLossListener;
 import model.game.loss.TimeLossListener;
 import model.tile.Inaccessible;
 import model.tile.Portal;
+import model.tile.Tile;
+import model.tile.TileVisitor;
 import model.tile.mechanism.Door;
 import model.tile.mechanism.DoorGroup;
 import model.tile.mechanism.KeyTile;
@@ -24,12 +28,61 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 /** Builder + Creator (GRASP): collects the parsed cells and assembles the Level. */
 public class LevelBuilder {
     private static final List<LevelRule> RULES = List.of(new BorderRule(), new OnePlayerRule(), new PortalPairRule(),
             new DoorKeyGroupRule());
+
+    private static final TileVisitor<Optional<Door>> AS_DOOR = new TileVisitor<>() {
+        @Override
+        public Optional<Door> visitTile(Tile tile) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Door> visitDoor(Door door) {
+            return Optional.of(door);
+        }
+    };
+
+    private static final TileVisitor<Optional<KeyTile>> AS_KEY_TILE = new TileVisitor<>() {
+        @Override
+        public Optional<KeyTile> visitTile(Tile tile) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<KeyTile> visitKeyTile(KeyTile keyTile) {
+            return Optional.of(keyTile);
+        }
+    };
+
+    private static final TileVisitor<Optional<Portal>> AS_PORTAL = new TileVisitor<>() {
+        @Override
+        public Optional<Portal> visitTile(Tile tile) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Portal> visitPortal(Portal portal) {
+            return Optional.of(portal);
+        }
+    };
+
+    private static final OccupantVisitor<Optional<Player>> AS_PLAYER = new OccupantVisitor<>() {
+        @Override
+        public Optional<Player> visitPlayer(Player player) {
+            return Optional.of(player);
+        }
+
+        @Override
+        public Optional<Player> visitBox(Box box) {
+            return Optional.empty();
+        }
+    };
 
     private final LossRules lossRules;
     private LevelHeader header;
@@ -76,8 +129,9 @@ public class LevelBuilder {
                 if (content.occupant() != null) {
                     cells[row][col].place(content.occupant());
                 }
-                if (content.occupant() instanceof Player found) {
-                    player = found;
+                Optional<Player> found = playerIn(content);
+                if (found.isPresent()) {
+                    player = found.get();
                     playerPosition = p;
                 }
             }
@@ -100,14 +154,12 @@ public class LevelBuilder {
     private Collection<DoorGroup> linkDoorGroups() {
         Map<Character, DoorGroup> groups = new HashMap<>();
         for (CellContent content : contents.values()) {
-            if (content.tile() instanceof Door door) {
-                groups.computeIfAbsent(door.getGroup(), DoorGroup::new).addDoor(door);
-            }
+            content.tile().accept(AS_DOOR)
+                    .ifPresent(door -> groups.computeIfAbsent(door.getGroup(), DoorGroup::new).addDoor(door));
         }
         for (CellContent content : contents.values()) {
-            if (content.tile() instanceof KeyTile keyTile) {
-                keyTile.addListener(groups.computeIfAbsent(keyTile.getGroup(), DoorGroup::new));
-            }
+            content.tile().accept(AS_KEY_TILE)
+                    .ifPresent(key -> key.addListener(groups.computeIfAbsent(key.getGroup(), DoorGroup::new)));
         }
         return groups.values();
     }
@@ -121,33 +173,38 @@ public class LevelBuilder {
         }
     }
 
+    /** Only called for positions that portalsByLetter returned, so the portal is always there. */
     private Portal portalAt(Position p) {
-        return (Portal) contents.get(p).tile();
+        return contents.get(p).tile().accept(AS_PORTAL).orElseThrow();
     }
 
     /** Portal positions grouped by letter, in reading order. Shared by the pair rule and the linking. */
     Map<Character, List<Position>> portalsByLetter() {
-        return positionsByGroup(Portal.class, Portal::getLetter);
+        return positionsByGroup(AS_PORTAL, Portal::getLetter);
     }
 
     /** Key tile positions grouped by group letter (upper case), in reading order. */
     Map<Character, List<Position>> keyTilesByGroup() {
-        return positionsByGroup(KeyTile.class, KeyTile::getGroup);
+        return positionsByGroup(AS_KEY_TILE, KeyTile::getGroup);
     }
 
     Map<Character, List<Position>> doorsByGroup() {
-        return positionsByGroup(Door.class, Door::getGroup);
+        return positionsByGroup(AS_DOOR, Door::getGroup);
     }
 
-    private <T> Map<Character, List<Position>> positionsByGroup(Class<T> type, Function<T, Character> letterOf) {
+    private <T> Map<Character, List<Position>> positionsByGroup(TileVisitor<Optional<T>> as,
+                                                               Function<T, Character> letterOf) {
         Map<Character, List<Position>> byLetter = new LinkedHashMap<>();
         for (Map.Entry<Position, CellContent> entry : contents.entrySet()) {
-            if (type.isInstance(entry.getValue().tile())) {
-                char letter = letterOf.apply(type.cast(entry.getValue().tile()));
-                byLetter.computeIfAbsent(letter, l -> new ArrayList<>()).add(entry.getKey());
-            }
+            entry.getValue().tile().accept(as).ifPresent(tile ->
+                    byLetter.computeIfAbsent(letterOf.apply(tile), l -> new ArrayList<>()).add(entry.getKey()));
         }
         return byLetter;
+    }
+
+    /** The player at that content, if there is one (a padded cell has no content). */
+    static Optional<Player> playerIn(CellContent content) {
+        return content.occupant() == null ? Optional.empty() : content.occupant().accept(AS_PLAYER);
     }
 
     private void validate() throws InvalidLevelException {

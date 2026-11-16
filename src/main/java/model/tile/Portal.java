@@ -48,4 +48,8 @@ public class Portal extends Tile {
         return pairPosition == null ? Set.of() : Set.of(pairPosition);
     }
 
+    @Override
+    public <R> R accept(TileVisitor<R> visitor) {
+        return visitor.visitPortal(this);
+    }
 }

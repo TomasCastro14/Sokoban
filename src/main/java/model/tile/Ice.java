@@ -10,4 +10,9 @@ public class Ice extends Tile {
     protected EntryEffect entryEffect() {
         return SLIDE;
     }
+
+    @Override
+    public <R> R accept(TileVisitor<R> visitor) {
+        return visitor.visitIce(this);
+    }
 }

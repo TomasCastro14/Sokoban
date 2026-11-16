@@ -60,4 +60,7 @@ public abstract class Tile {
     public StorageResult getStorageResult() {
         return null;
     }
+
+    /** Double dispatch: each concrete tile calls its own visit method. */
+    public abstract <R> R accept(TileVisitor<R> visitor);
 }

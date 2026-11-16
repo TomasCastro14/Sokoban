@@ -59,4 +59,9 @@ public abstract class Box implements Occupant {
     protected StorageResult onStored(StoragePoint point) {
         return StorageResult.STORED;
     }
+
+    @Override
+    public <R> R accept(OccupantVisitor<R> visitor) {
+        return visitor.visitBox(this);
+    }
 }

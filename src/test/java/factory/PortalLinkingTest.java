@@ -4,6 +4,8 @@ import model.board.Board;
 import model.board.Cell;
 import model.board.Position;
 import model.tile.Portal;
+import model.tile.Tile;
+import model.tile.TileVisitor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,11 +33,23 @@ class PortalLinkingTest {
         return linked.iterator().next();
     }
 
+    private static final TileVisitor<Boolean> IS_PORTAL = new TileVisitor<>() {
+        @Override
+        public Boolean visitTile(Tile tile) {
+            return false;
+        }
+
+        @Override
+        public Boolean visitPortal(Portal portal) {
+            return true;
+        }
+    };
+
     /** Every portal on the board, with its pair. */
     private static Map<Position, Position> pairs(Board board) {
         Map<Position, Position> pairs = new HashMap<>();
         for (Cell cell : board.cells()) {
-            if (cell.getTile() instanceof Portal) {
+            if (cell.getTile().accept(IS_PORTAL)) {
                 pairs.put(cell.getPosition(), pairOf(board, cell.getPosition()));
             }
         }

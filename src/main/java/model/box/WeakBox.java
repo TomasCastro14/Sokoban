@@ -43,4 +43,9 @@ public class WeakBox extends Box {
         remainingPushes--;
         return PushResult.PUSHED;
     }
+
+    @Override
+    public <R> R accept(OccupantVisitor<R> visitor) {
+        return visitor.visitWeakBox(this);
+    }
 }

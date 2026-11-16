@@ -4,7 +4,6 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Region;
-import javafx.scene.paint.Color;
 import model.board.Board;
 import model.board.Cell;
 import model.board.Position;
@@ -18,18 +17,18 @@ import java.util.Objects;
 public class BoardView extends Region {
 
     static final double TILE = 64;
-    private static final Color UNSEEN = Color.BLACK;
 
     private final Canvas canvas = new Canvas();
     private final SpriteCatalog sprites;
     private final PlayerAnimator player = new PlayerAnimator();
     private final WearBubbles wearBubbles;
+    private final FogLayer fog = new FogLayer(TILE);
     private final AnimationTimer loop = new AnimationTimer() {
         @Override
         public void handle(long ignored) {
             long now = System.nanoTime();
             draw(now);
-            if (!player.isMoving(now)) {
+            if (!player.isMoving(now) && !fog.isFading(now)) {
                 stop();
             }
         }
@@ -50,6 +49,7 @@ public class BoardView extends Region {
         loop.stop();
         Board board = level.getBoard();
         player.snapTo(board.getPlayerPosition(), board.getPlayer().getFacing());
+        fog.reset(board, level.getVisibility());
         draw(System.nanoTime());
     }
 
@@ -60,7 +60,15 @@ public class BoardView extends Region {
     }
 
     public void refresh() {
-        draw(System.nanoTime());
+        if (level == null) {
+            return;
+        }
+        long now = System.nanoTime();
+        fog.update(level.getBoard(), level.getVisibility(), now);
+        draw(now);
+        if (fog.isFading(now)) {
+            loop.start();                     // anima la nube que se disipa
+        }
     }
 
     /** Alto (px) de la franja de arriba que tapa el HUD: la cámara no deja el mapa debajo de ella. */
@@ -96,31 +104,30 @@ public class BoardView extends Region {
         double offX = Math.round(camera.x());          // enteros: sin costuras entre casilleros
         double offY = Math.round(camera.y());
 
-        int firstRow = Math.max(0, (int) Math.floor(offY / TILE));
-        int lastRow = Math.min(board.getRows() - 1, (int) Math.floor((offY + viewH) / TILE));
-        int firstCol = Math.max(0, (int) Math.floor(offX / TILE));
-        int lastCol = Math.min(board.getCols() - 1, (int) Math.floor((offX + viewW) / TILE));
+        TileRange onScreen = new TileRange(
+                Math.max(0, (int) Math.floor(offY / TILE)),
+                Math.min(board.getRows() - 1, (int) Math.floor((offY + viewH) / TILE)),
+                Math.max(0, (int) Math.floor(offX / TILE)),
+                Math.min(board.getCols() - 1, (int) Math.floor((offX + viewW) / TILE)));
 
-        for (int row = firstRow; row <= lastRow; row++) {
-            for (int col = firstCol; col <= lastCol; col++) {
-                drawCell(g, board.cellAt(new Position(row, col)), visibility,
-                        col * TILE - offX, row * TILE - offY);
-            }
-        }
+        // Orden de capas: piso visible, nube (asoma sobre el borde de lo visible), paredes, jugador.
+        drawCells(g, board, visibility, onScreen, CellSprites.Appearance.VISIBLE, offX, offY);
+        fog.draw(g, onScreen.grow(1), offX, offY, now);  // +1: las nubes de afuera de la pantalla asoman adentro
+        drawCells(g, board, visibility, onScreen, CellSprites.Appearance.ABOVE_FOG, offX, offY);
         g.drawImage(sprites.get(player.sprite(now)),
                 player.col(now) * TILE - offX, player.row(now) * TILE - offY, TILE, TILE);
         wearBubbles.draw(g, board, visibility, offX, offY);
     }
 
-    private void drawCell(GraphicsContext g, Cell cell, Visibility visibility, double x, double y) {
-        switch (CellSprites.appearanceOf(cell, visibility)) {
-            case OUTSIDE -> { }                                  // se ve el pasto del fondo
-            case HIDDEN -> {
-                g.setFill(UNSEEN);
-                g.fillRect(x, y, TILE, TILE);
+    private void drawCells(GraphicsContext g, Board board, Visibility visibility, TileRange range,
+                           CellSprites.Appearance appearance, double offX, double offY) {
+        range.forEach(position -> {
+            Cell cell = board.cellAt(position);
+            if (CellSprites.appearanceOf(cell, visibility) == appearance) {
+                double x = position.col() * TILE - offX;
+                double y = position.row() * TILE - offY;
+                CellSprites.layers(cell).forEach(key -> g.drawImage(sprites.get(key), x, y, TILE, TILE));
             }
-            case VISIBLE -> CellSprites.layers(cell)
-                    .forEach(key -> g.drawImage(sprites.get(key), x, y, TILE, TILE));
-        }
+        });
     }
 }
