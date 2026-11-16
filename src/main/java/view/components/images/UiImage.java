@@ -16,6 +16,7 @@ public enum UiImage implements ImageAsset {
     ICON_PLAY("buttons/icons/icon_play_outline.png"),
     ICON_REPLAY("buttons/icons/icon_repeat_outline.png"),
     ICON_CLOSE("buttons/icons/icon_outline_cross.png"),
+    ICON_LOCK("Items/lock.png"),
     SPLASH_LOGO("logos/splash_screen.png"),
     TITLE_TOP("logos/main_title_a.png"),
     TITLE_BOTTOM("logos/main_title_b.png");

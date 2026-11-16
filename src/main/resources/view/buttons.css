@@ -59,6 +59,14 @@
     -fx-text-fill: #9a9a9a;
 }
 
+/* Red, for answers that cannot be undone. There is no red rectangular button art: it borrows the red box. */
+.button-danger {
+    -fx-border-image-source: url("../assets/images/UI/containers/red/button_square_depth_flat.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 8 8 12 8;
+    -fx-text-fill: white;
+}
+
 .button-round:disabled {
     -fx-background-image: url("../assets/images/UI/buttons/rounded_grey/button_round_depth_gloss.png");
     -fx-opacity: 1;

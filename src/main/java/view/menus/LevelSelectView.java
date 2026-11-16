@@ -3,6 +3,7 @@ package view.menus;
 import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -12,12 +13,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.ArcType;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.StrokeLineCap;
 import javafx.util.Duration;
 import view.components.buttons.ButtonIcon;
 import view.components.buttons.ButtonProvider;
@@ -26,19 +21,16 @@ import view.components.buttons.ButtonStyle;
 import view.components.buttons.RoundStyle;
 import view.components.container.PopupInstaller;
 import view.components.container.TitledPanel;
+import view.components.images.ImageProvider;
 import view.components.images.LevelPreview;
 import view.components.images.UiImage;
-import view.components.images.ImageProvider;
+import view.gameplay.dialog.ConfirmDialog;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.IntConsumer;
 
-/**
- * Passive view: it shows the levels it receives (padlock when locked, 0 to 3 stars when unlocked)
- * and asks for confirmation before reporting a progress reset. It never reads the progress itself.
- */
 public class LevelSelectView implements LevelSelectScreen {
 
     public record LevelInfo(String name, int stars, boolean unlocked) { }
@@ -51,28 +43,13 @@ public class LevelSelectView implements LevelSelectScreen {
     private static final double PREVIEW_W = 704;
     private static final double PREVIEW_H = 354;
     private static final double STAR_HEIGHT = 40;
-    private static final double STAR_SPACING = 6;
-    private static final double TITLE_BAR_HEIGHT = 96;
-    private static final double FRAME_TOP_OVERLAP = 84;
-    private static final double PANEL_WIDTH = 800;
-    private static final double PANEL_HEIGHT = 546;
     private static final double ARROW_OUTSET = -36;
     private static final double PLAY_BUTTON_OUTSET = -32;
     private static final double HIDDEN = 0;
     private static final double SHOWN = 1;
     private static final Duration CARD_FADE = Duration.millis(90);
     private static final double RESET_MARGIN = 32;
-    private static final double CONFIRM_SPACING = 24;
-    private static final double CONFIRM_WIDTH = 520;
-    private static final double LOCK_SPACING = 12;
-    private static final double LOCK_BODY_W = 72;
-    private static final double LOCK_BODY_H = 56;
-    private static final double LOCK_BODY_ARC = 14;
-    private static final double LOCK_SHACKLE_RADIUS = 22;
-    private static final double LOCK_SHACKLE_WIDTH = 10;
-    private static final double LOCK_KEYHOLE_RADIUS = 7;
-    private static final Color LOCK_COLOR = Color.WHITE;
-    private static final Color KEYHOLE_COLOR = Color.web("#1b1b22");
+    private static final double LOCK_SIZE = 96;
     private static final ColorAdjust LOCKED_PREVIEW = new ColorAdjust(0, -1, -0.55, 0);
 
     private static final String PLAY_TEXT = "¡A TRABAJAR!";
@@ -80,16 +57,16 @@ public class LevelSelectView implements LevelSelectScreen {
     private static final String BACKGROUND_STYLE = "background";
     private static final String LEVEL_NAME_STYLE = "level-name";
     private static final String TITLE_BAR_STYLE = "level-title-bar";
-    private static final String FRAME_STYLE = "frame-blue";
-    private static final String PANEL_STYLE = "panel";
+    private static final String PANEL_SIZE_STYLE = "level-select-panel";
+    private static final String STARS_STYLE = "level-stars";
+    private static final String LOCK_STYLE = "level-lock";
     private static final String OVERLAY_STYLE = "popup-overlay";
     private static final String LOCKED_TEXT_STYLE = "level-locked-text";
-    private static final String CONFIRM_TEXT_STYLE = "confirm-text";
     private static final String WIDE_BUTTON_STYLE = "menu-button-wide";
-    private static final String LOCKED_TEXT = "Ganá el nivel anterior para desbloquearlo";
+    private static final String LOCKED_TEXT = "¡Bloqueado!";
     private static final String RESET_TEXT = "REINICIAR PROGRESO";
-    private static final String CONFIRM_TEXT =
-            "¿Reiniciar el progreso? Se pierden las estrellas y vuelve a quedar solo el nivel 1.";
+    private static final String CONFIRM_TITLE = "¡ADVERTENCIA!";
+    private static final String CONFIRM_TEXT = "¿Estás seguro de que querés borrar todo tu progreso?";
     private static final String CONFIRM_YES = "REINICIAR";
     private static final String CONFIRM_NO = "CANCELAR";
     private static final Runnable NO_RESET = () -> { };
@@ -102,9 +79,9 @@ public class LevelSelectView implements LevelSelectScreen {
     private final StackPane root = new StackPane();
     private final Label name = new Label();
     private final List<ImageView> stars = new ArrayList<>(MAX_STARS);
-    private final HBox starRow = new HBox(STAR_SPACING);
+    private final HBox starRow = new HBox();
     private final ImageView preview = new ImageView();
-    private final VBox lockBadge = lockBadge();
+    private final VBox lockBadge;
     private final StackPane confirm;
     private final StackPane card;
     private final Button play;
@@ -123,13 +100,14 @@ public class LevelSelectView implements LevelSelectScreen {
         Objects.requireNonNull(popups, "popups");
         this.index = startIndex;
 
+        lockBadge = lockBadge();
         card = card();
         play = playButton(buttons);
         prev = arrowButton(buttons, ButtonIcon.ARROW_LEFT, PREVIOUS, Pos.CENTER_LEFT, new Insets(0, 0, 0, ARROW_OUTSET));
         next = arrowButton(buttons, ButtonIcon.ARROW_RIGHT, NEXT, Pos.CENTER_RIGHT, new Insets(0, ARROW_OUTSET, 0, 0));
 
         StackPane panel = TitledPanel.panel(card);
-        panel.setPrefSize(PANEL_WIDTH, PANEL_HEIGHT);
+        panel.getStyleClass().add(PANEL_SIZE_STYLE);
         StackPane window = new StackPane(panel, play, prev, next);
         window.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
@@ -161,55 +139,33 @@ public class LevelSelectView implements LevelSelectScreen {
     }
 
     private StackPane confirmPopup(ButtonProvider buttons) {
-        Label question = new Label(CONFIRM_TEXT);
-        question.getStyleClass().add(CONFIRM_TEXT_STYLE);
-        question.setWrapText(true);
-
-        HBox answers = new HBox(CONFIRM_SPACING,
-                buttons.createRectangular(CONFIRM_NO, ButtonStyle.SECONDARY, () -> confirm.setVisible(false)),
-                buttons.createRectangular(CONFIRM_YES, ButtonStyle.PRIMARY, () -> {
+        Node question = new ConfirmDialog(images, buttons).build(CONFIRM_TITLE, CONFIRM_TEXT, CONFIRM_NO, CONFIRM_YES,
+                () -> confirm.setVisible(false),
+                () -> {
                     confirm.setVisible(false);
                     onReset.run();
-                }));
-        answers.setAlignment(Pos.CENTER);
-
-        VBox box = new VBox(CONFIRM_SPACING, question, answers);
-        box.getStyleClass().add(PANEL_STYLE);
-        box.setAlignment(Pos.CENTER);
-        box.setPrefWidth(CONFIRM_WIDTH);
-        box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                });
 
         Region veil = new Region();
         veil.getStyleClass().add(OVERLAY_STYLE);
         veil.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-        StackPane popup = new StackPane(veil, box);
+        StackPane popup = new StackPane(veil, question);
         popup.setVisible(false);
         return popup;
     }
 
-    /** A padlock drawn with shapes (there is no padlock image among the assets) and a hint below. */
-    private static VBox lockBadge() {
-        Arc shackle = new Arc(0, 0, LOCK_SHACKLE_RADIUS, LOCK_SHACKLE_RADIUS, 0, 180);
-        shackle.setType(ArcType.OPEN);
-        shackle.setFill(null);
-        shackle.setStroke(LOCK_COLOR);
-        shackle.setStrokeWidth(LOCK_SHACKLE_WIDTH);
-        shackle.setStrokeLineCap(StrokeLineCap.BUTT);
-
-        Rectangle body = new Rectangle(LOCK_BODY_W, LOCK_BODY_H, LOCK_COLOR);
-        body.setArcWidth(LOCK_BODY_ARC);
-        body.setArcHeight(LOCK_BODY_ARC);
-        StackPane bodyWithHole = new StackPane(body, new Circle(LOCK_KEYHOLE_RADIUS, KEYHOLE_COLOR));
-
-        VBox padlock = new VBox(-LOCK_SHACKLE_WIDTH / 2, shackle, bodyWithHole);
-        padlock.setAlignment(Pos.CENTER);
+    /** The padlock over a locked level's preview, with a hint below. */
+    private VBox lockBadge() {
+        ImageView padlock = new ImageView(images.get(UiImage.ICON_LOCK));
+        padlock.setFitHeight(LOCK_SIZE);
+        padlock.setPreserveRatio(true);
 
         Label hint = new Label(LOCKED_TEXT);
         hint.getStyleClass().add(LOCKED_TEXT_STYLE);
 
-        VBox badge = new VBox(LOCK_SPACING, padlock, hint);
-        badge.setAlignment(Pos.CENTER);
+        VBox badge = new VBox(padlock, hint);
+        badge.getStyleClass().add(LOCK_STYLE);
         badge.setMouseTransparent(true);
         badge.setVisible(false);
         return badge;
@@ -232,12 +188,11 @@ public class LevelSelectView implements LevelSelectScreen {
             stars.add(star);
         }
         starRow.getChildren().setAll(stars);
+        starRow.getStyleClass().add(STARS_STYLE);
         starRow.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         StackPane titleBar = TitledPanel.titleBar(name, starRow);
         titleBar.getStyleClass().add(TITLE_BAR_STYLE);
-        titleBar.setPrefHeight(TITLE_BAR_HEIGHT);
-        titleBar.setMaxHeight(Region.USE_PREF_SIZE);
         StackPane.setAlignment(name, Pos.CENTER_LEFT);
         StackPane.setAlignment(starRow, Pos.CENTER_RIGHT);
         return titleBar;
