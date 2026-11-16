@@ -6,9 +6,15 @@ import model.board.Cell;
 import model.board.Direction;
 import model.board.Position;
 import model.board.Visibility;
+import model.box.Box;
+import model.box.OccupantVisitor;
+import model.box.Player;
 import model.box.WeakBox;
+import model.box.WearState;
 import view.SpriteCatalog;
 import view.SpriteKey;
+
+import java.util.Optional;
 
 /** Dibuja el globo de desgaste sobre las cajas débiles que están pegadas al jugador. */
 final class WearBubbles {
@@ -16,6 +22,24 @@ final class WearBubbles {
     private static final double WIDTH_RATIO = 0.5;        // ancho del globo respecto del casillero
     private static final double ASPECT = 38.0 / 32.0;     // proporción del sprite (alto / ancho)
     private static final double OVERLAP_RATIO = 0.15;     // cuánto pisa el globo el borde de la caja
+
+    /** Solo las cajas débiles tienen desgaste. */
+    private static final OccupantVisitor<Optional<WearState>> WEAR = new OccupantVisitor<>() {
+        @Override
+        public Optional<WearState> visitPlayer(Player player) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<WearState> visitBox(Box box) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<WearState> visitWeakBox(WeakBox box) {
+            return Optional.of(box.getWearState());
+        }
+    };
 
     private final SpriteCatalog sprites;
     private final double tile;
@@ -37,12 +61,14 @@ final class WearBubbles {
                 continue;
             }
             Cell cell = board.cellAt(near);
-            if (cell.getOccupant() instanceof WeakBox box
-                    && CellSprites.appearanceOf(cell, visibility) == CellSprites.Appearance.VISIBLE) {
+            if (cell.isFree() || CellSprites.appearanceOf(cell, visibility) != CellSprites.Appearance.VISIBLE) {
+                continue;
+            }
+            cell.getOccupant().accept(WEAR).ifPresent(wear -> {
                 double x = near.col() * tile - offX + (tile - width) / 2;
                 double y = near.row() * tile - offY - height + tile * OVERLAP_RATIO;
-                g.drawImage(sprites.get(SpriteKey.wearBubble(box.getWearState())), x, y, width, height);
-            }
+                g.drawImage(sprites.get(SpriteKey.wearBubble(wear)), x, y, width, height);
+            });
         }
     }
 }

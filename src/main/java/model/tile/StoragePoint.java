@@ -60,4 +60,9 @@ public class StoragePoint extends Tile {
     public StorageResult getStorageResult() {
         return result;
     }
+
+    @Override
+    public <R> R accept(TileVisitor<R> visitor) {
+        return visitor.visitStoragePoint(this);
+    }
 }

@@ -6,4 +6,9 @@ public class Floor extends Tile {
     public boolean acceptsEjectedBox() {
         return true;
     }
+
+    @Override
+    public <R> R accept(TileVisitor<R> visitor) {
+        return visitor.visitFloor(this);
+    }
 }

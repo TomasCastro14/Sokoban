@@ -35,4 +35,9 @@ public class Player implements Occupant {
     public Box boxIn(Tile tile) {
         return tile.getStoredBox();
     }
+
+    @Override
+    public <R> R accept(OccupantVisitor<R> visitor) {
+        return visitor.visitPlayer(this);
+    }
 }

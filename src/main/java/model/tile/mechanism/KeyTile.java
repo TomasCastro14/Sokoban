@@ -3,6 +3,7 @@ package model.tile.mechanism;
 import model.box.Box;
 import model.history.Memento;
 import model.tile.Tile;
+import model.tile.TileVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,5 +61,10 @@ public class KeyTile extends Tile {
         public void restore() {
             tile.used = used;
         }
+    }
+
+    @Override
+    public <R> R accept(TileVisitor<R> visitor) {
+        return visitor.visitKeyTile(this);
     }
 }
