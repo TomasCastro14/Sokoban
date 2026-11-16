@@ -13,7 +13,8 @@ public interface LevelDialogs {
 
     void showDefeat(LossReason reason, Runnable onLeave, Runnable onRetry);
 
-    void showVictory(ScoreResult result, Runnable onRetry, Runnable onNext);
+    /** newRecord: whether this win beat the best result of the level in this session. */
+    void showVictory(ScoreResult result, boolean newRecord, Runnable onRetry, Runnable onNext);
 
     /** onResume runs when the player clicks the dark veil around the popup. */
     void showPause(Runnable onLeave, Runnable onRestart, Runnable onResume);

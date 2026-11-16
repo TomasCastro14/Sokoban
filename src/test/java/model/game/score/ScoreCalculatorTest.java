@@ -3,6 +3,8 @@ package model.game.score;
 import model.game.LevelStats;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 
@@ -77,5 +79,41 @@ class ScoreCalculatorTest {
     @DisplayName("6. Segundos restantes negativos se rechazan")
     void negativeSecondsAreRejected() {
         assertThrows(IllegalArgumentException.class, () -> calculator.calculate(GOALS, stats(0, 0, 0), -1));
+    }
+
+    @ParameterizedTest(name = "{0}: en el limite {1} estrellas, uno mas {2}")
+    @CsvSource({
+            "MOVES,  3, 2",
+            "PUSHES, 3, 2",
+            "UNDOS,  3, 2"})
+    @DisplayName("7. Borde de cada umbral por separado: el limite exacto suma, uno mas resta una estrella")
+    void eachThresholdBorder(GoalType type, int atLimit, int overLimit) {
+        assertEquals(atLimit, calculator.calculate(GOALS, statsAt(type, 0), 60).stars());
+        assertEquals(overLimit, calculator.calculate(GOALS, statsAt(type, 1), 60).stars());
+    }
+
+    @Test
+    @DisplayName("8. Un umbral en 0: sin usar cumple, usar uno solo ya no")
+    void zeroLimit() {
+        LevelGoals noUndos = new LevelGoals(10, 5, 0);
+
+        assertEquals(3, calculator.calculate(noUndos, stats(10, 5, 0), 60).stars());
+        assertEquals(2, calculator.calculate(noUndos, stats(10, 5, 1), 60).stars());
+    }
+
+    @Test
+    @DisplayName("9. Las estrellas no dependen del tiempo: con 0 segundos se ganan igual (el puntaje es 0)")
+    void starsDoNotDependOnTime() {
+        ScoreResult result = calculator.calculate(GOALS, stats(10, 5, 1), 0);
+
+        assertEquals(3, result.stars());
+        assertEquals(0, result.score());
+    }
+
+    /** Every goal exactly at its limit, plus {@code extra} on the given one. */
+    private static LevelStats statsAt(GoalType type, int extra) {
+        return stats(10 + (type == GoalType.MOVES ? extra : 0),
+                5 + (type == GoalType.PUSHES ? extra : 0),
+                1 + (type == GoalType.UNDOS ? extra : 0));
     }
 }

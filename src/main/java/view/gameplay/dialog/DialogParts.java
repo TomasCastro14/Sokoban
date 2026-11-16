@@ -71,10 +71,15 @@ final class DialogParts {
      * so decorations can be placed in panel coordinates and buttons can stick out of it.
      */
     StackPane panel(String variantStyle, Node... content) {
+        return panel(PANEL_WIDTH, variantStyle, content);
+    }
+
+    /** Same panel with another width, for popups whose content does not fit the usual one. */
+    StackPane panel(double width, String variantStyle, Node... content) {
         VBox column = new VBox(PANEL_SPACING, content);
         column.getStyleClass().addAll(PANEL_STYLE, variantStyle);
         column.setAlignment(Pos.TOP_CENTER);
-        column.setPrefWidth(PANEL_WIDTH);
+        column.setPrefWidth(width);
         column.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         StackPane dialog = new StackPane(column);
@@ -143,11 +148,16 @@ final class DialogParts {
 
     /** The sokoban peeking from behind the panel, with a thought bubble showing how he feels. */
     void addMascot(StackPane dialog, MascotPose pose, UiImage emote) {
+        addMascot(dialog, PANEL_WIDTH, pose, emote);
+    }
+
+    /** Same, on a panel built with another width. */
+    void addMascot(StackPane dialog, double panelWidth, MascotPose pose, UiImage emote) {
         ImageView figure = image(UiImage.MASCOT, MASCOT_SIZE);
         figure.setRotate(pose.rotation());
         ImageView bubble = image(emote, BUBBLE_HEIGHT);
-        dialog.getChildren().add(0, decoration(figure, pose.figureCenterX(PANEL_WIDTH), pose.figureCenterY()));
-        dialog.getChildren().add(decoration(bubble, pose.bubbleCenterX(PANEL_WIDTH), pose.bubbleCenterY()));
+        dialog.getChildren().add(0, decoration(figure, pose.figureCenterX(panelWidth), pose.figureCenterY()));
+        dialog.getChildren().add(decoration(bubble, pose.bubbleCenterX(panelWidth), pose.bubbleCenterY()));
     }
 
     /**

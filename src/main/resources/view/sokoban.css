@@ -53,10 +53,48 @@
     -fx-padding: 0 32 12 32;
 }
 
+.level-title-bar {
+    /* lo que ya tenías, más: */
+    -fx-pref-height: 96px;
+    -fx-max-height: 96px;
+}
+
+.level-select-panel {
+    -fx-pref-width: 800px;
+    -fx-pref-height: 546px;
+}
+
+.level-stars {
+    -fx-spacing: 6px;
+}
+
+.level-lock {
+    -fx-spacing: 12px;
+    -fx-alignment: center;
+}
+
 .level-name {
     -fx-font-family: "Kenney Future";
     -fx-font-size: 24px;
     -fx-text-fill: white;
+}
+
+.level-locked-text {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 20px;
+    -fx-text-fill: white;
+}
+
+.confirm-text {
+    -fx-font-family: "Kenney Future";
+    -fx-font-size: 22px;
+    -fx-text-fill: #1b1b22;
+    -fx-text-alignment: center;
+}
+
+.menu-button.menu-button-wide {
+    -fx-pref-width: 340px;
+    -fx-font-size: 20px;
 }
 
 .settings-title {

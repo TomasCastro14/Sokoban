@@ -9,9 +9,9 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import model.game.Game;
 import model.game.Level;
+import model.game.progress.Progress;
 import model.game.score.StandardScoreCalculator;
-import service.JsonProgressRepository;
-import service.ProgressSaver;
+import service.FileProgressStore;
 import service.sound.JavaFxSoundService;
 import service.sound.SilentSoundService;
 import service.sound.SoundService;
@@ -29,7 +29,6 @@ import view.gameplay.GameView;
 import view.gameplay.HudView;
 import view.gameplay.dialog.LevelDialogsView;
 import view.menus.LevelSelectView;
-import view.menus.LevelSelectView.LevelInfo;
 import view.menus.MenuView;
 import view.menus.SettingsView;
 import service.sound.AudioMixer;
@@ -43,18 +42,14 @@ import view.menus.SplashView;
 import java.util.random.RandomGenerator;
 
 import java.lang.System.Logger;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.function.IntFunction;
-import java.util.stream.IntStream;
 
 /** Composition root: the only place that knows every piece and wires them together. */
 public class SokobanApp extends Application {
     private static final int LEVEL_COUNT = 5;
     private static final String FONT_PATH = "/assets/Kenney Future.ttf";
     private static final double FONT_SIZE = 14;
-    private static final String PROGRESS_FOLDER = ".new-sokoban";
-    private static final String PROGRESS_FILE = "progress.json";
     private static final Runnable NO_ESCAPE = () -> { };
     private static final Logger LOG = System.getLogger(SokobanApp.class.getName());
 
@@ -68,7 +63,10 @@ public class SokobanApp extends Application {
 
         GameWindow window = new GameWindow(stage, sprites);
         Game game = new Game(levelsFrom(new LevelLoader(StandardLossRules.create())), LEVEL_COUNT);
-        saveProgressOf(game);
+        // The only Progress of this run, injected into the controllers. It is loaded from a local file
+        // (~/.sokoban/progress.properties) and saved again every time it changes, so it survives restarts.
+        Progress progress = new Progress(LEVEL_COUNT);
+        ProgressAutosave.attach(progress, FileProgressStore.inUserHome());
         SoundService sound = createSoundService();
         playSoundsOf(game, sound);
         MusicService music = createMusicService();
@@ -80,16 +78,17 @@ public class SokobanApp extends Application {
         HudView hud = new HudView(buttons);
         gameView.setHud(hud.getRoot());
         new HudController(game, hud, gamePresenter::onEscape);
-        new LevelDialogPresenter(game, dialogs, session, new StandardScoreCalculator(), window);
+        new LevelDialogPresenter(game, dialogs, session, new StandardScoreCalculator(), window, progress);
         new LevelProgression(game, window);
-        MenuController menus = new MenuController(game, window, Platform::exit);
+        MenuController menus = new MenuController(game, progress, window, Platform::exit);
 
         SplashView splash = new SplashView(images, music::start, () -> window.replace(Screen.MAIN_MENU));
         window.register(Screen.SPLASH, splash.getRoot(), NO_ESCAPE);
         window.register(Screen.MAIN_MENU, new MenuView(menus, buttons, images).getRoot(), NO_ESCAPE);
-        window.register(Screen.LEVEL_SELECT,
-                new LevelSelectView(levelInfos(), menus::onLevelChosen, LevelSelectView.FIRST_INDEX, window::back,
-                        images, buttons, popups).getRoot(), window::back);
+        LevelSelectView levelSelect = new LevelSelectView(menus::onLevelChosen, LevelSelectView.FIRST_INDEX,
+                window::back, images, buttons, popups);
+        new LevelSelectPresenter(progress, levelSelect);
+        window.register(Screen.LEVEL_SELECT, levelSelect.getRoot(), window::back);
         window.register(Screen.GAME, gameView.getRoot(), gamePresenter::onEscape);
         window.register(Screen.SETTINGS,
                 new SettingsView(new SettingsPresenter(audio), window::back, popups).getRoot(), window::back);
@@ -97,13 +96,6 @@ public class SokobanApp extends Application {
         window.show(Screen.SPLASH);
         window.open();
         splash.play();
-    }
-
-    /** Levels are read from the classpath; progress is written outside the .jar, in the user's home. */
-    private static void saveProgressOf(Game game) {
-        Path file = Path.of(System.getProperty("user.home"), PROGRESS_FOLDER, PROGRESS_FILE);
-        ProgressSaver saver = new ProgressSaver(new JsonProgressRepository(file), LEVEL_COUNT);
-        game.addLevelCompletedListener(saver);
     }
 
     private static SoundService createSoundService() {
@@ -131,13 +123,6 @@ public class SokobanApp extends Application {
         game.addBoardListener(listener);
         game.addLevelFlowListener(listener);
         game.addLevelOutcomeListener(listener);
-    }
-
-    /** Provisional: every level unlocked and no stars until saved progress exists. */
-    private static List<LevelInfo> levelInfos() {
-        return IntStream.rangeClosed(1, LEVEL_COUNT)
-                .mapToObj(n -> new LevelInfo("Nivel " + n, 0, true))
-                .toList();
     }
 
     /** LevelLoader.load throws checked exceptions; Game asks for an IntFunction. */

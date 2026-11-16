@@ -39,6 +39,10 @@ final class DialogTexts {
         };
     }
 
+    static String record(boolean newRecord) {
+        return newRecord ? "¡Nuevo récord de la sesión!" : "No superaste tu récord de la sesión";
+    }
+
     static String points(int score) {
         return NUMBERS.format(score) + POINTS_SUFFIX;
     }

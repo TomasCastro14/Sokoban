@@ -20,6 +20,9 @@ final class VictoryDialog {
     private static final String TITLE_BOX = "dialog-victory-title";
     private static final String SCORE_BOX = "dialog-score";
     private static final String SCORE_TEXT = "dialog-score-text";
+    private static final String RECORD_BOX = "dialog-record";
+    private static final String NEW_RECORD_TEXT = "dialog-record-new";
+    private static final String NO_RECORD_TEXT = "dialog-record-text";
     private static final String MET_VALUE = "goal-met";
     private static final String MISSED_VALUE = "goal-missed";
 
@@ -29,12 +32,13 @@ final class VictoryDialog {
         this.parts = parts;
     }
 
-    Node build(ScoreResult result, Runnable onRetry, Runnable onNext) {
+    Node build(ScoreResult result, boolean newRecord, Runnable onRetry, Runnable onNext) {
         Node[] rows = result.goals().stream().map(this::row).toArray(Node[]::new);
         StackPane dialog = parts.panel(PANEL_VARIANT,
                 parts.overlapped(DialogParts.Overlap.LOWER_IN_FRONT,
                         parts.textBox(DialogTexts.VICTORY_TITLE, TITLE_BOX, DialogParts.TITLE_TEXT),
                         parts.textBox(DialogTexts.points(result.score()), SCORE_BOX, SCORE_TEXT)),
+                parts.textBox(DialogTexts.record(newRecord), RECORD_BOX, newRecord ? NEW_RECORD_TEXT : NO_RECORD_TEXT),
                 parts.list(DialogTexts.SUMMARY_TITLE, rows));
         parts.addMascot(dialog, MascotPose.FROM_THE_RIGHT, UiImage.EMOTE_HEART);
         addStars(dialog, result.stars(), result.goals().size());
