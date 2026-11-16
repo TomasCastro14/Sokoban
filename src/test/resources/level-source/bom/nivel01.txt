@@ -1,0 +1,9 @@
+﻿nombre: Nivel basico
+tiempo: 90
+movimientos: 60
+empujes: 20
+undo: 1
+---
+#####
+#@$.#
+#####

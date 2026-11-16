@@ -1,9 +1,9 @@
 package model.game.state;
 
-public class GameCompletedState implements GameState {
+public final class GameCompletedState extends AbstractGameState {
 
-    @Override
-    public boolean acceptsInput() {
-        return false;
+    public static final GameCompletedState INSTANCE = new GameCompletedState();
+
+    private GameCompletedState() {
     }
 }

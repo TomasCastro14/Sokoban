@@ -1,16 +1,9 @@
 package model.tile;
 
-import model.box.Box;
-
-public class Wall extends Tile {
+public class Wall extends SolidTile {
 
     @Override
-    public boolean allowsPlayer() {
-        return false;
-    }
-
-    @Override
-    public boolean allowsBox(Box box) {
-        return false;
+    public <R> R accept(TileVisitor<R> visitor) {
+        return visitor.visitWall(this);
     }
 }

@@ -1,0 +1,5 @@
+# Level-source test resources need exact line endings (the CRLF test must stay CRLF on every machine)
+src/test/resources/level-source/crlf/*.txt text eol=crlf
+src/test/resources/level-source/basic/*.txt text eol=lf
+src/test/resources/level-source/utf8/*.txt text eol=lf
+src/test/resources/level-source/bom/*.txt text eol=lf

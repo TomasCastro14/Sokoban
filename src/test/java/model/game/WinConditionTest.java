@@ -4,13 +4,10 @@ import factory.TestLevels;
 import model.board.Direction;
 import model.board.MoveResult;
 import model.board.Position;
-import model.game.event.EventType;
+import model.game.event.EventRecorder;
 import model.game.state.WonState;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +26,7 @@ class WinConditionTest {
         assertFalse(level.isWon());
 
         level.move(Direction.DOWN);  // player at (2,2)
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
 
         assertTrue(level.isWon());
         assertEquals(new Position(2, 3), level.getBoard().getPlayerPosition());
@@ -43,7 +40,7 @@ class WinConditionTest {
                 "#@$.#",
                 "#####");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertTrue(level.isWon());
     }
 
@@ -55,7 +52,7 @@ class WinConditionTest {
                 "#@$~.#",
                 "######");
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertTrue(level.isWon());
     }
 
@@ -66,8 +63,7 @@ class WinConditionTest {
                 "#######",
                 "#@$ . #",
                 "#######");
-        List<EventType> events = new ArrayList<>();
-        level.addListener(event -> events.add(event.getType()));
+        EventRecorder events = EventRecorder.attachTo(level);
 
         level.move(Direction.RIGHT);
         level.move(Direction.RIGHT); // box stored -> won
@@ -76,7 +72,7 @@ class WinConditionTest {
 
         level.undo();
 
-        assertFalse(events.contains(EventType.LEVEL_WON));
+        assertFalse(events.received("levelWon"));
     }
 
     @Test
@@ -91,7 +87,6 @@ class WinConditionTest {
         game.move(Direction.RIGHT);
 
         assertInstanceOf(WonState.class, game.getState());
-        assertTrue(game.isInputBlocked());
         Position before = game.getCurrentLevel().getBoard().getPlayerPosition();
         game.move(Direction.LEFT);
         assertEquals(before, game.getCurrentLevel().getBoard().getPlayerPosition());

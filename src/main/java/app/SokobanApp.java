@@ -1,0 +1,139 @@
+package app;
+
+import controller.*;
+import factory.LevelLoader;
+import factory.StandardLossRules;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
+import model.game.Game;
+import model.game.Level;
+import model.game.progress.Progress;
+import model.game.score.StandardScoreCalculator;
+import service.FileProgressStore;
+import service.sound.JavaFxSoundService;
+import service.sound.SilentSoundService;
+import service.sound.SoundService;
+import view.GameWindow;
+import view.Screen;
+import view.SpriteCatalog;
+import view.components.buttons.ButtonFactory;
+import view.components.buttons.ButtonProvider;
+import view.components.container.PopupInstaller;
+import view.components.container.PopupLayout;
+import view.components.images.ImageLoader;
+import view.components.images.ImageProvider;
+import view.components.images.UiImages;
+import view.gameplay.GameView;
+import view.gameplay.HudView;
+import view.gameplay.dialog.LevelDialogsView;
+import view.menus.LevelSelectView;
+import view.menus.MenuView;
+import view.menus.SettingsView;
+import service.sound.AudioMixer;
+import service.sound.JavaFxMusicService;
+import service.sound.MusicService;
+import service.sound.MusicTrack;
+import service.sound.Playlist;
+import service.sound.SilentMusicService;
+import view.menus.SplashView;
+
+import java.util.random.RandomGenerator;
+
+import java.lang.System.Logger;
+import java.util.List;
+import java.util.function.IntFunction;
+
+/** Composition root: the only place that knows every piece and wires them together. */
+public class SokobanApp extends Application {
+    private static final int LEVEL_COUNT = 5;
+    private static final String FONT_PATH = "/assets/Kenney Future.ttf";
+    private static final double FONT_SIZE = 14;
+    private static final Runnable NO_ESCAPE = () -> { };
+    private static final Logger LOG = System.getLogger(SokobanApp.class.getName());
+
+    @Override
+    public void start(Stage stage) {
+        Font.loadFont(getClass().getResourceAsStream(FONT_PATH), FONT_SIZE);
+        ImageProvider images = new UiImages(new ImageLoader());
+        ButtonProvider buttons = new ButtonFactory(images);
+        PopupInstaller popups = new PopupLayout(buttons);
+        SpriteCatalog sprites = new SpriteCatalog(images);
+
+        GameWindow window = new GameWindow(stage, sprites);
+        Game game = new Game(levelsFrom(new LevelLoader(StandardLossRules.create())), LEVEL_COUNT);
+        // The only Progress of this run, injected into the controllers. It is loaded from a local file
+        // (~/.sokoban/progress.properties) and saved again every time it changes, so it survives restarts.
+        Progress progress = new Progress(LEVEL_COUNT);
+        ProgressAutosave.attach(progress, FileProgressStore.inUserHome());
+        SoundService sound = createSoundService();
+        playSoundsOf(game, sound);
+        MusicService music = createMusicService();
+        AudioMixer audio = new AudioMixer(List.of(sound, music));
+        LevelDialogsView dialogs = new LevelDialogsView(images, buttons);
+        GameView gameView = new GameView(sprites, dialogs.getRoot());
+        PlaySession session = new PlaySession(new InputController(game), new GameClock(game));
+        GamePresenter gamePresenter = new GamePresenter(game, gameView, session);
+        HudView hud = new HudView(buttons);
+        gameView.setHud(hud.getRoot());
+        new HudController(game, hud, gamePresenter::onEscape);
+        new LevelDialogPresenter(game, dialogs, session, new StandardScoreCalculator(), window, progress);
+        new LevelProgression(game, window);
+        MenuController menus = new MenuController(game, progress, window, Platform::exit);
+
+        SplashView splash = new SplashView(images, music::start, () -> window.replace(Screen.MAIN_MENU));
+        window.register(Screen.SPLASH, splash.getRoot(), NO_ESCAPE);
+        window.register(Screen.MAIN_MENU, new MenuView(menus, buttons, images).getRoot(), NO_ESCAPE);
+        LevelSelectView levelSelect = new LevelSelectView(menus::onLevelChosen, LevelSelectView.FIRST_INDEX,
+                window::back, images, buttons, popups);
+        new LevelSelectPresenter(progress, levelSelect);
+        window.register(Screen.LEVEL_SELECT, levelSelect.getRoot(), window::back);
+        window.register(Screen.GAME, gameView.getRoot(), gamePresenter::onEscape);
+        window.register(Screen.SETTINGS,
+                new SettingsView(new SettingsPresenter(audio), window::back, popups).getRoot(), window::back);
+
+        window.show(Screen.SPLASH);
+        window.open();
+        splash.play();
+    }
+
+    private static SoundService createSoundService() {
+        try {
+            return new JavaFxSoundService();
+        } catch (RuntimeException | LinkageError e) {
+            LOG.log(Logger.Level.WARNING, "Audio is not available, the game continues without sound", e);
+            return new SilentSoundService();
+        }
+    }
+
+    /** The first track is picked at random on every launch; after that the playlist rotates in order. */
+    private static MusicService createMusicService() {
+        try {
+            Playlist playlist = Playlist.randomStart(List.of(MusicTrack.values()), RandomGenerator.getDefault());
+            return new JavaFxMusicService(playlist);
+        } catch (RuntimeException | LinkageError e) {
+            LOG.log(Logger.Level.WARNING, "Music is not available, the game continues without it", e);
+            return new SilentMusicService();
+        }
+    }
+
+    private static void playSoundsOf(Game game, SoundService sound) {
+        SoundEventListener listener = new SoundEventListener(sound);
+        game.addBoardListener(listener);
+        game.addLevelFlowListener(listener);
+        game.addLevelOutcomeListener(listener);
+    }
+
+    /** LevelLoader.load throws checked exceptions; Game asks for an IntFunction. */
+    private static IntFunction<Level> levelsFrom(LevelLoader loader) {
+        return number -> {
+            try {
+                return loader.load(number);
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                        "No se pudo cargar el nivel " + number + ": " + e.getMessage(), e);
+            }
+        };
+    }
+}

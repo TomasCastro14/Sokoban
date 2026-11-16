@@ -1,10 +1,18 @@
 package model.box;
 
+import model.history.Memento;
+
 public class WeakBox extends Box {
+    public static final int MIN_PUSHES = 1;
+    public static final int MAX_PUSHES = 9;
+
     private int remainingPushes;
 
-    /** @param maxPushes pushes the box withstands; the next one breaks it */
     public WeakBox(int maxPushes) {
+        if (maxPushes < MIN_PUSHES || maxPushes > MAX_PUSHES) {
+            throw new IllegalArgumentException(
+                    "A weak box withstands " + MIN_PUSHES + ".." + MAX_PUSHES + " pushes, got " + maxPushes);
+        }
         this.remainingPushes = maxPushes;
     }
 
@@ -12,9 +20,19 @@ public class WeakBox extends Box {
         return remainingPushes;
     }
 
+    public WearState getWearState() {
+        return WearState.of(remainingPushes);
+    }
+
     @Override
     public BoxType getType() {
         return BoxType.WEAK;
+    }
+
+    @Override
+    public Memento save() {
+        int savedPushes = remainingPushes;
+        return () -> remainingPushes = savedPushes;
     }
 
     @Override
@@ -24,5 +42,10 @@ public class WeakBox extends Box {
         }
         remainingPushes--;
         return PushResult.PUSHED;
+    }
+
+    @Override
+    public <R> R accept(OccupantVisitor<R> visitor) {
+        return visitor.visitWeakBox(this);
     }
 }

@@ -1,12 +1,13 @@
 package model.game.loss;
 
-import model.game.Level;
+import model.tile.StorageResult;
 
-public class WrongStorageCondition implements LossCondition {
+public class WrongStorageCondition extends StorageLossCondition {
 
+    /** Lost as soon as a box is pushed onto a point of another color. */
     @Override
-    public boolean isMet(Level level) {
-        throw new UnsupportedOperationException("TODO");
+    protected boolean matches(StorageResult result) {
+        return result == StorageResult.WRONG_BOX;
     }
 
     @Override

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class WeakBoxTest {
 
     @Test
-    @DisplayName("1. WeakBox(1) aguanta 1 empuje: el primero da OK y el segundo da BROKEN y la caja desaparece")
+    @DisplayName("1. WeakBox(1) aguanta 1 empuje: el primero da PUSHED y el segundo da BROKEN y la caja desaparece")
     void weakBoxOfOneBreaksOnSecondPush() {
         Level level = TestLevels.level(
                 "#######",
@@ -21,7 +21,7 @@ class WeakBoxTest {
                 "#######");
         WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
 
-        assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
         assertEquals(0, box.getRemainingPushes());
 
         assertEquals(MoveResult.BROKEN, level.move(Direction.RIGHT));
@@ -30,7 +30,7 @@ class WeakBoxTest {
     }
 
     @Test
-    @DisplayName("2. WeakBox(3): los empujes intermedios dan OK y el contador baja de a 1")
+    @DisplayName("2. WeakBox(3): los empujes intermedios dan PUSHED y el contador baja de a 1")
     void weakBoxOfThreeCountsDownOneByOne() {
         Level level = TestLevels.level(
                 "#########",
@@ -39,7 +39,7 @@ class WeakBoxTest {
         WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
 
         for (int expected = 2; expected >= 0; expected--) {
-            assertEquals(MoveResult.OK, level.move(Direction.RIGHT));
+            assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
             assertEquals(expected, box.getRemainingPushes());
         }
         assertEquals(MoveResult.BROKEN, level.move(Direction.RIGHT));
@@ -77,5 +77,130 @@ class WeakBoxTest {
 
         assertEquals(3, box.getRemainingPushes());
         assertEquals(0, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("5. Caminar 1 celda al lado de una WeakBox(3) no descuenta")
+    void walkingOneCellNextToBoxDoesNotCountDown() {
+        Level level = TestLevels.level(
+                "######",
+                "#@   #",
+                "# 3 :#",
+                "######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(2, 2));
+
+        assertEquals(MoveResult.OK, level.move(Direction.RIGHT)); // ends right above the box
+
+        assertEquals(3, box.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("6. Caminar en las 4 direcciones alrededor de la WeakBox(3) no descuenta")
+    void walkingAroundBoxInFourDirectionsDoesNotCountDown() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@    #",
+                "#  3  #",
+                "#    :#",
+                "#######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(2, 3));
+        Direction[] loopAroundBox = {
+                Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, // above the box
+                Direction.DOWN, Direction.DOWN,                    // right of the box
+                Direction.LEFT, Direction.LEFT,                    // below the box
+                Direction.UP, Direction.UP                         // left of the box
+        };
+
+        for (Direction direction : loopAroundBox) {
+            assertEquals(MoveResult.OK, level.move(direction), direction.name());
+        }
+
+        assertEquals(3, box.getRemainingPushes());
+        assertSame(box, level.getBoard().getBoxAt(new Position(2, 3)));
+        assertEquals(0, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("7. Moverse contra una pared o contra % no descuenta")
+    void movingIntoWallOrVoidDoesNotCountDown() {
+        Level level = TestLevels.level(
+                "######",
+                "#@%  #",
+                "# 3 :#",
+                "######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(2, 2));
+
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.UP));
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
+
+        assertEquals(3, box.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("8. Con dos WeakBox(3), empujar una solo descuenta a esa")
+    void pushingOneWeakBoxDoesNotAffectTheOther() {
+        Level level = TestLevels.level(
+                "########",
+                "#@3   :#",
+                "#  3  :#",
+                "########");
+        WeakBox pushed = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
+        WeakBox other = (WeakBox) level.getBoard().getBoxAt(new Position(2, 3));
+
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+
+        assertEquals(2, pushed.getRemainingPushes());
+        assertEquals(3, other.getRemainingPushes());
+    }
+
+    @Test
+    @DisplayName("9. Empujar una NormalBox no descuenta a la WeakBox")
+    void pushingNormalBoxDoesNotAffectWeakBox() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$  .#",
+                "#  3 :#",
+                "#######");
+        WeakBox weak = (WeakBox) level.getBoard().getBoxAt(new Position(2, 3));
+
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+
+        assertEquals(3, weak.getRemainingPushes());
+        assertEquals(1, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("10. Control: empujar la WeakBox(3) con exito si la baja a 2")
+    void successfulPushCountsDown() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@3  :#",
+                "#######");
+        WeakBox box = (WeakBox) level.getBoard().getBoxAt(new Position(1, 2));
+
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+
+        assertEquals(2, box.getRemainingPushes());
+        assertSame(box, level.getBoard().getBoxAt(new Position(1, 3)));
+    }
+
+    @Test
+    @DisplayName("11. Una WeakBox arranca con la resistencia que recibe, en todo el rango valido 1..9")
+    void weakBoxStartsWithItsResistance() {
+        for (int pushes = WeakBox.MIN_PUSHES; pushes <= WeakBox.MAX_PUSHES; pushes++) {
+            assertEquals(pushes, new WeakBox(pushes).getRemainingPushes());
+        }
+    }
+
+    @Test
+    @DisplayName("12. No se puede crear una WeakBox con resistencia menor al minimo")
+    void weakBoxBelowMinimumIsRejected() {
+        assertThrows(IllegalArgumentException.class, () -> new WeakBox(WeakBox.MIN_PUSHES - 1));
+    }
+
+    @Test
+    @DisplayName("13. No se puede crear una WeakBox con resistencia mayor al maximo")
+    void weakBoxAboveMaximumIsRejected() {
+        assertThrows(IllegalArgumentException.class, () -> new WeakBox(WeakBox.MAX_PUSHES + 1));
     }
 }

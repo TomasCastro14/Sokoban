@@ -1,9 +1,19 @@
 package model.game.loss;
 
 public enum LossReason {
-    DEADLOCK,
-    TIME_OUT,
-    BROKEN_BOX,
-    WRONG_STORAGE,
-    EARLY_KEY_STORAGE
+    DEADLOCK(true),
+    TIME_OUT(false),
+    BROKEN_BOX(false),
+    WRONG_STORAGE(false),
+    EARLY_KEY_STORAGE(false);
+
+    private final boolean recoverable;
+
+    LossReason(boolean recoverable) {
+        this.recoverable = recoverable;
+    }
+    
+    public boolean isRecoverable() {
+        return recoverable;
+    }
 }

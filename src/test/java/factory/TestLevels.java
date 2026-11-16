@@ -19,10 +19,12 @@ public final class TestLevels {
 
     public static final String NAME = "Nivel de prueba";
     public static final int TIME = 120;
-    public static final int TARGET = 1000;
+    public static final int MAX_MOVES = 100;
+    public static final int MAX_PUSHES = 50;
+    public static final int MAX_UNDOS = 3;
 
-    /** Number of header lines before the first map row (3 keys + "---"). */
-    public static final int HEADER_LINES = 4;
+    /** Number of header lines before the first map row (5 keys + "---"). */
+    public static final int HEADER_LINES = 6;
 
     private TestLevels() {
     }
@@ -30,14 +32,16 @@ public final class TestLevels {
     public static String text(String... rows) {
         return "nombre: " + NAME + "\n"
                 + "tiempo: " + TIME + "\n"
-                + "objetivo: " + TARGET + "\n"
+                + "movimientos: " + MAX_MOVES + "\n"
+                + "empujes: " + MAX_PUSHES + "\n"
+                + "undo: " + MAX_UNDOS + "\n"
                 + "---\n"
                 + String.join("\n", rows);
     }
 
     public static Level level(String... rows) {
         try {
-            return new LevelLoader().parse(text(rows));
+            return new LevelLoader(StandardLossRules.create()).parse(text(rows));
         } catch (InvalidLevelException e) {
             throw new IllegalArgumentException("Invalid test level: " + e.getMessage(), e);
         }

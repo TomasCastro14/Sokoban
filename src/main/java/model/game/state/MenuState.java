@@ -1,9 +1,9 @@
 package model.game.state;
 
-public class MenuState implements GameState {
+public final class MenuState extends AbstractGameState {
 
-    @Override
-    public boolean acceptsInput() {
-        return false;
+    public static final MenuState INSTANCE = new MenuState();
+
+    private MenuState() {
     }
 }

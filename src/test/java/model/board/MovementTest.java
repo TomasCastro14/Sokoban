@@ -110,4 +110,167 @@ class MovementTest {
         assertEquals(1, level.getStats().getMoves());
         assertEquals(0, level.getStats().getPushes());
     }
+
+    @Test
+    @DisplayName("6b. Caminar a piso libre en cada direccion da OK, suma 1 movimiento y ningun empuje")
+    void walkingInEachDirectionCountsOneMove() {
+        for (Direction direction : Direction.values()) {
+            Level level = openRoom();
+
+            assertEquals(MoveResult.OK, level.move(direction), direction.name());
+
+            assertEquals(1, level.getStats().getMoves(), direction.name());
+            assertEquals(0, level.getStats().getPushes(), direction.name());
+        }
+    }
+
+    @Test
+    @DisplayName("6c. N pasos seguidos sin empujar suman N movimientos y 0 empujes")
+    void severalWalksCountEachMove() {
+        Level level = openRoom();
+
+        level.move(Direction.UP);
+        level.move(Direction.LEFT);
+        level.move(Direction.LEFT);
+        level.move(Direction.DOWN);
+
+        assertEquals(new Position(2, 1), level.getBoard().getPlayerPosition());
+        assertEquals(4, level.getStats().getMoves());
+        assertEquals(0, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("6d. Chocar contra una pared no suma movimientos ni empujes")
+    void walkingIntoWallCountsNothing() {
+        Level level = TestLevels.level(
+                "######",
+                "#@ $.#",
+                "######");
+
+        level.move(Direction.UP);
+        level.move(Direction.LEFT);
+
+        assertEquals(0, level.getStats().getMoves());
+        assertEquals(0, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("6e. Chocar contra terreno no accesible (%) no suma movimientos ni empujes")
+    void walkingIntoVoidCountsNothing() {
+        Level level = TestLevels.level(
+                "######",
+                "#@%  #",
+                "# $. #",
+                "######");
+
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
+
+        assertEquals(0, level.getStats().getMoves());
+        assertEquals(0, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("6f. Una caja que no se puede mover bloquea al jugador y no suma nada")
+    void unmovableBoxCountsNothing() {
+        Level level = TestLevels.level(
+                "######",
+                "#@$#.#",
+                "######");
+
+        assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT));
+
+        assertEquals(new Position(1, 1), level.getBoard().getPlayerPosition());
+        assertEquals(0, level.getStats().getMoves());
+        assertEquals(0, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("6g. Empujar una caja da PUSHED y suma 1 movimiento y 1 empuje")
+    void pushingCountsMoveAndPush() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$  .#",
+                "#######");
+
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+
+        assertEquals(1, level.getStats().getMoves());
+        assertEquals(1, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("6h. Caminar y empujar mezclados: los movimientos cuentan todo, los empujes solo los empujes")
+    void walkingAndPushingAreCountedApart() {
+        Level level = TestLevels.level(
+                "########",
+                "#@ $  .#",
+                "#      #",
+                "########");
+
+        level.move(Direction.RIGHT); // walk
+        level.move(Direction.RIGHT); // push
+        level.move(Direction.DOWN);  // walk
+
+        assertEquals(3, level.getStats().getMoves());
+        assertEquals(1, level.getStats().getPushes());
+    }
+
+    @Test
+    @DisplayName("11. Un punto de guardado vacio de cualquier color bloquea al jugador sin mover ni contar")
+    void emptyStoragePointOfEveryColorBlocksPlayer() {
+        for (char point : new char[] {'.', ':', ';'}) {
+            Level level = TestLevels.level(
+                    "######",
+                    "#@" + point + "  #",
+                    "######");
+
+            assertEquals(MoveResult.BLOCKED, level.move(Direction.RIGHT), "point " + point);
+            assertEquals(new Position(1, 1), level.getBoard().getPlayerPosition(), "point " + point);
+            assertEquals(0, level.getStats().getMoves(), "point " + point);
+            assertEquals(0, level.getStats().getPushes(), "point " + point);
+        }
+    }
+
+    @Test
+    @DisplayName("11. Una caja empujada hacia un punto vacio de su color entra y queda guardada")
+    void boxStillEntersTheHole() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@$.  #",
+                "#######");
+
+        assertEquals(MoveResult.PUSHED, level.move(Direction.RIGHT));
+
+        assertNotNull(level.getBoard().getTile(new Position(1, 3)).getStoredBox());
+        assertEquals(1, level.getStats().getStoredBoxes());
+    }
+
+    @Test
+    @DisplayName("11. Al lado de un agujero el jugador se mueve con normalidad a piso libre")
+    void walkingAwayFromTheHoleWorks() {
+        Level level = TestLevels.level(
+                "######",
+                "#@.  #",
+                "#    #",
+                "######");
+
+        assertEquals(MoveResult.OK, level.move(Direction.DOWN));
+
+        assertEquals(new Position(2, 1), level.getBoard().getPlayerPosition());
+        assertEquals(1, level.getStats().getMoves());
+    }
+
+    @Test
+    @DisplayName("11. Un agujero frena el deslizamiento del jugador por hielo")
+    void holeStopsIceSlide() {
+        Level level = TestLevels.level(
+                "#######",
+                "#@~~. #",
+                "#     #",
+                "#######");
+
+        level.move(Direction.RIGHT);
+
+        assertEquals(new Position(1, 3), level.getBoard().getPlayerPosition());
+    }
 }

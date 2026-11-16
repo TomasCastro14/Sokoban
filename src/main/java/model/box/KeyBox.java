@@ -1,5 +1,6 @@
 package model.box;
 
+import model.history.Memento;
 import model.tile.StoragePoint;
 import model.tile.StorageResult;
 
@@ -15,11 +16,22 @@ public class KeyBox extends Box {
     }
 
     @Override
+    public boolean activateKeyTile() {
+        markDoorOpened();
+        return true;
+    }
+
+    @Override
+    public Memento save() {
+        boolean savedDoorOpened = doorOpened;
+        return () -> doorOpened = savedDoorOpened;
+    }
+
+    @Override
     public BoxType getType() {
         return BoxType.KEY;
     }
 
-    /** A key box can only be stored after it has opened its door. */
     @Override
     protected StorageResult onStored(StoragePoint point) {
         return doorOpened ? StorageResult.STORED : StorageResult.KEY_NOT_USED;

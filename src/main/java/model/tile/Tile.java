@@ -1,12 +1,18 @@
 package model.tile;
 
+import model.board.Board;
+import model.board.Direction;
+import model.board.Position;
 import model.box.Box;
+import model.box.Occupant;
+import model.history.Memento;
+import model.tile.effect.EntryEffect;
+import model.tile.effect.NoEffect;
 
-/**
- * Polymorphism (GRASP): each tile answers what it lets in, so the board
- * never asks for the concrete tile type.
- */
+import java.util.Set;
+
 public abstract class Tile {
+    private static final EntryEffect STAY = new NoEffect();
 
     public boolean allowsPlayer() {
         return true;
@@ -15,4 +21,46 @@ public abstract class Tile {
     public boolean allowsBox(Box box) {
         return true;
     }
+
+    public boolean acceptsEjectedBox() {
+        return false;
+    }
+
+    public boolean isBoundary() {
+        return false;
+    }
+
+    public boolean blocksVision() {
+        return false;
+    }
+
+    public Set<Position> linkedPositions() {
+        return Set.of();
+    }
+
+    public final Position arrivalFor(Occupant occupant, Position entered, Direction direction, Board board) {
+        return entryEffect().apply(occupant, entered, direction, board);
+    }
+
+    protected EntryEffect entryEffect() {
+        return STAY;
+    }
+
+    public void onBoxEntered(Box box) {
+    }
+
+    public Memento save() {
+        return Memento.NOTHING_TO_RESTORE;
+    }
+
+    public Box getStoredBox() {
+        return null;
+    }
+
+    public StorageResult getStorageResult() {
+        return null;
+    }
+
+    /** Double dispatch: each concrete tile calls its own visit method. */
+    public abstract <R> R accept(TileVisitor<R> visitor);
 }

@@ -1,7 +1,9 @@
 package model.tile.mechanism;
 
 import model.box.Box;
+import model.history.Memento;
 import model.tile.Tile;
+import model.tile.TileVisitor;
 
 public class Door extends Tile {
     private final char group;
@@ -28,6 +30,12 @@ public class Door extends Tile {
     }
 
     @Override
+    public Memento save() {
+        boolean savedOpen = open;
+        return () -> open = savedOpen;
+    }
+
+    @Override
     public boolean allowsPlayer() {
         return open;
     }
@@ -35,5 +43,15 @@ public class Door extends Tile {
     @Override
     public boolean allowsBox(Box box) {
         return open;
+    }
+
+    @Override
+    public boolean blocksVision() {
+        return !open;
+    }
+
+    @Override
+    public <R> R accept(TileVisitor<R> visitor) {
+        return visitor.visitDoor(this);
     }
 }

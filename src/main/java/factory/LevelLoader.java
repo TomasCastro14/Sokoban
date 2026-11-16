@@ -1,6 +1,7 @@
 package factory;
 
 import exception.InvalidLevelException;
+import exception.LevelNotFoundException;
 import model.board.Direction;
 import model.board.Position;
 import model.box.BoxType;
@@ -8,32 +9,45 @@ import model.box.KeyBox;
 import model.box.NormalBox;
 import model.box.Player;
 import model.game.Level;
+import model.game.loss.LossRules;
 import model.tile.Floor;
 import model.tile.Ice;
 import model.tile.StoragePoint;
-import model.tile.Void;
+import model.tile.Inaccessible;
+import port.LevelSource;
+import service.ClasspathLevelSource;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** Builder director: reads the level text and tells the builder what to create. */
 public class LevelLoader {
     private static final String SEPARATOR = "---";
+    /** Rule reported when a map character is not in the format (the creators map is the only source). */
+    static final String UNKNOWN_CHARACTER = "Unknown character";
 
     private final Map<Character, CellCreator> creators = new HashMap<>();
+    private final HeaderParser headerParser = new HeaderParser();
+    private final LevelSource source;
+    private final LossRules lossRules;
 
-    public LevelLoader() {
+    /** Reads the game levels from the classpath (levels/nivelNN.txt). */
+    public LevelLoader(LossRules lossRules) {
+        this(new ClasspathLevelSource(), lossRules);
+    }
+
+    public LevelLoader(LevelSource source, LossRules lossRules) {
+        this.source = source;
+        this.lossRules = Objects.requireNonNull(lossRules, "lossRules");
         register("#", new WallCreator());
-        register("%", (p, symbol) -> new CellContent(new Void(), null));
+        register("%", (p, symbol) -> new CellContent(new Inaccessible(), null));
         register(" ", (p, symbol) -> new CellContent(new Floor(), null));
         register("@", (p, symbol) -> new CellContent(new Floor(), new Player(Direction.DOWN)));
         register("$", (p, symbol) -> new CellContent(new Floor(), new NormalBox()));
         register("K", (p, symbol) -> new CellContent(new Floor(), new KeyBox()));
-        register("123456789", new WeakBoxCreator());
+        register(WeakBoxCreator.symbols(), new WeakBoxCreator());
         register(".", (p, symbol) -> new CellContent(new StoragePoint(BoxType.NORMAL), null));
         register(":", (p, symbol) -> new CellContent(new StoragePoint(BoxType.WEAK), null));
         register(";", (p, symbol) -> new CellContent(new StoragePoint(BoxType.KEY), null));
@@ -49,48 +63,29 @@ public class LevelLoader {
         }
     }
 
-    /** Loads a level from the classpath, e.g. "/levels/nivel01.txt". */
-    public Level load(String resourcePath) throws InvalidLevelException {
-        try (InputStream in = LevelLoader.class.getResourceAsStream(resourcePath)) {
-            if (in == null) {
-                throw new InvalidLevelException("Level not found: " + resourcePath, -1);
-            }
-            return parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new InvalidLevelException("Could not read " + resourcePath + ": " + e.getMessage(), -1);
-        }
+    /** Builds level n from the lines its source gives (1-based). */
+    public Level load(int levelNumber) throws LevelNotFoundException, InvalidLevelException {
+        return parse(source.lines(levelNumber));
+    }
+
+    public boolean exists(int levelNumber) {
+        return source.exists(levelNumber);
     }
 
     /** Parses the full text of a level file: header, "---" separator and map. */
     public Level parse(String text) throws InvalidLevelException {
-        List<String> lines = text.lines().toList();
+        return parse(text.lines().toList());
+    }
+
+    private Level parse(List<String> lines) throws InvalidLevelException {
         int separator = lines.indexOf(SEPARATOR);
         if (separator < 0) {
             throw new InvalidLevelException("Missing '" + SEPARATOR + "' between header and map", -1);
         }
-        LevelBuilder builder = new LevelBuilder();
-        parseHeader(lines.subList(0, separator), builder);
+        LevelBuilder builder = new LevelBuilder(lossRules).withMapStartLine(separator + 2); // 1-based line after "---"
+        builder.withHeader(headerParser.parse(lines.subList(0, separator)));
         parseMap(lines, separator + 1, builder);
         return builder.build();
-    }
-
-    private void parseHeader(List<String> lines, LevelBuilder builder) throws InvalidLevelException {
-        Map<String, String> values = new HashMap<>();
-        for (String line : lines) {
-            int colon = line.indexOf(':');
-            if (colon > 0) {
-                values.put(line.substring(0, colon).trim(), line.substring(colon + 1).trim());
-            }
-        }
-        builder.withHeader(values.get("nombre"), intValue(values, "tiempo"), intValue(values, "objetivo"));
-    }
-
-    private int intValue(Map<String, String> values, String key) throws InvalidLevelException {
-        try {
-            return Integer.parseInt(values.get(key));
-        } catch (NumberFormatException e) {
-            throw new InvalidLevelException("Header '" + key + "' must be a number", -1);
-        }
     }
 
     /** Map rows start right after the separator; error lines are 1-based lines of the file. */
@@ -101,7 +96,7 @@ public class LevelLoader {
                 char symbol = line.charAt(col);
                 CellCreator creator = creators.get(symbol);
                 if (creator == null) {
-                    throw new InvalidLevelException("Unknown character '" + symbol + "'", i + 1);
+                    throw new InvalidLevelException(UNKNOWN_CHARACTER + " '" + symbol + "'", i + 1);
                 }
                 Position position = new Position(i - firstRow, col);
                 builder.addCell(position, creator.create(position, symbol));

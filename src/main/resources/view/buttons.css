@@ -1,0 +1,125 @@
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-image-width: 8;
+    -fx-border-image-repeat: stretch;
+    -fx-pref-width: 240px;
+    -fx-pref-height: 64px;
+    -fx-padding: 0 0 4 0;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.button-primary {
+    -fx-border-image-source: url("../assets/images/UI/buttons/primary_blue/button_square_depth_gloss.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-text-fill: white;
+}
+
+.button-secondary {
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 8 8 12 8;
+    -fx-padding: 0;
+    -fx-text-fill: #171717;
+}
+
+.menu-button:pressed {
+    -fx-translate-y: 3;
+}
+
+.button-primary:pressed {
+    -fx-border-image-source: url("../assets/images/UI/buttons/primary_blue/button_square_gloss.png");
+}
+
+.button-secondary:pressed {
+    -fx-border-image-source: url("../assets/images/UI/buttons/secondary_blue/button_square_gloss.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-border-image-width: 8;
+}
+
+.button-secondary {
+    -fx-border-image-source: url("../assets/images/UI/buttons/secondary_blue/button_square_depth_gloss.png");
+}
+
+.button-gold {
+    -fx-border-image-source: url("../assets/images/UI/buttons/primary_gold/button_square_depth_gloss.png");
+    -fx-border-image-slice: 16 fill;
+    -fx-text-fill: white;
+}
+
+.button-gold:pressed {
+    -fx-border-image-source: url("../assets/images/UI/buttons/primary_gold/button_square_gloss.png");
+}
+
+.button-gold:disabled {
+    -fx-border-image-source: url("../assets/images/UI/buttons/primary_disabled/button_square_depth_gloss.png");
+    -fx-opacity: 1;
+    -fx-text-fill: #9a9a9a;
+}
+
+/* Red, for answers that cannot be undone. There is no red rectangular button art: it borrows the red box. */
+.button-danger {
+    -fx-border-image-source: url("../assets/images/UI/containers/red/button_square_depth_flat.png");
+    -fx-border-image-slice: 16 16 24 16 fill;
+    -fx-border-image-width: 8 8 12 8;
+    -fx-text-fill: white;
+}
+
+.button-round:disabled {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_grey/button_round_depth_gloss.png");
+    -fx-opacity: 1;
+    -fx-translate-y: 0;
+    -fx-cursor: default;
+}
+
+.menu-button:disabled {
+    -fx-effect: null;
+    -fx-cursor: default;
+}
+
+.button-round {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
+    -fx-padding: 0 0 4 0;
+    -fx-cursor: hand;
+}
+
+.button-round:pressed {
+    -fx-translate-y: 3;
+}
+
+.round-blue {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_blue/button_round_depth_gloss.png");
+}
+
+.round-blue:pressed {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_blue/button_round_gloss.png");
+}
+
+.round-gold {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_gold/button_round_depth_gloss.png");
+}
+
+.round-gold:pressed {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_gold/button_round_gloss.png");
+}
+
+.round-grey {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_grey/button_round_depth_gloss.png");
+}
+
+.round-grey:pressed {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_grey/button_round_gloss.png");
+}
+
+.round-red {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_red/button_round_depth_gloss.png");
+}
+
+.round-red:pressed {
+    -fx-background-image: url("../assets/images/UI/buttons/rounded_red/button_round_gloss.png");
+}

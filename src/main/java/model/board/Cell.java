@@ -21,7 +21,6 @@ public class Cell {
         return tile;
     }
 
-    /** Returns the occupant of the cell, or null if it is free. */
     public Occupant getOccupant() {
         return occupant;
     }
@@ -34,7 +33,6 @@ public class Cell {
         this.occupant = o;
     }
 
-    /** Takes the occupant out of the cell and returns it. */
     public Occupant remove() {
         Occupant removed = occupant;
         occupant = null;
